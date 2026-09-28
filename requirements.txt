@@ -1,0 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+nba_api
+pandas
+pyarrow
+numpy
+scikit-learn
+joblib
+matplotlib
+torch
