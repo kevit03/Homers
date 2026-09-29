@@ -140,11 +140,21 @@ details summary { cursor: pointer; font-weight: 600; padding-block: 4px; }
 .bigp { font-family: var(--font-display); font-size: 64px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 footer { border-top: 1px solid var(--line-strong); padding-top: 16px; display: grid; gap: 6px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-/* page nav */
-.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
-       display: flex; gap: 4px 18px; flex-wrap: wrap; padding-block: 8px; }
-.nav a { color: var(--ink-2); text-decoration: none; text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; font-weight: 600; }
-.nav a:hover { color: var(--ink); }
+/* tabs: one view at a time instead of one long scroll */
+.tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line-strong);
+        display: flex; gap: 2px; align-items: stretch; overflow-x: auto; scrollbar-width: none; margin-top: -12px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs [role=tab] { all: unset; cursor: pointer; white-space: nowrap; padding: 12px 14px 10px; font-family: var(--font-display); font-size: 18px; font-weight: 600;
+                   text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs [role=tab]:hover { color: var(--ink); }
+.tabs [role=tab][aria-selected=true] { color: var(--ink); border-bottom-color: var(--model); }
+.tabs [role=tab]:focus-visible { outline: 2px solid var(--model); outline-offset: -2px; }
+.tabs [role=tab][hidden] { display: none; }
+.tabs .spacer { flex: 1; }
+.theme-btn { align-self: center; padding: 4px 10px; font-size: 13px; white-space: nowrap; }
+.off-tab { display: none !important; }
+/* section headings: caption sits under the title, not floating on the right */
+.sec-head > .caption { flex-basis: 100%; }
 
 /* players */
 .pl-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
@@ -313,6 +323,95 @@ body:has(.pf-modal[open]) { overflow: hidden; }
 .pf-mini tr.go:hover, .pf-mini tr.sel { background: var(--bg); }
 .pf-mini td.fp { font-weight: 700; color: var(--model); }
 </style>
+<style>
+/* shot charts: every player, counts from play-by-play */
+:root { --dv-0: #184f95; --dv-1: #3987e5; --dv-2: #9ec5f4; --dv-3: #d6d4ce; --dv-4: #f2a3a0; --dv-5: #e34948; --dv-6: #a52524; --court: #c9ced6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --dv-0: #5ea0f0; --dv-1: #2f72c9; --dv-2: #1f4575; --dv-3: #43423e; --dv-4: #6e2a29; --dv-5: #b93a39; --dv-6: #ef5f5d; --court: #3a424d; } }
+:root[data-theme="dark"] { --dv-0: #5ea0f0; --dv-1: #2f72c9; --dv-2: #1f4575; --dv-3: #43423e; --dv-4: #6e2a29; --dv-5: #b93a39; --dv-6: #ef5f5d; --court: #3a424d; }
+.sc-top { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 920px) { .sc-top { grid-template-columns: minmax(0, 1fr); } }
+.sc-col { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.sc-court { position: relative; display: grid; gap: 10px; align-content: start; }
+.hexcourt { width: 100%; height: auto; display: block; }
+.hexcourt .line { fill: none; stroke: var(--court); stroke-width: 2; }
+.hexcourt .line.dash { stroke-dasharray: 6 6; }
+.hexcourt .hx { stroke: var(--surface); stroke-width: 1.5; }
+.hexcourt .hit { fill: transparent; cursor: default; }
+.hexcourt .hit:hover + .hx, .hexcourt .zn:hover { stroke: var(--ink); stroke-width: 2; }
+.hexcourt .zn { stroke: var(--surface); stroke-width: 3; }
+.hexcourt .zn.empty { fill: var(--bg); }
+.hexcourt text { font-family: var(--font-body); font-size: 15px; fill: var(--ink); text-anchor: middle; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; font-variant-numeric: tabular-nums; }
+.hexcourt text.big { font-size: 19px; font-weight: 700; }
+.hexcourt text.small { font-size: 12.5px; fill: var(--ink-2); }
+.hexcourt text.empty-msg { font-size: 18px; fill: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 12px; font-size: 13.5px; }
+.seg button + button { border-left: 1px solid var(--line-strong); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.sc-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+.sc-ramp { display: inline-flex; align-items: center; gap: 6px; }
+.sc-ramp i { width: 18px; height: 12px; display: inline-block; border-radius: 2px; }
+.sc-ramp span.sw { display: inline-flex; gap: 2px; }
+.sc-size { display: inline-flex; align-items: center; gap: 6px; }
+.sc-size svg { display: block; }
+.sc-tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius);
+          padding: 8px 10px; font-size: 13px; line-height: 1.4; box-shadow: 0 4px 14px rgb(0 0 0 / .12); min-width: 170px; z-index: 2; }
+.sc-tip b { font-weight: 700; color: var(--ink); }
+.sc-tip .mut { color: var(--muted); }
+.sc-side { display: grid; gap: 16px; align-content: start; }
+.sc-name { font-family: var(--font-display); font-size: 36px; font-weight: 700; line-height: 1.05; }
+.sc-meta { color: var(--ink-2); font-size: 14px; }
+.sc-now { font-size: 14.5px; font-weight: 600; margin-top: 4px; }
+.sc-now .mut { font-weight: 400; color: var(--ink-2); }
+.team-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 5px; margin-right: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.tile { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.tile .v { font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.freq { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.freq i { display: block; height: 8px; border-radius: 0 4px 4px 0; background: var(--muted); }
+.freq .ftrack { width: 60px; display: flex; }
+td.up, td.down { font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.lb { max-height: 560px; overflow: auto; }
+.lb thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+#lbHead th.sort.on { color: var(--ink); }
+#lbHead th.sort.on::after { content: " ▾"; }
+#lbHead th.sort.on.asc::after { content: " ▴"; }
+tr.pick { cursor: pointer; }
+tr.pick:hover, tr.pick.cur { background: var(--bg); }
+tr.pick.cur td:first-child { box-shadow: inset 3px 0 0 var(--model); }
+</style>
+<style>
+/* sources & methods */
+.src-list { display: grid; gap: 0; }
+.src { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr) minmax(0, 1.3fr); gap: 6px 20px; padding: 14px 0; border-top: 1px solid var(--line); }
+.src:first-child { border-top: 0; padding-top: 0; }
+.src h4 { margin: 0; font-size: 15px; font-weight: 700; }
+.src h4 a { color: inherit; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.src h4 a:hover { text-decoration-color: currentColor; }
+.src .org { font-size: 13px; color: var(--muted); }
+.src .use { font-size: 14px; color: var(--ink-2); }
+.src .cov { font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.src .cov .mut { color: var(--muted); display: block; font-size: 12.5px; margin-top: 2px; }
+@media (max-width: 860px) { .src { grid-template-columns: minmax(0, 1fr); } }
+.methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .methods { grid-template-columns: minmax(0, 1fr); } }
+.method { display: grid; gap: 10px; align-content: start; }
+.method .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.method .tag { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: var(--bg); border: 1px solid var(--line-strong); color: var(--ink-2); }
+.method .tag.status-ok { background: var(--good-bg); color: var(--good); border-color: transparent; }
+.method .tag.status-no { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.method dl { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 7px 14px; margin: 0; font-size: 14px; }
+.method dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; padding-top: 2px; }
+.method dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 480px) { .method dl { grid-template-columns: minmax(0, 1fr); } .method dt { padding-top: 6px; } }
+.soft { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; }
+.soft a { color: var(--ink); font-weight: 600; }
+.soft span { color: var(--muted); }
+</style>
 
 <div class="wrap">
   <header>
@@ -322,16 +421,80 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
     <div class="chips" id="chips"></div>
   </header>
-  <nav class="nav" aria-label="Sections"><a href="#h-board">Scoreboard</a><a href="#h-replay">Game replay</a><a href="#players" class="needs-shots" hidden>Players</a><a href="#defenders" class="needs-shots" hidden>Defenders</a><a href="#coaches" class="needs-shots" hidden>Coaches</a><a href="#profiles" class="needs-profiles" hidden>Fantasy</a><a href="#h-quality">Model quality</a><a href="#h-whatif">What-if</a></nav>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="shots" id="tab-shots">Shot charts</button>
+    <button role="tab" data-tab="players" id="tab-players">Players</button>
+    <button role="tab" data-tab="games" id="tab-games">Game replay</button>
+    <button role="tab" data-tab="model" id="tab-model">Model</button>
+    <button role="tab" data-tab="sources" id="tab-sources">Sources</button>
+    <span class="spacer"></span>
+    <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch colour theme">◐ Theme</button>
+  </nav>
 
-  <div class="notice" id="synNotice" hidden><b>Synthetic data.</b> These are simulated games used to test the pipeline. Train on real NBA seasons and re-export to see real results.</div>
+<section aria-labelledby="h-shots" id="shots" data-tab="shots">
+  <div class="sec-head">
+    <h2 id="h-shots">Shot charts</h2>
+    <p class="caption" id="scCaption">Every field-goal attempt by every player, from play-by-play.</p>
+  </div>
+  <div class="panel controls">
+    <div class="field grow"><label class="label" for="scFind">Player</label>
+      <input type="search" id="scFind" list="scNames" placeholder="Search any player…" autocomplete="off"><datalist id="scNames"></datalist></div>
+    <div class="field"><label class="label" for="scSeason">Season</label><select id="scSeason"></select></div>
+    <div class="field"><span class="label">Chart</span>
+      <div class="seg" role="group" aria-label="Chart type"><button id="scHex" aria-pressed="true">Hexes</button><button id="scZones" aria-pressed="false">Zones</button></div></div>
+  </div>
 
-  <section aria-labelledby="h-board">
+  <div class="sc-top">
+    <div class="sc-col">
+    <div class="panel sc-court" id="scCourtPanel">
+      <svg class="hexcourt" id="scCourt" viewBox="-252 -372 504 427" role="img" aria-label="Shot chart"></svg>
+      <div class="sc-legend" id="scLegend"></div>
+      <div class="sc-tip" id="scTip" hidden></div>
+    </div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <div class="sec-head"><h3 id="scKindTitle">Shot types</h3>
+        <div class="seg" role="group" aria-label="Breakdown"><button id="scByType" aria-pressed="true">Shot type</button><button id="scByStyle" aria-pressed="false">How he gets it</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th id="scKindCol">Type</th><th class="r">FGM–FGA</th><th class="r">FG%</th><th class="r">vs Lg</th><th class="r">Share</th></tr></thead><tbody id="scKinds"></tbody></table></div>
+    </div>
+    </div>
+    <div class="panel sc-side">
+      <div>
+        <div class="sc-name" id="scName"></div>
+        <div class="sc-now" id="scNow"></div>
+        <div class="sc-meta" id="scMeta"></div>
+      </div>
+      <div class="tiles" id="scTiles"></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Zone</th><th class="r">FGM–FGA</th><th class="r">FG%</th><th class="r">vs Lg</th><th class="r">Share of shots</th></tr></thead>
+        <tbody id="scZoneTable"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="panel" style="display:grid;gap:12px">
+    <div class="sec-head"><h3>All players</h3><p class="caption" id="lbCount"></p></div>
+    <div class="controls">
+      <div class="field grow"><label class="label" for="lbFind">Filter</label><input type="search" id="lbFind" placeholder="Player or team (e.g. BOS)" autocomplete="off"></div>
+      <div class="field"><label class="label" for="lbTeam">Current team</label><select id="lbTeam"></select></div>
+      <div class="field"><label class="label" for="lbMin">Min. attempts</label>
+        <select id="lbMin"><option value="1">Any</option><option value="100">100</option><option value="250" selected>250</option><option value="500">500</option><option value="1000">1,000</option></select></div>
+    </div>
+    <div class="table-wrap lb"><table>
+      <thead id="lbHead"></thead>
+      <tbody id="lbBody"></tbody>
+    </table></div>
+    <p class="caption">Click a column to sort and a row to open that player's chart. <b>Now</b> = current team from Basketball-Reference; <b>Shot for</b> = team(s) in the play-by-play for the selected season. Rim = restricted area; mid = mid-range outside the paint; 3PA rate = share of attempts that are threes.</p>
+  </div>
+</section>
+
+  <div class="notice" id="synNotice" data-tab="games model" hidden><b>Synthetic data.</b> These are simulated games used to test the pipeline. Train on real NBA seasons and re-export to see real results.</div>
+
+  <section aria-labelledby="h-board" data-tab="model">
     <h2 id="h-board" class="label" style="font-family:var(--font-body);font-size:12px;">Scoreboard · held-out test games</h2>
     <div class="board" id="board"></div>
   </section>
 
-  <section aria-labelledby="h-replay">
+  <section aria-labelledby="h-replay" id="replay" data-tab="games">
     <div class="sec-head">
       <h2 id="h-replay">Game replay</h2>
       <p class="caption">Hover the chart or drag the slider to step through a game play by play.</p>
@@ -418,7 +581,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section aria-labelledby="h-players" id="players" hidden>
+  <section aria-labelledby="h-players" id="players" data-tab="players" hidden>
     <div class="sec-head">
       <h2 id="h-players">Player tendencies</h2>
       <p class="caption" id="plCaption"></p>
@@ -474,7 +637,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section aria-labelledby="h-defenders" id="defenders" hidden>
+  <section aria-labelledby="h-defenders" id="defenders" data-tab="players" hidden>
     <div class="sec-head">
       <h2 id="h-defenders">Defender indicators</h2>
       <p class="caption">How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Negative points per shot is good defense.</p>
@@ -492,7 +655,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section aria-labelledby="h-coaches" id="coaches" hidden>
+  <section aria-labelledby="h-coaches" id="coaches" data-tab="players" hidden>
     <div class="sec-head">
       <h2 id="h-coaches">Coaches &amp; schemes</h2>
       <p class="caption">Play-type mix from Synergy tracking, shot diets from play-by-play, and the model's read on each coach's offense and defense.</p>
@@ -512,7 +675,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section id="profiles" aria-labelledby="h-profiles" hidden>
+  <section id="profiles" aria-labelledby="h-profiles" data-tab="players" hidden>
     <div class="sec-head">
       <h2 id="h-profiles">Fantasy leaderboard</h2>
       <p class="caption">Fantasy points per game with NBA.com scoring: points ×1, rebounds ×1.2, assists ×1.5, steals and blocks ×3, turnovers −1. Click any player for his profile.</p>
@@ -533,7 +696,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section aria-labelledby="h-quality">
+  <section aria-labelledby="h-quality" data-tab="model">
     <div class="sec-head">
       <h2 id="h-quality">Model quality</h2>
       <p class="caption">Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25.</p>
@@ -570,7 +733,7 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <section aria-labelledby="h-whatif">
+  <section aria-labelledby="h-whatif" data-tab="model">
     <div class="sec-head">
       <h2 id="h-whatif">What-if</h2>
       <p class="caption">Set a game situation to see the baseline's win probability. NBAGPT needs the full play sequence, so its predictions live in the replay above.</p>
@@ -600,9 +763,29 @@ body:has(.pf-modal[open]) { overflow: hidden; }
     </div>
   </section>
 
+<section aria-labelledby="h-sources" id="sources" data-tab="sources">
+  <div class="sec-head">
+    <h2 id="h-sources">Sources</h2>
+    <p class="caption" id="srcCaption">Where every number on this page comes from, how much of it we have, and when it was last pulled.</p>
+  </div>
+  <div class="panel"><div class="src-list" id="srcList"></div></div>
+
+  <div class="sec-head" style="margin-top:14px">
+    <h2 id="h-methods">Models, regression and training</h2>
+    <p class="caption">What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs.</p>
+  </div>
+  <div class="methods" id="methods"></div>
+
+  <div class="panel" style="display:grid;gap:10px">
+    <h3>Software</h3>
+    <div class="soft" id="software"></div>
+    <p class="caption" id="srcBuilt"></p>
+  </div>
+</section>
+
   <footer>
     <p class="caption" id="footMeta"></p>
-    <p class="caption">Rebuild after training: <code>python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl</code></p>
+    <p class="caption">Rebuild after fetching or training: <code>python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl</code>. Data sources and methods are under the Sources tab.</p>
   </footer>
   <dialog id="pfModal" class="pf-modal" aria-labelledby="pfName"><div id="pfCard"></div></dialog>
 </div>
@@ -1310,6 +1493,8 @@ function pfRenderCard() {
   const born = b.born ? b.born.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : "";
   const bio = [PF_POS[b.pos] || b.pos, b.ht && b.ht.replace("-", "′ ") + "″", b.wt && b.wt + " lb", born && "Born " + born,
     b.since && `In the NBA since ${b.since}`, b.school].filter(Boolean);
+  const nowT = scNowOf(pid);
+  if (nowT) bio.unshift(`Now: ${SC.teams[nowT.team] || nowT.team} (${SC.roster.season})`);
   $("pfCard").innerHTML = `
     <header class="pf-hero" style="--tc:${c1};--ta:${c2}">
       <div class="pf-num" aria-hidden="true">${esc(b.num || "")}</div>
@@ -1436,13 +1621,15 @@ function pfRenderSeason() {
         return `<tr class="go${x === season ? " sel" : ""}" data-season="${x}" tabindex="0"><td>${x}</td><td>${esc(t.team)}</td><td class="r">${t.gp}</td><td class="r">${f1(t.min / n)}</td><td class="r">${f1(t.pts / n)}</td>
           <td class="r">${f1(pfReb(t) / n)}</td><td class="r">${f1(t.ast / n)}</td><td class="r">${f1(t.stl / n)}</td><td class="r">${f1(t.blk / n)}</td><td class="r">${f1(t.tov / n)}</td>
           <td class="r">${p("fgm", "fga")}</td><td class="r">${p("tpm", "tpa")}</td><td class="r fp">${f1(pfFP(t) / n)}</td></tr>`; }).join("")}</tbody></table></div></div>
-    ${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<div><button type="button" id="pfShots">Open his shot chart and matchup simulator ›</button></div>` : ""}`;
+    ${scIndexOf(pid) >= 0 ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="pfShotChart">Open his shot chart ›</button>${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<button type="button" id="pfShots">Matchup simulator ›</button>` : ""}</div>`
+      : DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<div><button type="button" id="pfShots">Open his shot chart and matchup simulator ›</button></div>` : ""}`;
 }
 function pfJumpToGame(gid) {
   const i = order.findIndex(g => g.id === gid);
   if (i < 0) return;
   $("pfModal").close();
   pickGame(i);
+  showTab("games");
   $("h-replay").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -1508,8 +1695,11 @@ function initProfiles() {
     if (gid) { pfJumpToGame(gid.dataset.gid); return; }
     const se = e.target.closest("tr[data-season]");
     if (se) { pfSeasonSel = se.dataset.season; pfRenderCard(); return; }
+    if (e.target.id === "pfShotChart") {
+      d.close(); showTab("shots"); scPick(scIndexOf(pfCurPid), true); return;
+    }
     if (e.target.id === "pfShots") {
-      d.close();
+      d.close(); showTab("players");
       $("plSel").value = String(pfCurPid);
       renderPlayer(DATA.shots.players.find(p => p.id === pfCurPid));
       $("players").scrollIntoView({ behavior: "smooth" });
@@ -1531,6 +1721,414 @@ function initProfiles() {
   const m = location.hash.match(/^#player-(\d+)$/);
   if (m) openProfile(+m[1]);
 }
+
+/* ---------- shot charts (every player) ---------- */
+const SC = DATA.shotcharts;
+const sc = { player: 0, season: "", view: "hex", kind: "type", sort: "fga", asc: false, cache: {} };
+const TYPE_NAMES = { LAYUP: "Layup", DUNK: "Dunk", FLOATER: "Floater", HOOK: "Hook shot", SHORT_MID: "Short mid-range (≤14 ft)", LONG_MID: "Long mid-range",
+  CORNER_3: "Corner 3", ABOVE_BREAK_3: "Above-the-break 3" };
+const STYLE_NAMES = { STANDARD: "Catch / standard", PULLUP: "Pull-up", STEPBACK: "Step-back", FADEAWAY: "Fadeaway / turnaround", DRIVING: "Driving",
+  CUTTING: "Cutting", PUTBACK: "Putback / tip", ALLEY_OOP: "Alley-oop", RUNNING: "Running" };
+const fmtP = (v, d = 1) => v == null || !isFinite(v) ? "—" : (v * 100).toFixed(d) + "%";
+const fmtD = (v, d = 1) => v == null || !isFinite(v) ? "" : (v >= 0 ? "+" : "−") + Math.abs(v * 100).toFixed(d);
+const dCls = v => v == null || Math.abs(v) < 0.005 ? "" : v > 0 ? "up" : "down";
+
+function scAdd(dst, src) { for (let i = 0; i < src.length; i++) dst[i] += src[i]; }
+function scSum(recs) {
+  const o = { g: 0, lz: Array(SC.loc_zones.length * 2).fill(0), ty: Array(SC.types.length * 2).fill(0),
+              st: Array(SC.styles.length * 2).fill(0), t3: [0, 0], ast: 0, d: 0, h: new Map(), teams: [] };
+  for (const r of recs) {
+    o.g += r.g; scAdd(o.lz, r.lz); scAdd(o.ty, r.ty); scAdd(o.st, r.st); scAdd(o.t3, r.t3); o.ast += r.ast; o.d += r.d;
+    if (r.h) for (let i = 0; i < r.h.length; i += 3) {
+      const v = o.h.get(r.h[i]) || [0, 0]; v[0] += r.h[i + 1]; v[1] += r.h[i + 2]; o.h.set(r.h[i], v);
+    }
+    if (r.t) for (const t of r.t.split("/")) if (!o.teams.includes(t)) o.teams.push(t);
+    if (r.ha) { o.ha = o.ha ? o.ha.map((v, i) => v + r.ha[i]) : r.ha.slice(); o.hm = o.hm ? o.hm.map((v, i) => v + r.hm[i]) : r.hm.slice(); }
+  }
+  return o;
+}
+function scStats(o) {
+  let fga = 0, fgm = 0;
+  for (let z = 0; z < SC.loc_zones.length; z++) { fga += o.lz[2 * z]; fgm += o.lz[2 * z + 1]; }
+  const grp = zs => { let a = 0, m = 0; for (const z of zs) { a += o.lz[2 * z]; m += o.lz[2 * z + 1]; } return { a, m, fg: a ? m / a : null, freq: fga ? a / fga : null }; };
+  const [a3, m3] = o.t3, q = (n, d) => d ? n / d : null;
+  return { fga, fgm, g: o.g, fg: q(fgm, fga), a3, m3, fg3: q(m3, a3), efg: q(fgm + .5 * m3, fga), pps: q(2 * fgm + m3, fga),
+           dist: q(o.d, fga), ast: q(o.ast, fgm), rate3: q(a3, fga), perG: q(fga, o.g),
+           rim: grp([0]), paint: grp([1]), mid: grp([2, 3, 4]), c3: grp([5, 6]), ab3: grp([7, 8, 9]) };
+}
+const scRecs = p => sc.season === "all" ? p.p : p.p.filter(r => r.s === +sc.season);
+function scLeague() {
+  const k = "lg" + sc.season;
+  if (!sc.cache[k]) { const o = scSum(sc.season === "all" ? SC.league : SC.league.filter(r => r.s === +sc.season)); sc.cache[k] = { o, s: scStats(o) }; }
+  return sc.cache[k];
+}
+function scRows() {
+  const k = "rows" + sc.season;
+  if (!sc.cache[k]) sc.cache[k] = SC.players.map((p, i) => {
+    const recs = scRecs(p);
+    if (!recs.length) return null;
+    const o = scSum(recs);
+    return { i, name: p.n, team: o.teams.join("/"), now: p.now ? p.now.team : "", ...scStats(o) };
+  }).filter(Boolean);
+  return sc.cache[k];
+}
+
+/* court geometry (tenths of a foot, hoop at 0,0; screen y is flipped so the hoop sits at the bottom) */
+const P = (x, y) => `${x.toFixed(1)},${(-y).toFixed(1)}`;
+function arc(r, a0, a1, cx = 0, cy = 0, n = 48) {
+  const out = [];
+  for (let i = 0; i <= n; i++) { const a = (a0 + (a1 - a0) * i / n) * Math.PI / 180; out.push(P(cx + r * Math.cos(a), cy + r * Math.sin(a))); }
+  return out;
+}
+const poly = pts => "M" + pts.join("L") + "Z";
+const A3 = 237.5, CY = Math.sqrt(A3 * A3 - 220 * 220), MY = Math.sqrt(A3 * A3 - 80 * 80), TOP = SC ? SC.hex.top : 370;
+const aC = Math.atan2(CY, 220) * 180 / Math.PI, aM = Math.atan2(MY, 80) * 180 / Math.PI;
+const ZONE_PATHS = [
+  poly(arc(40, 0, 360)),
+  poly([P(-80, -52.5), P(80, -52.5), P(80, 137.5), P(-80, 137.5)]) + poly(arc(40, 360, 0)),
+  poly([P(-220, -52.5), P(-80, -52.5), P(-80, MY), ...arc(A3, 180 - aM, 180 - aC), P(-220, CY)]),
+  poly([P(-80, 137.5), P(80, 137.5), P(80, MY), ...arc(A3, aM, 180 - aM)]),
+  poly([P(220, -52.5), P(80, -52.5), P(80, MY), ...arc(A3, aM, aC), P(220, CY)]),
+  poly([P(-250, -52.5), P(-220, -52.5), P(-220, CY), P(-250, CY)]),
+  poly([P(250, -52.5), P(220, -52.5), P(220, CY), P(250, CY)]),
+  poly([P(-250, CY), ...arc(A3, 180 - aC, 180 - aM), P(-80, TOP), P(-250, TOP)]),
+  poly([...arc(A3, 180 - aM, aM), P(80, TOP), P(-80, TOP)]),
+  poly([P(250, CY), ...arc(A3, aC, aM), P(80, TOP), P(250, TOP)]),
+];
+const ZONE_LABEL = [[0, 12], [0, 88], [-150, 70], [0, 178], [150, 70], [-235, 20], [235, 20], [-175, 290], [0, 300], [175, 290]];
+const COURT_LINES = [
+  `<path class="line" d="M${P(-250, TOP)}L${P(-250, -52.5)}L${P(250, -52.5)}L${P(250, TOP)}"/>`,
+  `<path class="line" d="M${P(-80, -52.5)}L${P(-80, 137.5)}L${P(80, 137.5)}L${P(80, -52.5)}"/>`,
+  `<path class="line" d="M${P(-60, -52.5)}L${P(-60, 137.5)}M${P(60, -52.5)}L${P(60, 137.5)}"/>`,
+  `<path class="line" d="M${arc(60, 0, 180, 0, 137.5).join("L")}"/>`,
+  `<path class="line dash" d="M${arc(60, 180, 360, 0, 137.5).join("L")}"/>`,
+  `<path class="line" d="M${arc(40, 0, 180).join("L")}"/>`,
+  `<path class="line" d="M${P(-30, -7.5)}L${P(30, -7.5)}"/><circle class="line" cx="0" cy="0" r="7.5"/>`,
+  `<path class="line" d="M${P(-220, -52.5)}L${P(-220, CY)}L${arc(A3, 180 - aC, aC).join("L")}L${P(220, -52.5)}"/>`,
+].join("");
+
+/* hexes: pointy-top axial grid; colour = smoothed FG% at that spot minus the league's */
+const SQ3 = Math.sqrt(3);
+let HEX_XY = [], HEX_NB = [];
+function scHexInit() {
+  const R = SC.hex.r, key = new Map(SC.hex.qr.map(([q, r], i) => [q + "," + r, i]));
+  HEX_XY = SC.hex.qr.map(([q, r]) => [R * SQ3 * (q + r / 2), R * 1.5 * r]);
+  HEX_NB = SC.hex.qr.map(([q, r]) => {
+    const nb = [];
+    for (let dq = -2; dq <= 2; dq++) for (let dr = -2; dr <= 2; dr++) {
+      const d = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+      const j = key.get((q + dq) + "," + (r + dr));
+      if (d <= 2 && j != null) nb.push([j, [1, .5, .2][d]]);
+    }
+    return nb;
+  });
+}
+const hexPts = (cx, cy, s) => Array.from({ length: 6 }, (_, k) => { const a = (30 + 60 * k) * Math.PI / 180; return P(cx + s * Math.cos(a), cy + s * Math.sin(a)); }).join(" ");
+const BUCKETS = [-.09, -.05, -.02, .02, .05, .09];
+const bucket = d => { let b = 0; while (b < BUCKETS.length && d >= BUCKETS[b]) b++; return b; };
+const DV = b => `var(--dv-${b})`;
+
+function scLegend() {
+  const sw = BUCKETS.length + 1;
+  const ramp = `<span class="sc-ramp">Colder <span class="sw">${Array.from({ length: sw }, (_, b) => `<i style="background:${DV(b)}"></i>`).join("")}</span> Hotter than league</span>`;
+  if (sc.view === "zones") return ramp + `<span>Each zone: FG% and makes–attempts. Colour steps at ±2, 5 and 9 points.</span>`;
+  const R = SC.hex.r, mini = s => `<svg width="18" height="18" viewBox="-12 -12 24 24"><polygon points="${hexPts(0, 0, s)}" fill="var(--muted)"/></svg>`;
+  return ramp + `<span class="sc-size">Less often ${mini(R * .4)}${mini(R * .7)}${mini(R)} More often</span>`;
+}
+
+function scDraw() {
+  const p = SC.players[sc.player], recs = scRecs(p), svg = $("scCourt"), L = scLeague();
+  $("scLegend").innerHTML = scLegend();
+  if (!recs.length) {
+    svg.innerHTML = COURT_LINES + `<text class="empty-msg" x="0" y="-200">${p.p.length ? "No shots in " + (sc.season === "all" ? "these seasons" : SC.seasons[+sc.season]) : "No NBA shots in the data yet"}</text>`;
+    return;
+  }
+  const o = scSum(recs), st = scStats(o);
+  let body = "";
+  if (sc.view === "zones") {
+    body += ZONE_PATHS.map((d, z) => {
+      const a = o.lz[2 * z], m = o.lz[2 * z + 1], la = L.o.lz[2 * z], lm = L.o.lz[2 * z + 1];
+      const diff = a ? m / a - lm / la : null;
+      return `<path class="zn${a ? "" : " empty"}" data-z="${z}" d="${d}" fill-rule="evenodd" ${a ? `fill="${DV(bucket(diff))}"` : ""}/>`;
+    }).join("") + COURT_LINES;
+    body += ZONE_LABEL.map(([x, y], z) => {
+      const a = o.lz[2 * z], m = o.lz[2 * z + 1];
+      if (!a) return "";
+      const narrow = z === 5 || z === 6;
+      return `<text class="big" x="${x}" y="${-y - (narrow ? 0 : 4)}"${narrow ? ` style="font-size:14px"` : ""}>${fmtP(m / a, 0)}</text>` +
+        (narrow ? `<text class="small" x="${x}" y="${-y + 16}">${a}</text>` : `<text class="small" x="${x}" y="${-y + 15}">${m}–${a}</text>`);
+    }).join("");
+  } else {
+    body += COURT_LINES;
+    const R = SC.hex.r, rows = [];
+    for (const [i, [a, m]] of o.h) {
+      let pa = 0, pm = 0, la = 0, lm = 0;
+      for (const [j, w] of HEX_NB[i]) { const v = o.h.get(j); if (v) { pa += w * v[0]; pm += w * v[1]; } la += w * L.o.ha[j]; lm += w * L.o.hm[j]; }
+      const lg = la ? lm / la : 0, K = 10, diff = (pm + K * lg) / (pa + K) - lg;
+      const s = R * Math.max(.35, Math.min(1, Math.sqrt((a / st.fga) / .012))) * .96;
+      const [cx, cy] = HEX_XY[i];
+      rows.push([a, `<polygon class="hit" data-h="${i}" data-d="${diff.toFixed(4)}" points="${hexPts(cx, cy, R)}"/><polygon class="hx" points="${hexPts(cx, cy, s)}" fill="${DV(bucket(diff))}"/>`]);
+    }
+    body += rows.sort((x, y) => x[0] - y[0]).map(r => r[1]).join("");
+  }
+  svg.innerHTML = body;
+  svg.setAttribute("aria-label", `${p.n} shot chart, ${st.fga} attempts`);
+}
+
+function scTipAt(e, html) {
+  const tip = $("scTip"), box = $("scCourtPanel").getBoundingClientRect();
+  tip.innerHTML = html; tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX - box.left + 14, y = e.clientY - box.top + 14;
+  if (x + w > box.width - 4) x = e.clientX - box.left - w - 14;
+  if (y + h > box.height - 4) y = e.clientY - box.top - h - 14;
+  tip.style.left = Math.max(4, x) + "px"; tip.style.top = Math.max(4, y) + "px";
+}
+function scHover(e) {
+  const t = e.target, p = SC.players[sc.player], L = scLeague();
+  if (!scRecs(p).length) return;
+  const o = scSum(scRecs(p)), fga = scStats(o).fga;
+  if (t.dataset.h != null) {
+    const i = +t.dataset.h, [a, m] = o.h.get(i), la = L.o.ha[i], lm = L.o.hm[i], d = +t.dataset.d;
+    const ft = Math.hypot(...HEX_XY[i]) / 10;
+    scTipAt(e, `<b>${ft.toFixed(0)} ft from the rim</b><br>${m} of ${a} made (${fmtP(m / a, 0)}) · ${fmtP(a / fga)} of his shots` +
+      `<br><span class="mut">League here: ${fmtP(la ? lm / la : null, 0)}</span><br><span class="mut">Area vs league (smoothed): ${fmtD(d)} pts</span>`);
+  } else if (t.dataset.z != null) {
+    const z = +t.dataset.z, a = o.lz[2 * z], m = o.lz[2 * z + 1], lg = L.o.lz[2 * z + 1] / L.o.lz[2 * z];
+    scTipAt(e, `<b>${SC.loc_zones[z]}</b><br>${m} of ${a} made (${fmtP(a ? m / a : null)})` +
+      `<br>${fmtP(a / fga)} of his shots<br><span class="mut">League: ${fmtP(lg)} · ${a ? fmtD(m / a - lg) + " pts" : "no attempts"}</span>`);
+  } else $("scTip").hidden = true;
+}
+
+function scPairRows(arr, lgArr, names, labels, fga, lgFga) {
+  let maxShare = 0;
+  const rows = names.map((k, i) => ({ k, a: arr[2 * i], m: arr[2 * i + 1], la: lgArr[2 * i], lm: lgArr[2 * i + 1] })).filter(r => r.a > 0 || r.la > 0);
+  rows.forEach(r => { maxShare = Math.max(maxShare, r.a / fga); });
+  return rows.map(r => {
+    const fg = r.a ? r.m / r.a : null, lg = r.la ? r.lm / r.la : null, d = fg != null && lg != null ? fg - lg : null, share = r.a / fga;
+    return `<tr${r.a ? "" : ` style="color:var(--muted)"`}><td>${esc(labels[r.k] || r.k)}</td><td class="r">${r.m}–${r.a}</td><td class="r">${fmtP(fg)}</td>` +
+      `<td class="r ${r.a >= 10 ? dCls(d) : ""}">${r.a ? fmtD(d) : ""}</td>` +
+      `<td class="r"><span class="freq">${fmtP(share, 0)}<span class="ftrack"><i style="width:${maxShare ? (share / maxShare * 100).toFixed(1) : 0}%"></i></span></span></td></tr>`;
+  }).join("");
+}
+
+function scPanel() {
+  const p = SC.players[sc.player], recs = scRecs(p), L = scLeague(), ls = L.s;
+  $("scName").textContent = p.n;
+  const nw = p.now, yrs = nw && (nw.exp === "R" ? "Rookie" : nw.exp ? `${nw.exp} yrs in the league` : "");
+  $("scNow").innerHTML = nw ? `<span class="team-tag">${esc(nw.team)}</span>${esc(SC.teams[nw.team] || nw.team)} <span class="mut">· ${[nw.pos, nw.ht, nw.wt && nw.wt + " lb", yrs].filter(Boolean).map(esc).join(" · ")}` +
+      `${nw.no ? " · #" + esc(nw.no) : ""} · ${esc(SC.roster.season)} roster</span>`
+    : SC.roster && SC.roster.season ? `<span class="mut">Not on a ${esc(SC.roster.season)} NBA roster</span>` : "";
+  $("scFind").value = "";
+  $("scFind").placeholder = p.n;
+  const seasonTxt = sc.season === "all" ? `${SC.seasons[0]} to ${SC.seasons[SC.seasons.length - 1]}` : SC.seasons[+sc.season];
+  if (!recs.length) {
+    $("scMeta").textContent = p.p.length ? `No shots in ${seasonTxt}. Shot in: ${p.p.map(r => SC.seasons[r.s]).join(", ")}.`
+      : `No NBA shots in this data yet (${SC.seasons.join(", ")}).`;
+    $("scTiles").innerHTML = ""; $("scZoneTable").innerHTML = ""; $("scKinds").innerHTML = "";
+    return;
+  }
+  const o = scSum(recs), s = scStats(o);
+  $("scMeta").textContent = `${o.teams.join(" / ")} · ${seasonTxt} · ${s.g} games · ${s.fga.toLocaleString()} shots`;
+  const tile = (label, v, sub) => `<div class="tile"><span class="label">${label}</span><span class="v">${v}</span><span class="s">${sub}</span></div>`;
+  const vs = (a, b) => a == null ? "" : `<span class="${dCls(a - b)}">${fmtD(a - b)}</span> vs league ${fmtP(b)}`;
+  $("scTiles").innerHTML = [
+    tile("FG%", fmtP(s.fg), vs(s.fg, ls.fg)),
+    tile("eFG%", fmtP(s.efg), vs(s.efg, ls.efg)),
+    tile("3P%", fmtP(s.fg3), s.a3 ? `${s.m3}–${s.a3} · <span class="${dCls(s.fg3 - ls.fg3)}">${fmtD(s.fg3 - ls.fg3)}</span> vs lg ${fmtP(ls.fg3)}` : "No threes"),
+    tile("Points / shot", s.pps.toFixed(2), `League ${ls.pps.toFixed(2)}`),
+    tile("Shots / game", s.perG.toFixed(1), `${fmtP(s.rate3, 0)} are threes (lg ${fmtP(ls.rate3, 0)})`),
+    tile("Avg distance", s.dist.toFixed(1) + " ft", `${fmtP(s.ast, 0)} of makes assisted`),
+  ].join("");
+  $("scZoneTable").innerHTML = scPairRows(o.lz, L.o.lz, SC.loc_zones.map((_, i) => i), SC.loc_zones, s.fga) +
+    `<tr style="font-weight:700"><td>All shots</td><td class="r">${s.fgm}–${s.fga}</td><td class="r">${fmtP(s.fg)}</td><td class="r ${dCls(s.fg - ls.fg)}">${fmtD(s.fg - ls.fg)}</td><td></td></tr>`;
+  const byType = sc.kind === "type";
+  $("scKindTitle").textContent = byType ? "Shot types" : "How he gets his shot";
+  $("scKindCol").textContent = byType ? "Type" : "Style";
+  $("scKinds").innerHTML = byType ? scPairRows(o.ty, L.o.ty, SC.types, TYPE_NAMES, s.fga) : scPairRows(o.st, L.o.st, SC.styles, STYLE_NAMES, s.fga);
+}
+
+const LB_COLS = [
+  ["name", "Player", 0], ["now", "Now", 0], ["team", "Shot for", 0], ["g", "G", 1], ["fga", "FGA", 1], ["perG", "FGA/G", 1], ["fg", "FG%", 1], ["efg", "eFG%", 1],
+  ["a3", "3PA", 1], ["fg3", "3P%", 1], ["rate3", "3PA rate", 1], ["rimF", "Rim freq", 1], ["rimFg", "Rim FG%", 1],
+  ["midF", "Mid freq", 1], ["midFg", "Mid FG%", 1], ["pps", "Pts/shot", 1], ["dist", "Avg ft", 1], ["ast", "Ast'd", 1],
+];
+const lbVal = (r, k) => ({ rimF: r.rim.freq, rimFg: r.rim.fg, midF: r.mid.freq, midFg: r.mid.fg })[k] ?? r[k];
+function scBoard() {
+  const min = +$("lbMin").value, qs = $("lbFind").value.trim().toLowerCase(), tm = $("lbTeam").value;
+  const rows = scRows().filter(r => r.fga >= min && (!tm || (tm === "-" ? !r.now : r.now === tm)) &&
+    (!qs || r.name.toLowerCase().includes(qs) || r.team.toLowerCase().includes(qs) || r.now.toLowerCase().includes(qs)));
+  const k = sc.sort, dir = sc.asc ? 1 : -1;
+  rows.sort((a, b) => {
+    const x = lbVal(a, k), y = lbVal(b, k);
+    if (typeof x === "string") return dir * (x || "~").localeCompare(y || "~");
+    return dir * ((x ?? -1) - (y ?? -1));
+  });
+  $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0" aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
+  const pc = v => fmtP(v), f1 = v => v == null ? "—" : v.toFixed(1);
+  $("lbBody").innerHTML = rows.map(r => `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0">
+    <td><b>${esc(r.name)}</b></td><td>${r.now ? esc(r.now) : `<span style="color:var(--muted)">—</span>`}</td><td>${esc(r.team)}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td><td class="r">${f1(r.perG)}</td>
+    <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
+    <td class="r">${pc(r.rim.freq)}</td><td class="r">${r.rim.a ? pc(r.rim.fg) : "—"}</td><td class="r">${pc(r.mid.freq)}</td><td class="r">${r.mid.a ? pc(r.mid.fg) : "—"}</td>
+    <td class="r">${r.pps.toFixed(2)}</td><td class="r">${f1(r.dist)}</td><td class="r">${r.fgm ? pc(r.ast) : "—"}</td></tr>`).join("");
+  $("lbCount").textContent = `${rows.length.toLocaleString()} of ${scRows().length.toLocaleString()} players who took a shot${sc.season === "all" ? "" : " in " + SC.seasons[+sc.season]}`;
+}
+
+function scPick(i, scroll) {
+  sc.player = i;
+  scDraw(); scPanel();
+  document.querySelectorAll("#lbBody tr").forEach(tr => tr.classList.toggle("cur", +tr.dataset.i === i));
+  try { history.replaceState(null, "", "#shots/" + SC.players[i].id); } catch (e) {}
+  if (scroll) $("shots").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function scRender() { scDraw(); scPanel(); scBoard(); }
+
+function scInit() {
+  if (!SC) { $("shots").hidden = true; return; }
+  scHexInit();
+  const last = SC.seasons.length - 1;
+  $("scSeason").innerHTML = SC.seasons.map((s, i) => `<option value="${i}">${s}</option>`).reverse().join("") +
+    (SC.seasons.length > 1 ? `<option value="all">All seasons</option>` : "");
+  sc.season = String(last);
+  $("scNames").innerHTML = SC.players.map(p => `<option value="${esc(p.n)}">${p.now ? esc(p.now.team) : ""}</option>`).join("");
+  $("lbTeam").innerHTML = `<option value="">All</option>` + Object.keys(SC.teams).sort().map(t => `<option value="${t}">${t} · ${esc(SC.teams[t])}</option>`).join("") +
+    (SC.roster && SC.roster.season ? `<option value="-">Not on a ${esc(SC.roster.season)} roster</option>` : "");
+  const nL = SC.league.reduce((s, r) => s + r.lz.filter((_, i) => i % 2 === 0).reduce((a, b) => a + b, 0), 0);
+  $("scCaption").textContent = `Every field-goal attempt by all ${SC.players.length.toLocaleString()} players who took a shot (${nL.toLocaleString()} shots, ${SC.seasons.join(", ")}), from play-by-play. Current teams are ${SC.roster && SC.roster.season ? `${SC.roster.season} rosters from Basketball-Reference (updated ${SC.roster.fetched})` : "not fetched yet"}.`;
+  const m = location.hash.match(/^#shots\/(\d+)/);
+  const fromHash = m ? SC.players.findIndex(p => p.id === +m[1]) : -1;
+  sc.player = fromHash >= 0 ? fromHash : 0;
+  const first = SC.players[sc.player];
+  if (!scRecs(first).length && first.p.length) sc.season = String(first.p.at(-1).s);
+  $("scSeason").value = sc.season;
+
+  $("scSeason").addEventListener("change", e => { sc.season = e.target.value; scRender(); });
+  $("scFind").addEventListener("change", e => {
+    const fold = t => t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const q = fold(e.target.value.trim());
+    const i = SC.players.findIndex(p => fold(p.n) === q);
+    const j = i >= 0 ? i : SC.players.findIndex(p => fold(p.n).includes(q));
+    if (q && j >= 0) scPick(j);
+  });
+  const setView = v => { sc.view = v; $("scHex").setAttribute("aria-pressed", v === "hex"); $("scZones").setAttribute("aria-pressed", v === "zones"); scDraw(); };
+  $("scHex").addEventListener("click", () => setView("hex"));
+  const setKind = k => { sc.kind = k; $("scByType").setAttribute("aria-pressed", k === "type"); $("scByStyle").setAttribute("aria-pressed", k === "style"); scPanel(); };
+  $("scByType").addEventListener("click", () => setKind("type"));
+  $("scByStyle").addEventListener("click", () => setKind("style"));
+  $("scZones").addEventListener("click", () => setView("zones"));
+  $("scCourt").addEventListener("mousemove", scHover);
+  $("scCourt").addEventListener("mouseleave", () => { $("scTip").hidden = true; });
+  $("lbMin").addEventListener("change", scBoard);
+  $("lbTeam").addEventListener("change", scBoard);
+  $("lbFind").addEventListener("input", scBoard);
+  const sortBy = th => { const k = th.dataset.k; if (sc.sort === k) sc.asc = !sc.asc; else { sc.sort = k; sc.asc = k === "name" || k === "team"; } scBoard(); };
+  $("lbHead").addEventListener("click", e => { const th = e.target.closest("th"); if (th) sortBy(th); });
+  $("lbHead").addEventListener("keydown", e => { const th = e.target.closest("th"); if (th && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); sortBy(th); } });
+  $("lbBody").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) scPick(+tr.dataset.i, true); });
+  $("lbBody").addEventListener("keydown", e => { const tr = e.target.closest("tr"); if (tr && e.key === "Enter") scPick(+tr.dataset.i, true); });
+  scRender();
+}
+
+/* ---------- sources & methods ---------- */
+function srcInit() {
+  const S = DATA.sources;
+  if (!S) { $("sources").hidden = true; return; }
+  const e = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  $("srcList").innerHTML = S.sources.map(s => `<div class="src">
+      <div><h4>${s.url ? `<a href="${e(s.url)}" target="_blank" rel="noopener">${e(s.name)}</a>` : e(s.name)}</h4><div class="org">${e(s.org)}</div></div>
+      <div class="use">${e(s.used)}</div>
+      <div class="cov">${e(s.coverage)}<span class="mut">${[s.updated && "Updated " + e(s.updated), s.script && !s.script.startsWith("(") && `<code>${e(s.script)}</code> → <code>${e(s.file)}</code>`].filter(Boolean).join(" · ")}</span></div>
+    </div>`).join("");
+  $("software").innerHTML = S.software.map(s => `<div><a href="${e(s.url)}" target="_blank" rel="noopener">${e(s.name)}</a> <span>${e(s.use)}</span></div>`).join("");
+  $("srcBuilt").textContent = `Page built ${S.built}. Re-run the fetch scripts, then export_dashboard.py, to refresh everything.`;
+
+  const R = S.runs, G = R.nbagpt, A = G ? G.args : {}, C = (DATA.meta && DATA.meta.config) || (G && G.config) || {};
+  const SH = R.shots, SA = SH ? SH.args : {};
+  const syn = DATA.meta && DATA.meta.synthetic;
+  const status = (ok, yes, no) => `<span class="tag ${ok ? "status-ok" : "status-no"}">${ok ? "✓ " + yes : "○ " + no}</span>`;
+  const card = (title, tags, rows) => `<div class="panel method"><h3>${title}</h3><div class="tags">${tags.join("")}</div>
+    <dl>${rows.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>`;
+  const tag = t => `<span class="tag">${t}</span>`;
+  const nShots = S.n_shots ? S.n_shots.toLocaleString() : "every";
+
+  $("methods").innerHTML = [
+    card("Win probability: baseline", [tag("Logistic regression"), tag("Binary classification"), status(R.baseline_trained, "Trained", "Not trained")], [
+      ["Predicts", "P(home team wins) at any moment of a game."],
+      ["Inputs", "Three features: score margin, margin ÷ √(minutes left + 1) (a lead matters more as time runs out), and minutes left."],
+      ["Model", "scikit-learn <code>LogisticRegression</code>: L2-regularised (C = 1), fitted with L-BFGS for up to 1,000 iterations. p = σ(b + w·x)."],
+      ["Training data", "Every game state in the training seasons, sampled down to at most 2,000,000 rows."],
+      ["Used for", "The dashed line in the game replay, and the what-if calculator. NBAGPT has to beat it to be worth anything."],
+    ]),
+    card("NBAGPT", [tag("Decoder-only transformer"), tag("Softmax (multinomial logistic) head"), tag("Logistic head"), status(!!G, syn ? "Trained (synthetic demo)" : "Trained", "Not trained")], [
+      ["Predicts", "At every play, (1) the next event out of 31 tokens such as <code>H_3PT_MAKE</code> or <code>A_DREB</code>, and (2) P(home win)."],
+      ["Architecture", `${C.n_layer ?? 4} layers, ${C.n_head ?? 4} attention heads, ${C.n_embd ?? 128}-dim embeddings, context of ${C.block_size ?? 1024} events${G && G.n_params ? `, ${G.n_params.toLocaleString()} parameters` : ""}. Causal self-attention, pre-LayerNorm blocks with GELU MLPs, tied input/output embeddings, GPT-2-style init. Time left, margin, period and lead-for-time are projected into every position.`],
+      ["Loss", "Cross-entropy on the next event (a multinomial logistic regression on the transformer's output) + binary cross-entropy on the win head (a logistic regression), weighted " + (A.wp_weight ?? 1) + " : 1."],
+      ["Optimizer", `AdamW (β = 0.9, 0.95), learning rate ${A.lr ?? 3e-4} with a 5% linear warm-up then cosine decay, weight decay ${A.weight_decay ?? 0.1} on weight matrices only, gradient clipping at 1.0.`],
+      ["Regularisation", `Dropout ${A.dropout ?? C.dropout ?? 0.1}; early stopping after ${A.patience ?? 4} epochs without validation improvement${G ? ` (ran ${G.epochs_run} of ${A.epochs} epochs, kept epoch ${G.best_epoch})` : ""}.`],
+      ["Data split", "By time: the latest season is the test set; the last 10% of the remaining games (chronologically) is validation. No future games leak into training."],
+      ["Batching", `${A.batch_size ?? 16} games per batch, one full game per sequence, padded to the longest.`],
+    ]),
+    card("Shot model", [tag("Multinomial logistic (zone, style)"), tag("Logistic (make / miss)"), tag("Neural network with embeddings"), status(!!SH, "Trained", "Not trained yet")], [
+      ["Predicts", "For each shot: where it comes from (8 shot types), how it was created (9 styles), and the chance it goes in."],
+      ["Inputs", "Learned embeddings for the shooter, his 4 teammates, his likely primary defender, the 5 defenders on the floor and both head coaches; both teams' Synergy play-type profiles (z-scored); and game state (clock, margin, period, home/away, defender confidence)."],
+      ["Model", "Embeddings → 2-layer MLP (128 units, ReLU). A softmax head for zone and style and a sigmoid head for make probability, added on top of each shooter's own history (log-odds priors), so every effect reads as a shift from what he usually does."],
+      ["Priors", "Empirical-Bayes smoothing of each shooter's zone mix (α = 20 shots of league average) and per-zone FG% (β = 30 shots)."],
+      ["Loss", "Zone cross-entropy + 0.5 × style cross-entropy + make binary cross-entropy."],
+      ["Optimizer", `AdamW, one-cycle learning-rate schedule peaking at ${SA.lr ?? 2e-3}, weight decay ${SA.weight_decay ?? 1e-4}, batches of ${SA.batch_size ?? 1024} shots, up to ${SA.epochs ?? 30} epochs with early stopping (patience ${SA.patience ?? 4})${SH ? `; ran ${SH.epochs_run}` : ""}.`],
+      ["Vocabulary", `Own embedding for shooters with ≥ ${SA.min_off ?? 100} shots and defenders on the floor for ≥ ${SA.min_def ?? 400}; everyone else shares an "other" slot.`],
+      ["Compared with", "League-average and player-history baselines (log-loss for zone, Brier score for makes)."],
+    ]),
+    card("Shot charts", [tag("Descriptive statistics"), tag("Empirical-Bayes shrinkage"), tag("No model")], [
+      ["What", `Counts of all ${nShots} field-goal attempts in the play-by-play, per player and season: makes and attempts by court zone, shot type and style; 3-pointers; assisted makes; shot distance.`],
+      ["Zones", "Restricted area (within 4 ft of the rim), paint, mid-range left/center/right (split at the lane lines), corner 3s, and above-the-break 3s left/center/right. Heaves from 40+ ft count in totals only."],
+      ["Hex colour", "FG% around each spot (the hex plus two rings of neighbours, weighted 1, 0.5, 0.2), shrunk toward the league's FG% at that spot by 10 pseudo-shots, then compared with the league. Small samples stay grey instead of flashing hot or cold."],
+      ["Formulas", "eFG% = (FGM + 0.5 × 3PM) / FGA. Points per shot = (2 × FGM + 3PM) / FGA (field goals only, no free throws)."],
+      ["Teams", "Team per season = who he shot for in the play-by-play. \"Now\" = Basketball-Reference's current roster."],
+    ]),
+    card("How the models are scored", [tag("Proper scoring rules"), tag("Held-out season")], [
+      ["Brier score", "Mean squared error of a probability, (p − outcome)². 0 is perfect; always guessing 50% scores 0.25."],
+      ["Calibration", "Predictions grouped into 10 equal-width bins; in each, the average prediction vs how often the home team actually won."],
+      ["Perplexity", "e<sup>cross-entropy</sup> on the next event: roughly how many plays the model is choosing between."],
+      ["Accuracy", "How often the model's single most likely next event is the one that happened."],
+      ["Scaling", "<code>scaling.py</code> trains five sizes (32- to 256-dim, 1 to 8 layers) to chart validation loss against parameter count."],
+    ]),
+  ].join("");
+}
+
+/* ---------- tabs + theme ---------- */
+function scIndexOf(pid) { return SC ? SC.players.findIndex(p => p.id === +pid) : -1; }
+function scNowOf(pid) { const i = scIndexOf(pid); return i >= 0 ? SC.players[i].now : null; }
+const TABS = ["shots", "players", "games", "model", "sources"];
+function tabHasContent(name) {
+  return [...document.querySelectorAll(`[data-tab~="${name}"]`)].some(el => !el.hidden && el.id !== "synNotice");
+}
+function showTab(name, push) {
+  if (!TABS.includes(name) || !tabHasContent(name)) name = TABS.find(tabHasContent);
+  document.querySelectorAll("[data-tab]").forEach(el => el.classList.toggle("off-tab", !el.dataset.tab.split(" ").includes(name)));
+  document.querySelectorAll(".tabs [role=tab]").forEach(b => { const on = b.dataset.tab === name; b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1; });
+  if (push) { try { history.replaceState(null, "", "#" + name); } catch (e) {} window.scrollTo({ top: 0 }); }
+  Object.values(charts).forEach(c => c.resize());
+}
+function initTabs() {
+  document.querySelectorAll(".tabs [role=tab]").forEach(b => { b.hidden = !tabHasContent(b.dataset.tab); });
+  const bar = document.querySelector(".tabs");
+  bar.addEventListener("click", e => { const b = e.target.closest("[role=tab]"); if (b) showTab(b.dataset.tab, true); });
+  bar.addEventListener("keydown", e => {
+    if (!e.target.matches("[role=tab]") || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    const vis = [...bar.querySelectorAll("[role=tab]:not([hidden])")], i = vis.indexOf(e.target);
+    const nx = vis[(i + (e.key === "ArrowRight" ? 1 : -1) + vis.length) % vis.length];
+    nx.focus(); showTab(nx.dataset.tab, true); e.stopPropagation();
+  });
+  $("themeBtn").addEventListener("click", () => {
+    const cur = document.documentElement.dataset.theme;
+    const dark = cur ? cur === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", document.documentElement.dataset.theme); } catch (e) {}
+  });
+  const h = location.hash.slice(1);
+  showTab(h.startsWith("shots/") ? "shots" : h.startsWith("player-") ? "players" : h || "shots");
+}
+try { const th = localStorage.getItem("theme"); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
 
 /* ---------- wiring ---------- */
 function buildAll() {
@@ -1555,7 +2153,7 @@ $("copyCsv").addEventListener("click", () => {
     .catch(() => { $("copyMsg").textContent = "Your browser blocked copying. Select the table above and copy it instead."; });
 });
 document.addEventListener("keydown", e => {
-  if (e.target.matches("input, select, textarea")) return;
+  if (e.target.matches("input, select, textarea, [role=tab]") || $("replay").classList.contains("off-tab")) return;
   if (e.key === "ArrowLeft") setStep(step - 1);
   if (e.key === "ArrowRight") setStep(step + 1);
 });
@@ -1566,4 +2164,7 @@ buildAll();
 sortGames();
 initPlayers();
 initProfiles();
+scInit();
+srcInit();
+initTabs();
 </script>

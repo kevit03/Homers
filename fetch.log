@@ -46,3 +46,35 @@
 2024-25: 1230 games
   100/1230
   200/1230
+  300/1230
+  400/1230
+  500/1230
+  600/1230
+  700/1230
+  800/1230
+  0022400889 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  900/1230
+  0022400905 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022400905 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400905&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400905 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400905&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400906 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400906&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400906 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400906&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400906 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400906&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400907 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400907&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400907 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400907&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400907 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400907&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400908 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400908&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400908 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400908&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400908 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400908&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400909 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400909&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400909 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400909&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400909 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0022400909&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0022400981 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022400995 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  1000/1230
+  0022401009 attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  1100/1230
+  1200/1230
+  0022401203 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022401207 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+2024-25: done, 5 failed ['0022400905', '0022400906', '0022400907', '0022400908', '0022400909']

@@ -52,6 +52,7 @@ def main():
     ap.add_argument("--context", default="data/context")
     ap.add_argument("--raw", default="data/raw", help="raw play-by-play for player profiles; skipped for synthetic data")
     ap.add_argument("--profile_cache", default="data/processed/profiles_cache.pkl")
+    ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch_bbref.py")
     args = ap.parse_args()
 
     ck = torch.load(args.ckpt, map_location="cpu")
@@ -113,6 +114,16 @@ def main():
         if payload["profiles"]:
             print(f"added {len(payload['profiles']['players'])} player profiles, "
                   f"play-by-play actors for {len(payload['profiles']['games'])}/{len(out_games)} games")
+    payload["shotcharts"] = None
+    if Path(args.shots).exists():
+        from export_shotcharts import build_shotcharts_payload
+        payload["shotcharts"] = build_shotcharts_payload(args.shots, args.rosters)
+        sc = payload["shotcharts"]
+        print(f"added shot charts for {sum(1 for p in sc['players'] if p['p'])} players ({', '.join(sc['seasons'])}), "
+              f"current teams: {sc['roster']['season'] or 'not fetched'}")
+    from export_sources import build_sources_payload
+    payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
+                                               synthetic=payload["meta"]["synthetic"])
 
     html = Path(args.template).read_text()
     html = html.replace("/*__DATA__*/null", json.dumps(payload, separators=(",", ":")).replace("</", "<\\/"))

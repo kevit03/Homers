@@ -193,6 +193,7 @@ def main():
     ap.add_argument("--context", default="data/context")
     ap.add_argument("--out", default="data/processed/shots.parquet")
     ap.add_argument("--limit", type=int, default=0, help="only process this many games (for testing)")
+    ap.add_argument("--seasons", nargs="+", help="only these season folders, e.g. 2021-22 2022-23 (default: all)")
     args = ap.parse_args()
     ctx = Path(args.context)
 
@@ -203,6 +204,8 @@ def main():
         coaches = {(s, int(t)): int(cid) for s, t, cid in zip(c["season"], c["teamId"], c["coachId"])}
 
     files = sorted(Path(args.raw).rglob("*.parquet"))
+    if args.seasons:
+        files = [f for f in files if f.parent.name in args.seasons]
     if args.limit:
         files = files[:args.limit]
     rows, skipped = [], 0

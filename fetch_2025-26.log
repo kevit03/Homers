@@ -1,0 +1,5 @@
+2025-26: 1230 games
+  0/1230
+  0022500033 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022500045 attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  100/1230

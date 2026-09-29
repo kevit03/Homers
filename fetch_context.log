@@ -28,3 +28,25 @@
 2022-23: 1230 games
   0/1230
   100/1230
+  200/1230
+  300/1230
+  400/1230
+  500/1230
+  attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200596 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200596 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  attempt 4 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200596 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200597 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200597 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/boxscorematchupsv3?GameID=0022200597 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  600/1230
+  attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  700/1230
+  attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  800/1230
+  900/1230
+  1000/1230
+  attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+  1100/1230

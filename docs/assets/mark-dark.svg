@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -30 250 230" role="img" aria-label="HOMERs mark: a player rising into a jump shot, the ball arcing into the hoop">
+  <title>HOMERs</title>
+  <path d="M 104 16 C 142 -24, 202 -8, 218 58" fill="none" stroke="#EB6834" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="0.5 11"/>
+  <g fill="none" stroke="#F1F3F6" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="240" y1="28" x2="240" y2="86" stroke-width="6"/>
+    <line x1="240" y1="62" x2="229" y2="62" stroke-width="4"/>
+    <path d="M 198 66 L 203 88 L 221 88 L 226 66 M 205 67 L 209 88 M 212 68 L 212 88 M 219 67 L 215 88" stroke-width="2.2" opacity=".6"/>
+  </g>
+  <ellipse cx="212" cy="64" rx="15" ry="4.5" fill="none" stroke="#EB6834" stroke-width="4.5"/>
+  <g fill="none" stroke="#F1F3F6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 84 116 L 70 144 L 56 166 L 48 176" stroke-width="13"/>
+    <path d="M 90 116 L 104 146 L 99 180 L 111 184" stroke-width="14"/>
+    <path d="M 91 70 L 87 114" stroke-width="27"/>
+    <path d="M 99 66 L 115 46 L 106 22" stroke-width="11"/>
+    <path d="M 80 68 L 66 50 L 90 24" stroke-width="10"/>
+  </g>
+  <circle cx="90" cy="46" r="15" fill="#0D1117"/>
+  <circle cx="90" cy="46" r="11" fill="#F1F3F6"/>
+  <circle cx="100" cy="13" r="15" fill="#0D1117"/>
+  <circle cx="100" cy="13" r="12" fill="#EB6834"/>
+  <path d="M 88 13 H 112 M 100 1 V 25 M 91.5 4.5 C 97 9, 97 17, 91.5 21.5 M 108.5 4.5 C 103 9, 103 17, 108.5 21.5" fill="none" stroke="#14171C" stroke-width="1.6" opacity=".5"/>
+</svg>
