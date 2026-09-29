@@ -6,7 +6,7 @@
    and that the keyboard works. It also checks that the matchup boxes never offer the player already on the other
    side, and that the table filters (shot chart table, defenders, fantasy board) are accent-blind. Team names work in
    every box and filter: "knicks", "NYK", "new york", "New York Knicks" and "ny" list only Knicks, and "knicks brunson"
-   puts Brunson first.
+   puts Brunson first. An empty box browses everyone: every team gets a header and scrolling reaches every player.
 
    Run it on a built dashboard.html served over http, in the browser console:
 
@@ -15,7 +15,7 @@
      await testPlayerSearch()
 */
 window.testPlayerSearch = async function testPlayerSearch() {
-  const fails = [], passes = { cases: 0, everyone: 0, keys: 0, filters: 0, teams: 0 };
+  const fails = [], passes = { cases: 0, everyone: 0, keys: 0, filters: 0, teams: 0, browse: 0 };
   const plain = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const type = (input, text) => { input.focus(); input.value = text; input.dispatchEvent(new Event("input", { bubbles: true })); };
   const pop = input => input.closest(".ps").querySelector(".ps-pop");
@@ -30,6 +30,12 @@ window.testPlayerSearch = async function testPlayerSearch() {
     ["muDef", "matchups", () => MU_DEFS.filter(p => p.id !== mu.off.id).map(p => p.n)],
     ["plFind", "players", () => SH.players.map(p => p.name)],
   ].filter(([id, tab]) => $(id) && tabHasContent(tab));
+  // the teams each box groups its players under when browsing
+  const BOX_TEAMS = {
+    scFind: () => SC.players.map(p => p.now && p.now.team).filter(Boolean),
+    muOff: () => MU_OFFS.map(p => p.now).filter(Boolean), muDef: () => MU_DEFS.map(p => p.now).filter(Boolean),
+    plFind: () => SH.players.map(p => p.team).filter(Boolean),
+  };
   // query -> the player who must come first (skipped for a box whose list doesn't have him)
   const CASES = [["jokic", "Nikola Jokić"], ["JOKIC", "Nikola Jokić"], ["doncic", "Luka Dončić"], ["porzingis", "Kristaps Porziņģis"],
     ["valanciunas", "Jonas Valančiūnas"], ["sga", "Shai Gilgeous-Alexander"], ["gilgeous alexander", "Shai Gilgeous-Alexander"],
@@ -59,6 +65,17 @@ window.testPlayerSearch = async function testPlayerSearch() {
       type(input, "knicks brunson");
       if (names(input)[0] === knick && teamsOf()[0] === "NYK") passes.teams++; else fails.push({ box: id, test: '"knicks brunson" puts Brunson first', got: names(input).slice(0, 3) });
     }
+    // browsing: an empty box lists everyone, team by team, drawn in batches as the list scrolls
+    type(input, "");
+    for (let n = 0; n < 200 && p.scrollTop + p.clientHeight < p.scrollHeight - 1; n++) { p.scrollTop = p.scrollHeight; p.dispatchEvent(new Event("scroll")); }
+    const heads = [...p.querySelectorAll(".ps-head")].map(h => h.textContent), drawnIds = new Set([...p.querySelectorAll(".ps-opt")].map(o => o.id));
+    const teamsHere = [...new Set(list().length ? BOX_TEAMS[id]() : [])];
+    const missingTeams = teamsHere.filter(t => !heads.some(h => h.startsWith(pfTeam(t)[0])));
+    if (missingTeams.length) fails.push({ box: id, test: "browsing has a header for every team", missing: missingTeams });
+    else passes.browse++;
+    if (drawnIds.size < list().length) fails.push({ box: id, test: "browsing reaches every player", drawn: drawnIds.size, players: list().length });
+    else passes.browse++;
+    p.scrollTop = 0;
     type(input, "xyzzy qq");
     if (!p.querySelector(".ps-empty")) fails.push({ box: id, test: "says when nothing matches" });
     // keyboard

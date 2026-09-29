@@ -289,6 +289,60 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
 .ps-team { flex: none; font-family: var(--font-display); font-size: 14px; font-weight: 700; letter-spacing: .05em; color: var(--ink-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 1px 7px; }
 .ps-team.hit { color: var(--model); border-color: var(--model); }
 .ps-empty { padding: 14px 12px; font-size: 14.5px; color: var(--muted); }
+/* browsing everyone: taller list, team headers stick to the top while their players scroll under them */
+.ps-pop.browse { max-height: min(62vh, 560px); }
+.ps-head.grp { position: sticky; top: -6px; z-index: 1; display: flex; align-items: center; gap: 8px; margin: 0 -6px; padding: 9px 16px 7px;
+  background: var(--surface); border-bottom: 1px solid var(--line); }
+.ps-head.grp + .ps-opt { margin-top: 4px; }
+.ps-logo { width: 20px; height: 20px; object-fit: contain; flex: none; }
+.ps-n { margin-left: auto; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+
+/* season picker (.ss): a button like the search field; its panel is a calendar of seasons, one row per decade */
+.ss { position: relative; }
+.ss-btn { display: flex; align-items: center; gap: 9px; height: 42px; min-width: 200px; padding: 0 10px 0 12px; text-align: left; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; transition: border-color .15s, box-shadow .15s; }
+.ss-btn:hover { border-color: var(--ink-2); }
+.ss-btn:focus-visible, .ss-btn[aria-expanded=true] { outline: none; border-color: var(--model); box-shadow: 0 0 0 3px color-mix(in srgb, var(--model) 22%, transparent); }
+.ss-btn > svg { width: 17px; height: 17px; flex: none; color: var(--muted); }
+.ss-btn .ss-chev { margin-left: auto; transition: transform .15s; }
+.ss-btn[aria-expanded=true] .ss-chev { transform: rotate(180deg); }
+#ssVal { display: grid; min-width: 0; line-height: 1.12; }
+#ssVal b { font-size: 15px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#ssVal small { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--muted); white-space: nowrap; }
+.ss-pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 25; width: min(540px, calc(100vw - 32px)); display: grid; gap: 12px; padding: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px rgb(16 24 40 / .16); transform-origin: top; animation: nm-in .16s ease-out; }
+.ss-pop[hidden] { display: none; }
+.ss-kind { display: flex; }
+.ss-kind button { flex: 1; font-weight: 600; }
+.ss-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.ss-quick button { font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 999px; color: var(--ink-2); }
+.ss-quick button:hover { border-color: var(--ink-2); color: var(--ink); }
+.ss-quick button[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.ss-quick .ss-rng { margin-left: auto; border-style: dashed; }
+.ss-quick .ss-rng[aria-pressed=true] { background: color-mix(in srgb, var(--model) 12%, transparent); border: 1px solid var(--model); color: var(--model); }
+.ss-dec { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 6px 10px; align-items: center; max-height: 320px; overflow-y: auto; padding: 2px; }
+.ss-dl { font-family: var(--font-display); font-size: 17px; font-weight: 700; font-style: italic; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ss-row { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+.ss-chip { all: unset; box-sizing: border-box; position: relative; grid-column: var(--c); display: grid; place-items: center; height: 36px; border-radius: 8px; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); background: var(--bg); }
+.ss-chip.has { color: var(--ink); }
+.ss-chip.has::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--model); }
+.ss-chip:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
+.ss-chip:focus-visible { outline: 2px solid var(--model); outline-offset: 1px; }
+.ss-chip.on { background: color-mix(in srgb, var(--model) 20%, var(--surface)); color: var(--ink); }
+.ss-chip.end { background: var(--model); color: #fff; }
+.ss-chip.end.has::after { background: #fff; }
+.ss-chip:disabled { opacity: .3; cursor: not-allowed; box-shadow: none; }
+.ss-hint { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12.5px; color: var(--muted); }
+.ss-hint span { display: inline-flex; align-items: center; gap: 6px; }
+.ss-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--model); }
+@media (max-width: 560px) {
+  .ss-btn { min-width: 0; width: 100%; }
+  .ss-dec { grid-template-columns: 42px minmax(0, 1fr); }
+  .ss-row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ss-chip { grid-column: var(--c5); grid-row: var(--r5); }
+}
+@media (prefers-reduced-motion: reduce) { .ss-pop, .ss-btn .ss-chev { animation: none; transition: none; } }
 
 /* player profiles (pf-*): clickable names, on-floor strip, fantasy leaderboard, player card */
 .pf-link { all: unset; cursor: pointer; font-weight: 600; text-decoration: underline dotted var(--muted); text-underline-offset: 3px; }
@@ -418,6 +472,30 @@ body:has(.pf-modal[open]) { overflow: hidden; }
 .pf-mini td.fp { font-weight: 700; color: var(--model); }
 .pf-mini tr.po td { color: var(--ink-2); }
 .pf-mini tr.po td:first-child { padding-left: 18px; }
+
+/* fewer words: the fine print sits behind a small "i" and shows on hover or focus */
+.tip { position: relative; display: inline-grid; place-items: center; width: 17px; height: 17px; margin-left: 7px; vertical-align: .12em; flex: none;
+       border-radius: 50%; border: 1.5px solid var(--line-strong); color: var(--muted); cursor: help;
+       font: italic 700 11px/1 Georgia, serif; letter-spacing: 0; text-transform: none; }
+.tip:hover, .tip:focus-visible { color: var(--ink); border-color: var(--ink-2); outline: none; }
+.tip::after { content: attr(data-tip); position: absolute; left: -10px; top: calc(100% + 8px); z-index: 60; width: max-content; max-width: min(320px, 76vw);
+              padding: 9px 11px; border-radius: 8px; background: var(--ink); color: var(--surface); box-shadow: 0 6px 24px rgb(0 0 0 / .25);
+              font: 400 13px/1.45 var(--font-body); text-align: left; white-space: normal; opacity: 0; visibility: hidden; transition: opacity .12s; pointer-events: none; }
+.tip:hover::after, .tip:focus-visible::after { opacity: 1; visibility: visible; }
+.tip.up::after { top: auto; bottom: calc(100% + 8px); }
+.tip.end::after { left: auto; right: -10px; }
+/* keys drawn as marks instead of sentences */
+.keys { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.keys > span { display: inline-flex; align-items: center; gap: 6px; }
+.keys .kb { display: inline-block; width: 18px; height: 6px; border-radius: 3px; background: var(--model); }
+.keys .kb.blue { background: var(--base); }
+kbd { font: 600 11px/1 var(--font-label); padding: 3px 6px; border-radius: 5px; border: 1px solid var(--line-strong); border-bottom-width: 2px; color: var(--ink-2); background: var(--surface); }
+/* game recap as big numbers */
+.story .facts { display: flex; flex-wrap: wrap; gap: 10px 30px; }
+.story .facts span { display: grid; gap: 3px; font: 600 11.5px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.story .facts b { font: 800 32px/1 var(--font-cast); color: var(--ink); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.story .swing { font-size: 14px; color: var(--ink-2); }
+.story .swing b { color: var(--model); font-weight: 700; }
 </style>
 <style>
 /* shot charts: every player, counts from play-by-play */
@@ -655,7 +733,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
   .bug-mid { min-width: 0; padding: 8px 8px; } .bug-clk { font-size: 22px; } .bug-btns { flex-direction: column; }
 }
 /* game picker: type, team and sort filters over a scrolling rail of game cards */
-.gp { display: grid; gap: 12px; padding: 14px 16px 0; overflow: hidden; }
+.gp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px 16px 0; }
 .gp-bar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
 .gp-seg button { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; white-space: nowrap; }
 .gp-seg small { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -663,7 +741,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .gp-seg button[aria-pressed="true"] small { color: var(--model); }
 .gp-sort { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .gp-team { display: flex; align-items: center; gap: 4px; }
-.gp-teambtn { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 12px 0 5px; border-radius: 9px; background: var(--bg); border-color: var(--line);
+.gp-teambtn { display: inline-flex; align-items: center; gap: 9px; height: 41px; padding: 0 12px 0 6px; border-radius: 9px; background: var(--bg); border-color: var(--line);
               font-size: 14px; font-weight: 600; white-space: nowrap; }
 .gp-teambtn:hover, .gp-teambtn[aria-expanded="true"] { border-color: var(--line-strong); background: var(--surface); }
 .gp-teambtn svg { width: 14px; height: 14px; color: var(--muted); transition: transform .15s; }
@@ -696,6 +774,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .gp-count b { color: var(--ink); font-weight: 700; }
 .gp-nav { display: flex; gap: 6px; flex: none; }
 .gp-nav button { padding: 4px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 600; }
+.gp-nav button:disabled { opacity: .4; cursor: default; border-color: var(--line-strong); }
 .gp-railwrap { position: relative; margin-inline: -16px; }
 .gp-rail { position: relative; display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 16px;
            padding: 4px 16px 16px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
@@ -881,9 +960,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
   <header>
     <div class="brand">
       <h1>HOMER<span>s</span></h1>
-      <p>A transformer that reads play-by-play and predicts the next play and who wins.</p>
     </div>
-    <div class="chips" id="chips"></div>
   </header>
   <nav class="nm" id="nav" aria-label="Sections">
     <ul class="nm-list">
@@ -930,22 +1007,21 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 <section aria-labelledby="h-home" id="home" data-tab="home">
   <div class="hero hm-hero" id="hmHero" data-photo="arena">
     <div class="hero-in">
-      <p class="kicker">NBA play-by-play, read by a transformer</p>
       <h2 id="h-home" class="cast">Every game<br>is an <em>epic.</em></h2>
-      <p class="lede" id="hmLede">HOMERs reads NBA games one play at a time. At every moment it calls the next play and says who's going to win.</p>
+      <p class="lede" id="hmLede">It reads every play, then calls the next one and the winner.</p>
       <div class="hero-cta">
         <button type="button" class="go" data-go="games">Replay a game</button>
-        <button type="button" data-go="shots">Find a shot chart</button>
+        <button type="button" data-go="shots">Shot charts</button>
         <button type="button" data-go="sources">Why “HOMERs”?</button>
       </div>
     </div>
     <div class="jumbo" id="hmJumbo"></div>
   </div>
 
-  <div class="sec-head" id="hmGamesHead"><h2 class="cast">Featured games</h2><p class="caption" id="hmGamesCap">Three games from the test season the model never saw in training. The line is its home-win chance from tip to buzzer.</p></div>
+  <div class="sec-head" id="hmGamesHead"><h2 class="cast">Featured games<span id="hmGamesCap"></span></h2></div>
   <div class="hm-games" id="hmGames"></div>
 
-  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast" id="hmOrbTitle">Seasons in orbit</h2><p class="caption" id="hmOrbCap"></p></div>
+  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2></div>
   <div class="orb" id="hmOrbit" hidden></div>
 
   <div class="sec-head" id="hmLeadHead" hidden><h2 class="cast">Season leaders</h2><p class="caption" id="hmLeadCap"></p></div>
@@ -963,7 +1039,10 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
   <div class="panel controls">
     <div class="field grow"><label class="label" for="scFind">Player</label>
       <div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="scFind" placeholder="Search a player or team…" autocomplete="off" spellcheck="false"></div></div></div>
-    <div class="field"><label class="label" for="scSeason">Season</label><select id="scSeason"></select></div>
+    <div class="field ss"><span class="label" id="ssLabel">Season</span>
+      <button type="button" class="ss-btn" id="ssBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="ssPop" aria-labelledby="ssLabel ssVal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="ssVal"></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="ss-pop" id="ssPop" role="dialog" aria-label="Choose seasons" hidden></div>
+      <select id="scSeason" hidden aria-hidden="true" tabindex="-1"></select></div>
     <div class="field"><span class="label">Chart</span>
       <div class="seg" role="group" aria-label="Chart type"><button id="scHex" aria-pressed="true">Hexes</button><button id="scZones" aria-pressed="false">Zones</button></div></div>
   </div>
@@ -1394,7 +1473,6 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 
   <footer>
     <p class="caption" id="footMeta"></p>
-    <p class="caption">Rebuild after fetching or training: <code>python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl</code>. Data sources and methods are under the Sources tab.</p>
   </footer>
   <dialog id="pfModal" class="pf-modal" aria-labelledby="pfName"><div id="pfCard"></div></dialog>
 </div>
@@ -1403,6 +1481,9 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 const DATA = /*__DATA__*/null;
 const V = DATA.vocab, M = DATA.metrics, META = DATA.meta;
 const $ = id => document.getElementById(id);
+// a hover/focus "i" holding fine print that used to be a caption
+const tip = (t, cls = "") => { const a = String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  return `<span class="tip ${cls}" tabindex="0" role="note" aria-label="${a}" data-tip="${a}">i</span>`; };
 const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
@@ -1425,25 +1506,17 @@ const elapsed = (sec, p) => (p <= 4 ? 2880 - sec : 2880 + 300 * (p - 4) - sec) /
 const signed = v => (v > 0 ? "+" : "") + v;
 
 /* ---------- header + scoreboard ---------- */
-const cfg = META.config;
-$("chips").innerHTML = [
-  `${META.n_games.toLocaleString()} games`,
-  `${cfg.n_layer} layers · ${cfg.n_embd}-dim · ${META.n_params.toLocaleString()} params`,
-  `${DATA.games.length} ${META.split} games shown`,
-].map(t => `<span class="chip num">${t}</span>`).join("");
 $("synNotice").hidden = !META.synthetic;
 
 const bm = M.brier_model, bb = M.brier_baseline, beats = bm < bb, rel = Math.abs(bb - bm) / bb;
 $("board").innerHTML = `
-  <div class="stat"><span class="label">NBAGPT error (Brier)</span><span class="val">${bm.toFixed(4)}</span>
-    <span class="pill ${beats ? "good" : "warn"}">${beats ? "▲ " + pct(rel) + " better than baseline" : "▼ " + pct(rel) + " behind baseline"}</span></div>
-  <div class="stat"><span class="label">Baseline error</span><span class="val">${bb.toFixed(4)}</span>
-    <span class="sub">Score and clock only. A constant guess scores ${M.brier_constant.toFixed(3)}.</span></div>
-  <div class="stat"><span class="label">Next-play accuracy</span><span class="val">${pct(M.acc)}</span>
-    <span class="sub">How often the top guess for the next play is right.</span></div>
-  <div class="stat"><span class="label">Perplexity</span><span class="val">${M.ppl.toFixed(2)}</span>
-    <span class="sub">As unsure as choosing among about ${Math.round(M.ppl)} equally likely plays.</span></div>`;
-$("footMeta").textContent = `Built from ${META.ckpt} on ${META.data}. Split: train ${META.splits.train} / val ${META.splits.val} / test ${META.splits.test}.`;
+  <div class="stat"><span class="label">NBAGPT error${tip("Brier score: the squared error of the win chance. Lower is better; a coin flip scores 0.25.")}</span><span class="val">${bm.toFixed(4)}</span>
+    <span class="pill ${beats ? "good" : "warn"}">${beats ? "▲ " + pct(rel) + " better" : "▼ " + pct(rel) + " worse"} than baseline</span></div>
+  <div class="stat"><span class="label">Baseline error${tip(`Score and clock only. Always guessing the average scores ${M.brier_constant.toFixed(3)}.`)}</span><span class="val">${bb.toFixed(4)}</span></div>
+  <div class="stat"><span class="label">Next-play accuracy${tip("How often the model's top guess for the next play is right.")}</span><span class="val">${pct(M.acc)}</span></div>
+  <div class="stat"><span class="label">Perplexity${tip(`As unsure as choosing among about ${Math.round(M.ppl)} equally likely plays.`, "end")}</span><span class="val">${M.ppl.toFixed(2)}</span></div>`;
+$("footMeta").innerHTML = `${META.splits.train.toLocaleString()} train · ${META.splits.val.toLocaleString()} validation · ${META.splits.test.toLocaleString()} test games` +
+  tip(`Built from ${META.ckpt} on ${META.data}. Rebuild after fetching or training: python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl`, "up");
 
 /* ---------- chart defaults ---------- */
 Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
@@ -1599,9 +1672,11 @@ function gpMark() {  // highlight the open game's card and bring it into view
   c.classList.add("on"); c.setAttribute("aria-current", "true"); c.tabIndex = 0;
   gpCenter(true);
 }
-function gpCenter(smooth) {  // scroll the rail only, never the page
+function gpCenter(smooth) {  // scroll the rail only, never the page; long jumps are instant
   const rail = $("gpRail"), c = rail.querySelector(".gp-card.on");
-  if (c && rail.clientWidth) rail.scrollTo({ left: Math.max(0, c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2), behavior: smooth ? "smooth" : "auto" });
+  if (!c || !rail.clientWidth) return;
+  const left = Math.max(0, c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2);
+  rail.scrollTo({ left, behavior: smooth && Math.abs(left - rail.scrollLeft) < 2 * rail.clientWidth ? "smooth" : "auto" });
 }
 function gpEdges() {
   const r = $("gpRail");
@@ -1712,7 +1787,6 @@ function gameStory(g) {
   if (g._story) return g._story;
   const last = g.tok.length - 1, { H, A } = sides(g), [hs, as] = pfScore(g, last), hw = hs !== as ? hs > as : !!g.home_win;
   const W = hw ? H : A, Lo = hw ? A : H, ws = Math.max(hs, as), ls = Math.min(hs, as), sg = hw ? 1 : -1;
-  const Wt = `the ${esc(W.nick)}`, Lt = `the ${esc(Lo.nick)}`;
   const w = g.pm.map(p => hw ? p : 1 - p);  // the winner's win chance after each play
   let wMax = 0, wMaxI = 0, lMax = 0, lMaxI = 0, changes = 0, ties = 0, prev = 0, pd = 0;
   g.diff.forEach((d0, i) => {
@@ -1739,22 +1813,20 @@ function gameStory(g) {
   if (g.ot && !kicker.includes("overtime")) kicker += " in " + otName(g.ot);
   if (isPlayoffId(g.id)) kicker = `${playoffTag(g.id)} · ${kicker}`;
 
-  const S = [`The ${esc(W.full)} beat the ${esc(Lo.full)} <b>${ws}–${ls}</b>${g.ot ? " in " + otName(g.ot) : ""}.`];
-  if (lMax === 0) S.push("They never trailed.");
-  else if (lMax >= 10) S.push(`They were down <b>${lMax}</b> ${whenAt(g, lMaxI)} and came all the way back.`);
-  else S.push(`${capFirst(Lt)} led by as many as ${lMax}${wMax ? `, ${Wt} by ${wMax}` : ""}.`);
-  if (changes) S.push(`The lead changed hands ${changes === 1 ? "once" : changes === 2 ? "twice" : changes + " times"}${ties ? `, with ${ties} tie${ties === 1 ? "" : "s"}` : ""}.`);
-  const lead = i => { const d = g.diff[i] * sg; return d > 0 ? `when ${Wt} led by ${d}` : d < 0 ? `when ${Wt} still trailed by ${-d}` : "with the game tied"; };
-  if (call > last) S.push(`NBAGPT never got ${Wt} to 90%, even at the buzzer.`);
-  else if (g.x[last] - g.x[call] < 0.5) S.push("NBAGPT didn't call it until the final seconds.");
-  else S.push(`NBAGPT called it ${whenAt(g, call)}, ${lead(call)}.`);
-  if (low < .25 && lowI) S.push(`At their lowest, ${Wt} had a ${pct(low, low < .1 ? 1 : 0)} chance, ${whenAt(g, lowI)}.`);
+  // the recap as big-number facts, plus one line on the biggest swing
+  const short = i => { const c = clock(g.sec[i], g.per[i]); return c === "0:00" ? `End ${pname(g.per[i])}` : `${pname(g.per[i])} ${c}`; };
+  const F = [[lMax ? lMax : "0", lMax ? `${W.tri} max deficit` : `${W.tri} never trailed`]];
+  if (changes) F.push([changes, "lead changes"]);
+  if (ties) F.push([ties, ties === 1 ? "tie" : "ties"]);
+  if (low < .25 && lowI) F.push([pct(low, low < .1 ? 1 : 0), `${W.tri} low point`]);
+  F.push(call > last ? ["Never", "NBAGPT at 90%"] : g.x[last] - g.x[call] < 0.5 ? ["Buzzer", "NBAGPT called it"] : [short(call), "NBAGPT called it"]);
+  const rank = 1 + games.filter(o => o.swing > g.swing).length;
+  if (rank <= 25) F.push([`#${rank}`, "most dramatic"]);
+  const S = [`<span class="facts">${F.map(([v, l]) => `<span><b>${esc(String(v))}</b>${esc(l)}</span>`).join("")}</span>`];
   if (swI) {
     const dp = g.pm[swI] - g.pm[swI - 1], B = dp > 0 ? H : A, from = dp > 0 ? g.pm[swI - 1] : 1 - g.pm[swI - 1];
-    S.push(`The biggest swing came ${whenAt(g, swI)}, when ${whoDid(g, swI)}: ${esc(possessive("the " + B.nick))} chances went from ${pct(from, 0)} to ${pct(from + Math.abs(dp), 0)}.`);
+    S.push(`<span class="swing">Biggest swing · ${esc(short(swI))} · ${whoDid(g, swI)} · ${esc(B.tri)} ${pct(from, 0)} → <b>${pct(from + Math.abs(dp), 0)}</b></span>`);
   }
-  const rank = 1 + games.filter(o => o.swing > g.swing).length;
-  if (rank <= 25) S.push(`By how far the odds swung, it was the ${rank === 1 ? "" : ordinal(rank) + " "}most dramatic of the ${games.length.toLocaleString()} games here.`);
 
   const M = [{ i: 0, t: "Tip-off" }];
   if (lMax > 0) M.push({ i: lMaxI, t: `${Lo.tri} up ${lMax}` });
@@ -1769,14 +1841,14 @@ function gameStory(g) {
 function renderStory() {
   const S = gameStory(cur), g = cur, last = g.tok.length - 1;
   const at = i => { const c = clock(g.sec[i], g.per[i]); return c === "0:00" ? (i === last ? "Buzzer" : `End of ${pname(g.per[i])}`) : `${pname(g.per[i])} ${c}`; };
-  $("story").innerHTML = `<p class="kicker">${esc(S.kicker)}</p><h3 class="cast">${esc(S.head)}</h3><p>${S.html}</p>
+  $("story").innerHTML = `<p class="kicker">${esc(S.kicker)}</p><h3 class="cast">${esc(S.head)}</h3>${S.html}
     <div class="moments">${S.moments.map(m => `<button type="button" data-i="${m.i}"><small>${esc(at(m.i))}</small>${esc(m.t)}</button>`).join("")}
-      <button type="button" class="share" id="shareBtn">Copy link to this moment</button></div>`;
+      <button type="button" class="share" id="shareBtn" title="Copy a link to this moment">Copy link</button></div>`;
 }
 function shareMoment() {
   const url = location.href.split("#")[0] + `#games/${cur.id}/${step}`, b = $("shareBtn");
   try { history.replaceState(null, "", `#games/${cur.id}/${step}`); } catch (e) {}
-  const say = t => { b.textContent = t; setTimeout(() => { b.textContent = "Copy link to this moment"; }, 2000); };
+  const say = t => { b.textContent = t; setTimeout(() => { b.textContent = "Copy link"; }, 2000); };
   (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => say("Link copied"), () => say("Link is in the address bar"));
 }
 
@@ -2253,7 +2325,7 @@ function initPlayers() {
     `On held-out shots the model predicts shot type ${better ? "better" : "no better"} than each player's own history (log loss ${M2.zone_nll.toFixed(3)} vs ${M2.zone_nll_player.toFixed(3)}).`;
   const plItems = [...SH.players].sort((a, b) => b.n - a.n)
     .map(p => ({ key: p.id, id: p.id, name: p.name, team: p.team, meta: `${p.n.toLocaleString()} shots in the model` }));
-  playerSearch($("plFind"), { items: () => plItems, pick: it => renderPlayer(SH.players.find(p => p.id === it.id)), top: "Most shots" });
+  playerSearch($("plFind"), { items: () => plItems, pick: it => renderPlayer(SH.players.find(p => p.id === it.id)), top: "Most shots", browse: {} });
   const byName = [...SH.defenders].sort((a, b) => a.name.localeCompare(b.name));
   $("simDef").innerHTML = `<option value="">League-average defender</option>` + byName.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
   $("simCoach").innerHTML = `<option value="">League-average scheme</option>` + SH.coaches.map(c => `<option value="${c.id}">${c.name} (${c.team})</option>`).join("");
@@ -2794,9 +2866,9 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
     if (o) { o.setAttribute("aria-selected", "true"); input.setAttribute("aria-activedescendant", o.id); o.scrollIntoView({ block: "nearest" }); }
     else input.removeAttribute("aria-activedescendant");
   };
-  const opt = (r, i) => `<div class="ps-opt" role="option" id="${id}-${i}" data-i="${i}" aria-selected="false">${pfAvatar(r.it.id, r.it.name)}
+  const opt = (r, i, underTeam) => `<div class="ps-opt" role="option" id="${id}-${i}" data-i="${i}" aria-selected="false">${pfAvatar(r.it.id, r.it.name)}
         <span class="ps-txt"><span class="ps-name">${psName(r.it, r.hl)}</span><span class="ps-meta">${esc(r.it.meta || "")}</span></span>
-        ${r.it.team ? `<span class="ps-team${r.team ? " hit" : ""}">${esc(r.it.team)}</span>` : ""}</div>`;
+        ${r.it.team && !underTeam ? `<span class="ps-team${r.team ? " hit" : ""}">${esc(r.it.team)}</span>` : ""}</div>`;
   const show = () => {
     const q = fold(input.value), toks = q.split(" ").filter(Boolean), list = items(), all = !q && !!browse;
     let groups;  // [header, results, tricode]
@@ -2821,7 +2893,7 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
     for (const [h, rs, t] of groups) {
       if (h && rs.length) rows.push(`<div class="ps-head${all ? " grp" : ""}">${t && PF && PF.teams[t] ? pfLogo(PF.teams[t], "ps-logo") : ""}<span>${esc(h)}</span>` +
         `${all && i ? `<span class="ps-n">${rs.length}</span>` : ""}</div>`);
-      for (const r of rs) rows.push(opt(r, i++));
+      for (const r of rs) rows.push(opt(r, i++, all && t));  // under a team's header its tag would only repeat it
     }
     act = 0; drawn = 0;
     pop.classList.toggle("browse", all);
@@ -2835,6 +2907,7 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
   const choose = i => { const r = res[i]; if (!r) return; input.value = ""; sync(); hide(); pick(r.it); };
   input.addEventListener("input", show);
   input.addEventListener("focus", show);
+  input.addEventListener("click", () => { if (pop.hidden) show(); });  // already focused (after Esc or a pick): a click reopens it
   input.addEventListener("blur", hide);
   input.addEventListener("keydown", e => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -2924,10 +2997,128 @@ function scStats(o) {
            rim: grp([0]), paint: grp([1]), mid: grp([2, 3, 4]), c3: grp([5, 6]), ab3: grp([7, 8, 9]) };
 }
 // sc.season: a season index, or "rs" / "po" / "all" for every regular season, every playoffs, or both
-const scWants = s => sc.season === "all" || (sc.season === "rs" ? !isPO(SC.seasons[s]) : sc.season === "po" ? isPO(SC.seasons[s]) : s === +sc.season);
+// or "from|to|kind" (kind rs / po / all) for a span of seasons from the season picker
+const scWants = s => {
+  const v = String(sc.season);
+  if (v === "all") return true;
+  if (v === "rs" || v === "po") return isPO(SC.seasons[s]) === (v === "po");
+  if (v.includes("|")) {
+    const [a, b, k] = v.split("|"), key = SC.seasons[s], base = key.replace(PO_SFX, "");
+    return base >= a && base <= b && (k === "all" || isPO(key) === (k === "po"));
+  }
+  return s === +v;
+};
 const scHasPO = () => SC.seasons.some(isPO);
 function scSpan() { const b = [...new Set(SC.seasons.map(k => k.replace(PO_SFX, "")))].sort(); return b.length > 1 ? `${b[0]} to ${b[b.length - 1]}` : b[0] || ""; }
-const scSelName = () => ({ all: `${scSpan()}${scHasPO() ? ", regular season and playoffs" : ""}`, rs: `${scSpan()} regular seasons`, po: `${scSpan()} playoffs` })[sc.season] || SC.seasons[+sc.season];
+const scSelName = () => {
+  const v = String(sc.season);
+  if (v.includes("|")) {
+    const [a, b, k] = v.split("|");
+    return (a === b ? a : `${a} to ${b}`) + ({ rs: a === b ? "" : " regular seasons", po: " playoffs", all: scHasPO() ? ", regular season and playoffs" : "" })[k];
+  }
+  return ({ all: `${scSpan()}${scHasPO() ? ", regular season and playoffs" : ""}`, rs: `${scSpan()} regular seasons`, po: `${scSpan()} playoffs` })[v] || SC.seasons[+v];
+};
+
+/* season picker: a button that opens every season on one panel, a row per decade like a calendar (50 seasons are 5 rows),
+   instead of a long dropdown. Pick regular season, playoffs or both, then one season, a quick span, or a range (turn on
+   "Pick a range" and click its first and last season, or shift-click). A dot marks the seasons the player on screen has shots in.
+   The hidden #scSeason <select> keeps the value, so everything that reads sc.season works unchanged. */
+const ss = { range: false, anchor: null, last: null };
+const ssBases = () => [...new Set(SC.seasons.map(k => k.replace(PO_SFX, "")))].sort();
+function ssParse(v = String(sc.season)) {
+  const B = ssBases();
+  if (v === "all" || v === "rs" || v === "po") return { a: B[0], b: B[B.length - 1], k: v };
+  if (v.includes("|")) { const [a, b, k] = v.split("|"); return { a, b, k }; }
+  const key = SC.seasons[+v] || B[0], base = key.replace(PO_SFX, "");
+  return { a: base, b: base, k: isPO(key) ? "po" : scHasPO() ? "rs" : "all" };
+}
+function ssValue(a, b, k) {  // the simplest value for a selection, so it matches the <select>'s own options where it can
+  if (!scHasPO()) k = "all";
+  if (a > b) [a, b] = [b, a];
+  const B = ssBases();
+  if (a === b && (k !== "all" || !scHasPO())) { const i = SC.seasons.indexOf(a + (k === "po" ? PO_SFX : "")); if (i >= 0) return String(i); }
+  if (a === B[0] && b === B[B.length - 1]) return k;
+  return `${a}|${b}|${k}`;
+}
+function ssApply(a, b, k) {
+  const v = ssValue(a, b, k), sel = $("scSeason");
+  if (![...sel.options].some(o => o.value === v)) {
+    sel.querySelector("option[data-custom]")?.remove();
+    const o = new Option("", v); o.dataset.custom = ""; sel.add(o);
+  }
+  sel.value = v; sc.season = v;
+  if (sel.selectedOptions[0].dataset.custom != null) sel.selectedOptions[0].textContent = scSelName();
+  scRender();
+}
+function ssSync() {  // the button's label, and the open panel (the player on screen decides the dots)
+  const { a, b, k } = ssParse(), B = ssBases(), all = B.length > 1 && a === B[0] && b === B[B.length - 1];
+  const kind = scHasPO() ? { rs: "Regular season", po: "Playoffs", all: "Regular season + playoffs" }[k] : "";
+  $("ssVal").innerHTML = `<b>${all ? `All ${B.length} seasons` : a === b ? a : `${a} – ${b}`}</b>${kind ? `<small>${kind}</small>` : ""}`;
+  if (!$("ssPop").hidden) ssRender();
+}
+function ssRender() {
+  const pop = $("ssPop"), B = ssBases(), { a, b, k } = ssParse(), p = SC.players[sc.player], last = B[B.length - 1];
+  const has = new Set(p.p.filter(r => k === "all" || isPO(SC.seasons[r.s]) === (k === "po")).map(r => SC.seasons[r.s].replace(PO_SFX, "")));
+  const ok = s => k !== "po" || SC.seasons.includes(s + PO_SFX);  // playoffs only where the data has them
+  const inSel = s => ss.anchor ? s === ss.anchor : s >= a && s <= b, end = s => ss.anchor ? s === ss.anchor : s === a || s === b;
+  const yr = s => +s.slice(0, 4), dec = s => Math.floor(yr(s) / 10) * 10;
+  const quick = [["Latest", last, last], ...[5, 10, 20].filter(n => B.length > n).map(n => [`Last ${n}`, B[B.length - n], last]), ...(B.length > 1 ? [[`All ${B.length}`, B[0], last]] : [])];
+  pop.innerHTML = (scHasPO() ? `<div class="seg ss-kind" role="group" aria-label="Games">${[["rs", "Regular season"], ["po", "Playoffs"], ["all", "Both"]]
+      .map(([v, l]) => `<button type="button" data-k="${v}" aria-pressed="${k === v}">${l}</button>`).join("")}</div>` : "") +
+    `<div class="ss-quick">${quick.map(([l, x, y]) => `<button type="button" data-a="${x}" data-b="${y}" aria-pressed="${!ss.anchor && a === x && b === y}">${l}</button>`).join("")}
+      ${B.length > 1 ? `<button type="button" class="ss-rng" aria-pressed="${ss.range}">${ss.anchor ? `From ${ss.anchor} to…` : "Pick a range"}</button>` : ""}</div>` +
+    `<div class="ss-dec">${[...new Set(B.map(dec))].sort((x, y) => y - x).map(d => `<span class="ss-dl">${d}s</span><div class="ss-row">${B.filter(s => dec(s) === d).map(s => {
+      const c = yr(s) % 10, cls = [inSel(s) && "on", inSel(s) && end(s) && "end", has.has(s) && "has"].filter(Boolean).join(" ");
+      return `<button type="button" class="ss-chip ${cls}" data-s="${s}" style="--c:${c + 1};--c5:${c % 5 + 1};--r5:${c < 5 ? 1 : 2}"${ok(s) ? "" : " disabled"}
+        aria-pressed="${inSel(s)}" aria-label="${s}${has.has(s) ? "" : ", no shots by " + esc(p.n)}">${s.slice(2)}</button>`;
+    }).join("")}</div>`).join("")}</div>` +
+    `<p class="ss-hint">${ss.anchor ? `Now click the last season (from ${ss.anchor}).` : ss.range ? "Click the first season of the range." : "Click a season · shift-click for a range."}
+      <span><i class="ss-dot"></i>${esc(p.n)} has shots</span></p>`;
+}
+function ssInit() {
+  const btn = $("ssBtn"), pop = $("ssPop");
+  const focusSel = sel => (pop.querySelector(sel) || pop.querySelector(".ss-chip.on:not(:disabled)") || pop.querySelector(".ss-chip:not(:disabled)"))?.focus();
+  const open = () => {
+    ss.range = false; ss.anchor = null; ssRender(); pop.hidden = false; btn.setAttribute("aria-expanded", "true");
+    pop.style.left = "0px";  // then slide left as far as it takes to stay on screen
+    pop.style.left = Math.min(0, document.documentElement.clientWidth - 16 - pop.getBoundingClientRect().right) + "px";
+    focusSel(".ss-chip.end");
+  };
+  const close = refocus => {
+    if (pop.hidden) return;
+    pop.hidden = true; ss.range = false; ss.anchor = null; btn.setAttribute("aria-expanded", "false");
+    if (refocus) btn.focus();
+  };
+  btn.addEventListener("click", () => pop.hidden ? open() : close());
+  document.addEventListener("pointerdown", e => { if (!pop.hidden && !e.target.closest(".ss")) close(); });
+  pop.addEventListener("focusout", e => { if (!pop.hidden && e.relatedTarget && !e.relatedTarget.closest(".ss")) close(); });
+  pop.addEventListener("click", e => {
+    const t = e.target.closest("button");
+    if (!t || t.disabled) return;
+    const cur = ssParse();
+    if (t.dataset.k) { ssApply(cur.a, cur.b, t.dataset.k); focusSel(`[data-k="${t.dataset.k}"]`); return; }
+    if (t.classList.contains("ss-rng")) { ss.range = !ss.range; ss.anchor = null; ssRender(); focusSel(".ss-rng"); return; }
+    if (t.dataset.a) { ss.last = null; ssApply(t.dataset.a, t.dataset.b, cur.k); close(true); return; }
+    const s = t.dataset.s;
+    if (ss.anchor) { const from = ss.anchor; ss.anchor = null; ss.range = false; ssApply(from, s, cur.k); close(true); return; }
+    if (ss.range) { ss.anchor = s; ssApply(s, s, cur.k); focusSel(`[data-s="${s}"]`); return; }
+    if (e.shiftKey) { ssApply(ss.last || cur.a, s, cur.k); close(true); return; }
+    ss.last = s; ssApply(s, s, cur.k); close(true);
+  });
+  pop.addEventListener("keydown", e => {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(true); return; }
+    if (!e.target.classList.contains("ss-chip") || !/^Arrow/.test(e.key)) return;
+    // arrows move to the nearest season in that direction, like a calendar
+    e.preventDefault();
+    const r0 = e.target.getBoundingClientRect(), dx = { ArrowLeft: -1, ArrowRight: 1 }[e.key] || 0, dy = { ArrowUp: -1, ArrowDown: 1 }[e.key] || 0;
+    const next = [...pop.querySelectorAll(".ss-chip:not(:disabled)")].map(c => [c, c.getBoundingClientRect()])
+      .filter(([c, r]) => c !== e.target && (dx ? Math.abs(r.top - r0.top) < 4 && Math.sign(r.left - r0.left) === dx : Math.sign(r.top - r0.top) === dy))
+      .sort(([, r], [, q]) => dx ? Math.abs(r.left - r0.left) - Math.abs(q.left - r0.left)
+        : Math.abs(r.top - r0.top) - Math.abs(q.top - r0.top) || Math.abs(r.left - r0.left) - Math.abs(q.left - r0.left))[0];
+    if (next) next[0].focus();
+  });
+  ssSync();
+}
 const scRecs = p => p.p.filter(r => scWants(r.s));
 function scLeague() {
   const k = "lg" + sc.season;
@@ -3090,6 +3281,7 @@ function scPairRows(arr, lgArr, names, labels, fga) {
 }
 
 function scPanel() {
+  ssSync();
   const p = SC.players[sc.player], recs = scRecs(p), L = scLeague(), ls = L.s;
   $("scName").innerHTML = `${pfAvatar(p.id, p.n)}<span>${esc(p.n)}</span>`;
   $("scName").closest(".sc-side").style.setProperty("--tc", p.now ? pfTeam(p.now.team)[1] : "var(--line)");
@@ -3126,10 +3318,10 @@ function scPanel() {
   $("scKinds").innerHTML = byType ? scPairRows(o.ty, L.o.ty, SC.types, TYPE_NAMES, s.fga) : scPairRows(o.st, L.o.st, SC.styles, STYLE_NAMES, s.fga);
 }
 
-const LB_COLS = [
-  ["name", "Player", 0], ["now", "Now", 0], ["team", "Shot for", 0], ["g", "G", 1], ["fga", "FGA", 1], ["perG", "FGA/G", 1], ["fg", "FG%", 1], ["efg", "eFG%", 1],
-  ["a3", "3PA", 1], ["fg3", "3P%", 1], ["rate3", "3PA rate", 1], ["rimF", "Rim freq", 1], ["rimFg", "Rim FG%", 1],
-  ["midF", "Mid freq", 1], ["midFg", "Mid FG%", 1], ["pps", "Pts/shot", 1], ["dist", "Avg ft", 1], ["ast", "Ast'd", 1],
+const LB_COLS = [  // [key, header, right-aligned, what the header means]
+  ["name", "Player", 0], ["now", "Team", 0, "Current team (Basketball-Reference)"], ["g", "G", 1, "Games"], ["fga", "FGA", 1, "Field-goal attempts"],
+  ["fg", "FG%", 1], ["efg", "eFG%", 1, "Effective FG%: a three counts 1.5 makes"], ["fg3", "3P%", 1], ["rate3", "3PA rate", 1, "Share of his attempts that are threes"],
+  ["rimF", "Rim", 1, "Share of his attempts in the restricted area"], ["pps", "Pts/shot", 1, "Points per field-goal attempt"],
 ];
 const lbVal = (r, k) => ({ rimF: r.rim.freq, rimFg: r.rim.fg, midF: r.mid.freq, midFg: r.mid.fg })[k] ?? r[k];
 function scBoard() {
@@ -3141,14 +3333,13 @@ function scBoard() {
     if (typeof x === "string") return dir * (x || "~").localeCompare(y || "~");
     return dir * ((x ?? -1) - (y ?? -1));
   });
-  $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0" aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
+  $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r, what]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0"${what ? ` title="${what}"` : ""} aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
   const pc = v => fmtP(v), f1 = v => v == null ? "—" : v.toFixed(1);
   $("lbBody").innerHTML = rows.map(r => `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0">
-    <td><b>${esc(r.name)}</b></td><td>${r.now ? esc(r.now) : `<span style="color:var(--muted)">—</span>`}</td><td>${esc(r.team)}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td><td class="r">${f1(r.perG)}</td>
-    <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
-    <td class="r">${pc(r.rim.freq)}</td><td class="r">${r.rim.a ? pc(r.rim.fg) : "—"}</td><td class="r">${pc(r.mid.freq)}</td><td class="r">${r.mid.a ? pc(r.mid.fg) : "—"}</td>
-    <td class="r">${r.pps.toFixed(2)}</td><td class="r">${f1(r.dist)}</td><td class="r">${r.fgm ? pc(r.ast) : "—"}</td></tr>`).join("");
-  $("lbCount").textContent = `${rows.length.toLocaleString()} of ${scRows().length.toLocaleString()} players who took a shot${sc.season === "all" ? "" : " in " + scSelName()}`;
+    <td><b>${esc(r.name)}</b></td><td>${r.now ? esc(r.now) : `<span style="color:var(--muted)">—</span>`}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td>
+    <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
+    <td class="r">${pc(r.rim.freq)}</td><td class="r">${r.pps.toFixed(2)}</td></tr>`).join("");
+  $("lbCount").textContent = `${rows.length.toLocaleString()} of ${scRows().length.toLocaleString()} players${sc.season === "all" ? "" : " · " + scSelName()}`;
 }
 
 function scPick(i, scroll) {
@@ -3171,13 +3362,15 @@ function scInit() {
   $("lbTeam").innerHTML = `<option value="">All</option>` + Object.keys(SC.teams).sort().map(t => `<option value="${t}">${t} · ${esc(SC.teams[t])}</option>`).join("") +
     (SC.roster && SC.roster.season ? `<option value="-">Not on a ${esc(SC.roster.season)} roster</option>` : "");
   const nL = SC.league.reduce((s, r) => s + r.lz.filter((_, i) => i % 2 === 0).reduce((a, b) => a + b, 0), 0);
-  $("scCaption").textContent = `Every field-goal attempt by all ${SC.players.filter(p => p.p.length).length.toLocaleString()} players who took a shot (${nL.toLocaleString()} shots, ${scSpan()}${scHasPO() ? ", regular season and playoffs" : ""}), from play-by-play. Current teams are ${SC.roster && SC.roster.season ? `${SC.roster.season} rosters from Basketball-Reference (updated ${SC.roster.fetched})` : "not fetched yet"}.`;
+  $("scCaption").textContent = [`${SC.players.filter(p => p.p.length).length.toLocaleString()} players`, `${nL.toLocaleString()} shots`,
+    scSpan() + (scHasPO() ? ", regular season + playoffs" : ""), SC.roster && SC.roster.season ? `teams as of ${SC.roster.season}` : ""].filter(Boolean).join(" · ");
   const m = location.hash.match(/^#shots\/(\d+)/);
   const fromHash = m ? SC.players.findIndex(p => p.id === +m[1]) : -1;
   sc.player = fromHash >= 0 ? fromHash : 0;
   const first = SC.players[sc.player];
   if (!scRecs(first).length && first.p.length) sc.season = String((first.p.filter(r => !isPO(SC.seasons[r.s])).at(-1) || first.p.at(-1)).s);
   $("scSeason").value = sc.season;
+  ssInit();
 
   $("scSeason").addEventListener("change", e => { sc.season = e.target.value; scRender(); });
   const scItems = SC.players.map((p, i) => {  // SC.players is already busiest first
@@ -3187,7 +3380,8 @@ function scInit() {
     return { key: i, id: p.id, name: p.n, team: p.now ? p.now.team : "",
              meta: fga ? `${fga.toLocaleString()} shots · ${yrs.length > 1 ? `${yrs[0]} to ${yrs.at(-1)}` : yrs[0]}${!p.now && last ? ` · last with ${last}` : ""}` : "No NBA shots in the data yet" };
   });
-  playerSearch($("scFind"), { items: () => scItems, pick: it => scPick(it.key), top: "Most shots" });
+  playerSearch($("scFind"), { items: () => scItems, pick: it => scPick(it.key), top: "Most shots",
+    browse: { rest: SC.roster && SC.roster.season ? `Not on a ${SC.roster.season} roster` : "No current team" } });
   const setView = v => { sc.view = v; $("scHex").setAttribute("aria-pressed", v === "hex"); $("scZones").setAttribute("aria-pressed", v === "zones"); scDraw(); };
   $("scHex").addEventListener("click", () => setView("hex"));
   const setKind = k => { sc.kind = k; $("scByType").setAttribute("aria-pressed", k === "type"); $("scByStyle").setAttribute("aria-pressed", k === "style"); scPanel(); };
@@ -3500,8 +3694,8 @@ function muInit() {
   const muItems = (list, k, what) => [...list].sort((a, b) => b[k] - a[k])
     .map(p => ({ key: p.id, id: p.id, name: p.n, team: p.now || "", meta: `${p[k].toLocaleString()} tracked possessions as the ${what}` }));
   const offItems = muItems(MU_OFFS, "top", "scorer"), defItems = muItems(MU_DEFS, "tdp", "defender");
-  playerSearch($("muOff"), { items: () => offItems.filter(it => it.id !== mu.def.id), pick: it => { mu.off = MU_BY_ID.get(it.id); muRender(); }, top: "Most possessions" });
-  playerSearch($("muDef"), { items: () => defItems.filter(it => it.id !== mu.off.id), pick: it => { mu.def = MU_BY_ID.get(it.id); muRender(); }, top: "Most possessions" });
+  playerSearch($("muOff"), { items: () => offItems.filter(it => it.id !== mu.def.id), pick: it => { mu.off = MU_BY_ID.get(it.id); muRender(); }, top: "Most possessions", browse: { rest: `Not on a ${MU.roster_season} roster` } });
+  playerSearch($("muDef"), { items: () => defItems.filter(it => it.id !== mu.off.id), pick: it => { mu.def = MU_BY_ID.get(it.id); muRender(); }, top: "Most possessions", browse: { rest: `Not on a ${MU.roster_season} roster` } });
   $("muSwap").addEventListener("click", () => {
     const a = mu.def, b = mu.off;
     if (a.o && b.d) { mu.off = a; mu.def = b; muRender(); }
@@ -3570,7 +3764,7 @@ function orbInit() {
   if (!S || S.length < 2) return;
   orb.el = el; orb.items = orbItems(S);
   $("hmOrbTitle").textContent = `${NUM_WORDS[S.length] || S.length} seasons in orbit`;
-  $("hmOrbCap").textContent = `${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how NBAGPT used its games; seasons that shared a Finals team light up.`;
+  $("hmOrbCap").innerHTML = tip(`${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how NBAGPT used its games; seasons that shared a Finals team light up.`);
   $("hmOrbHead").hidden = el.hidden = false;
   el.innerHTML = `<div class="orb-stage"><div class="orb-core" aria-hidden="true"><i></i><i></i><b></b></div><div class="orb-ring" aria-hidden="true"></div>
     ${orb.items.map(it => `<div class="orb-node" data-i="${it.id}"><span class="orb-glow" style="--e:${it.energy}"></span>
@@ -3663,13 +3857,12 @@ function homeGameCard(g, kind, label, stat) {
     ${side(G && G.h, G && (PF.teams[G.h] || G.hid), hs, g.home_win, "Home")}
     <svg class="hm-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
       <line class="mid" x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}"/><polygon class="ar" points="0,${H} ${pts} ${W},${H}"/><polyline class="ln" points="${pts}"/></svg>
-    <span class="hm-foot"><span>${stat}</span><u>Watch the replay →</u></span></button>`;
+    <span class="hm-foot"><span>${stat}</span><u>Watch →</u></span></button>`;
 }
 function homeInit() {
   setPhotos();
   const n = v => Number(v).toLocaleString(), S = DATA.sources || {};
   const nPlayers = PF ? Object.keys(PF.players).length : SC ? SC.players.length : 0;
-  $("hmLede").textContent = `HOMERs read ${n(META.n_games)} NBA games one play at a time. At every moment it calls the next play and says who's going to win.`;
   $("hmJumbo").innerHTML = [[n(META.n_games), "Games read"], [S.n_shots ? n(S.n_shots) : "–", "Shots charted"], [nPlayers ? n(nPlayers) : "–", "Players"], [n(META.n_params), "Parameters"]]
     .map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
 
@@ -3681,7 +3874,7 @@ function homeInit() {
     ["upset", "Biggest upset", (a, b) => b.loserPeak - a.loserPeak, g => `The loser was ${pct(Math.min(g.loserPeak, .999), g.loserPeak > .99 ? 1 : 0)} to win`],
   ].map(([k, label, f, stat]) => { const g = pick(f); return g ? homeGameCard(g, k, label, stat(g)) : ""; });
   $("hmGames").innerHTML = feat.join("");
-  $("hmGamesCap").textContent = `From the ${games.length ? games[0].season : ""} season${games.some(g => isPlayoffId(g.id)) ? " and playoffs" : ""}, which the model never saw in training. The line is its home-win chance from tip to buzzer.`;
+  $("hmGamesCap").innerHTML = tip(`From the ${games.length ? games[0].season : ""} season${games.some(g => isPlayoffId(g.id)) ? " and playoffs" : ""}, which the model never saw in training. The line is its home-win chance from tip to buzzer.`);
 
   orbInit();
 
@@ -3700,7 +3893,7 @@ function homeInit() {
         <img src="${pfHead(r.id)}" alt="" loading="lazy" onerror="this.remove()"><span class="rk">${label}</span>
         <span class="who"><b>${esc(r.name)}</b><span>${esc(r.team)} · ${r.gp} games</span><strong>${f1(r[k])} <small style="font-size:15px">${unit}</small></strong></span></button>`;
     }).join("") : "";
-    $("hmLeadCap").textContent = `${season}, players with at least ${minGp} games. Each leader appears once, so a runner-up can take a category. Click anyone for their card.`;
+    $("hmLeadCap").textContent = `${season} · ${minGp}+ games`;
     $("hmLeadHead").hidden = $("hmLeaders").hidden = !rows.length;
   }
 
