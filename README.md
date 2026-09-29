@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/banner-dark.png">
-    <img alt="HOMERs: Hoop Outcome Modeling from Event Representations" src="docs/images/banner-light.png" width="100%">
+    <img alt="HOMERs: play-by-play transformer, shot-selection model, zero-server dashboard" src="docs/images/banner-light.png" width="100%">
   </picture>
 </p>
 
@@ -55,11 +55,17 @@ Everything lands in a single self-contained HTML dashboard. There's no server: o
   <img alt="Scoreboard and game picker" src="docs/images/overview.png" width="100%">
 </p>
 
+The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Game replay**, **Model** and **Sources**.
+
+- **Home** is the cover: the headline numbers, three featured games from the test season (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, season leaders, and a photo card for every tab.
+- **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Each gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
+- **Sources** tells how the project is built: where the name comes from, the pipeline from fetch to prediction with the real numbers, a card per data source with games per season, each model's type of regression and exact training settings (read from the run logs), and credits for every photo.
+
 <table>
   <tr>
     <td width="50%" valign="top">
       <img alt="Game replay" src="docs/images/replay.png"><br>
-      <b>Game replay.</b> Scrub any game play by play. Watch the win probability move against the baseline, see the model's top five guesses for the next play (the real one is checked off), and jump to the biggest momentum swings.
+      <b>Game replay.</b> Pick any game (filter by team) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. A written story of the game marks the key moments, including when NBAGPT "called it". Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
     </td>
     <td width="50%" valign="top">
       <img alt="Matchup simulator" src="docs/images/simulator.png"><br>
@@ -112,6 +118,17 @@ Everything lands in a single self-contained HTML dashboard. There's no server: o
 
 ## Quickstart
 
+**The easy way:** `./run.sh` handles every step and picks a Python that has torch installed.
+
+```bash
+./run.sh setup       # once: install packages
+./run.sh demo        # fake games -> model -> dashboard, about a minute
+./run.sh status      # what's downloaded, trained, and running
+./run.sh all         # the full real-data pipeline
+```
+
+Or run each step yourself:
+
 **1. Install**
 
 ```bash
@@ -134,9 +151,10 @@ On a Mac you can also double-click **`Open Dashboard.command`**. It rebuilds fro
 **3. Go real**
 
 ```bash
-python fetch_data.py                 # play-by-play, 4 seasons, ~5k games (a few hours, resumable)
+python fetch_data.py                 # play-by-play, 2021-22 to 2025-26, ~6k games (a few hours, resumable)
 python fetch_context.py              # coaches, Synergy play types, defensive matchups (~4 h, resumable)
 python fetch_rosters.py              # names, numbers, positions, heights for profiles (~2 min)
+python fetch_bbref.py                # current teams from Basketball-Reference (~2 min; --refresh during the offseason)
 python tokenize_pbp.py               # -> data/processed/games.pkl
 python baseline.py
 python train.py --out runs/base      # 4 layers, 128-dim, ~0.8M parameters
@@ -187,6 +205,7 @@ flowchart LR
 | Fetch play-by-play | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` |
 | Fetch context | `fetch_context.py` | `data/context/coaches.parquet`, `playtypes.parquet`, `matchups/` |
 | Fetch rosters | `fetch_rosters.py` | `data/context/rosters.parquet` |
+| Fetch current rosters | `fetch_bbref.py` | `data/context/bbref_rosters.parquet` (Basketball-Reference) |
 | Tokenize games | `tokenize_pbp.py` | `data/processed/games.pkl` |
 | Baseline | `baseline.py` | `runs/baseline.joblib` |
 | Train NBAGPT | `train.py` | `runs/<name>/best.pt`, `log.json` |
@@ -209,6 +228,7 @@ Each game becomes a sequence of team-relative events such as `H_3PT_MAKE`, `A_DR
 | Architecture | Decoder-only transformer, causal attention, tied input/output embeddings |
 | Default size | 4 layers, 4 heads, 128-dim, about 0.8M parameters |
 | Game state | Time remaining, score margin, period, and lead relative to time left, projected into every position so the model doesn't have to count baskets |
+| Play order | Game-clock order: period, then clock, then the feed's own order. The scorer logs some plays late with high `actionNumber`s, so sorting by that number put about 1% of plays minutes out of place (17,890 plays in 4,235 of 4,919 games) |
 | Heads | Next event (cross-entropy) and home win (binary cross-entropy at every position) |
 | Split | The latest season is the test set, so no future games leak into training |
 
@@ -241,27 +261,28 @@ HOMERs reports its numbers against baselines, including when a model doesn't bea
 
 With one season and defender data on only part of it, the context adds nothing measurable yet over a player's own history. The multi-season run with full matchup coverage is the real test.
 
-**NBAGPT, synthetic demo** (80 test games)
+**NBAGPT, 2024-25 season** (1,230 held-out games; trained on 2021-22 to 2023-24)
 
 | Metric | NBAGPT | Score + clock baseline |
 |---|---:|---:|
-| Win-probability Brier score | 0.1192 | **0.1175** |
-| Next-play accuracy | 42.2% | |
-| Perplexity | 4.33 | |
+| Win-probability Brier score (lower is better) | 0.1653 | **0.1651** |
+| Next-play accuracy | 40.5% | |
+| Next-play perplexity | 4.65 | |
 
-The synthetic games are random simulations, so there's little structure for the transformer to find. Real-season numbers will replace these once training on the full download finishes.
+Win probability is a dead heat with the baseline: nearly everything the model knows about who wins is already in the score and the clock. The play sequence helps with the next play instead. Putting plays in game-clock order cut perplexity from 4.90 to 4.65 and raised accuracy from 40.2% to 40.5%, while the Brier score moved by 0.0003, which is noise.
 
 <br>
 
 ## Data and caveats
 
-- **Sources.** Play-by-play, defensive matchups, Synergy play types, coaches and rosters come from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api). HOMERs is not affiliated with or endorsed by the NBA.
+- **Sources.** Play-by-play, defensive matchups, Synergy play types, coaches and rosters come from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api). Current teams and bios come from [Basketball-Reference](https://www.basketball-reference.com) team roster pages, fetched at most once every 3.5 seconds to respect its rate limit. The dashboard's Sources tab has the full list. HOMERs is not affiliated with or endorsed by the NBA.
 - **Primary defender.** The NBA doesn't publish who guarded each shot. HOMERs uses the on-floor opponent who guarded the shooter most in that game, weighted by shots attempted in the matchup feed.
 - **Coaches.** Each team's listed head coach for the season. Mid-season coaching changes aren't tracked.
 - **Lineups.** Complete on about 97% of plays.
 - **Minutes.** Checked against official 2021-22 minutes for Jokić, Giannis, Embiid and LeBron, matching to within about 0.1 minutes per game. Other players weren't checked individually.
 - **Next-play odds in profiles.** They use only the model's top five guesses, so they slightly understate how involved a player is.
 - **Headshots.** Profile photos are nba.com's current headshots, so a player may appear in a newer team's jersey. They don't load when the dashboard is hosted as a Claude artifact, whose security policy blocks outside images; profiles fall back to initials.
+- **Current teams.** "Now" is Basketball-Reference's roster for the current season (2026-27 from August 2026), so offseason moves show up as soon as that site records them. Seven of 554 players couldn't be matched to an NBA.com ID by name and show without shot history.
 - **Fantasy scoring.** NBA.com: points ×1, rebounds ×1.2, assists ×1.5, steals ×3, blocks ×3, turnovers −1.
 
 <br>
@@ -288,10 +309,12 @@ The synthetic games are random simulations, so there's little structure for the 
 ├── export_profiles.py     player profiles and fantasy data
 ├── export_shotcharts.py   shot charts for every shooter
 ├── export_sources.py      data sources and methods
+├── export_assets.py       dashboard photos (assets/img, credits in assets/credits.json)
 ├── dashboard_template.html
 ├── refresh_players.sh     rebuild the shot model and dashboard
+├── deploy.sh              rebuild and publish to Vercel
 ├── Open Dashboard.command double-click launcher (macOS)
-└── docs/                  logo and screenshots
+└── docs/                  logo, screenshots, and banner.html (render with docs/render_banner.py)
 ```
 
 <br>
@@ -311,5 +334,5 @@ The synthetic games are random simulations, so there's little structure for the 
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mark-dark.svg">
     <img alt="HOMERs mark" src="docs/assets/mark.svg" width="72">
   </picture><br>
-  <sub>HOMERs · Hoop Outcome Modeling from Event Representations</sub>
+  <sub>HOMERs · Every game is an epic.</sub>
 </p>

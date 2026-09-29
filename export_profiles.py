@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from build_shots import TEAM_ID_MIN, load_matchups, name_map, norm
-from tokenize_pbp import STOI, classify, parse_clock
+from tokenize_pbp import STOI, classify, game_order, parse_clock
 
 STATS = ["min", "pts", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "oreb", "dreb", "ast", "stl", "blk", "tov", "pf"]
 FP_WEIGHTS = {"pts": 1, "reb": 1.2, "ast": 1.5, "stl": 3, "blk": 3, "tov": -1}  # NBA.com / FanDuel scoring
@@ -24,7 +24,7 @@ LOG_STATS = ["ast", "stl", "blk", "tov", "fgm", "fga", "tpm", "tpa", "ftm", "fta
 EXTRA = {"AST": 0, "STL": 1, "BLK": 2}
 AST_RE = re.compile(r"\(([^()]+?) \d+ AST\)")
 SUB_RE = re.compile(r"SUB:\s*(.+?)\s+FOR\s+(.+)")
-CACHE_VERSION = 3
+CACHE_VERSION = 4  # 4: rows in game-clock order (tokenize_pbp.game_order)
 _ROSTER_NAMES = {}
 
 
@@ -34,9 +34,7 @@ def is_player(pid):
 
 def prep(df):
     """Same row order as tokenize_pbp.process_game, so token positions line up."""
-    df = df.copy()
-    df["actionNumber"] = pd.to_numeric(df["actionNumber"], errors="coerce")
-    df = df.sort_values("actionNumber").reset_index(drop=True)
+    df = game_order(df)
     df["personId"] = pd.to_numeric(df["personId"], errors="coerce").fillna(0).astype(int)
     df["teamId"] = pd.to_numeric(df["teamId"], errors="coerce").fillna(0).astype(int)
     df["period"] = pd.to_numeric(df["period"], errors="coerce").fillna(1).astype(int)

@@ -53,7 +53,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
          "used": "The list of regular-season game IDs to download for each season.",
          "coverage": ", ".join(pbp) or "not fetched yet", "updated": _mtime(raw), "script": "fetch_data.py", "file": "(not stored)"},
         {"name": "NBA.com Stats: BoxScoreMatchupsV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
-         "used": "Who guarded whom in each game (partial possessions, shots attempted). Used to estimate each shot's primary defender.",
+         "used": "Who guarded whom in each game: partial possessions, points, shots, turnovers. Used to estimate each shot's primary defender and to train the man-to-man matchup model.",
          "coverage": _cov(matchups), "updated": _mtime(ctx / "matchups"), "script": "fetch_context.py", "file": f"{context}/matchups/<season>/<gameId>.parquet"},
         {"name": "NBA.com Stats: CommonTeamRoster", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Head coach of every team each season" + (", plus season rosters (number, position, height, weight, age, experience, school)" if roster_seasons else "") + ".",
@@ -83,13 +83,32 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
                         "coverage": "Simulated seasons 2098-99 and 2099-00", "updated": _mtime("data/raw_synthetic"), "script": "synthetic.py",
                         "file": "data/raw_synthetic/"})
 
+    # extras for the Sources tab cards: per-season counts (drawn as bars), season lists (drawn as pills),
+    # which tabs each source feeds, and the badge style
+    extras = {
+        "NBA.com Stats: PlayByPlayV3": (pbp, [], ["games", "shots", "players", "model"]),
+        "NBA.com Stats: LeagueGameFinder": ({}, list(pbp), ["games", "shots"]),
+        "NBA.com Stats: BoxScoreMatchupsV3": (matchups, [], ["matchups", "players"]),
+        "NBA.com Stats: CommonTeamRoster": ({}, sorted(set(coach_seasons) | set(roster_seasons)), ["players"]),
+        "NBA.com Stats: SynergyPlayTypes": ({}, pt_seasons, ["players"]),
+        "NBA.com Stats: CommonAllPlayers": ({}, [], ["shots", "players"]),
+        "Basketball-Reference team rosters": ({}, sorted(bb["season"].unique()) if bb is not None else [], ["shots", "players"]),
+        "nba_api static data": ({}, [], ["games", "players"]),
+        "Synthetic games": ({}, [], ["games", "model"]),
+    }
+    for s in sources:
+        counts, seasons, feeds = extras.get(s["name"], ({}, [], []))
+        s.update(season_counts=counts, seasons=[str(x) for x in seasons], feeds=feeds,
+                 kind="nba" if s["name"].startswith("NBA.com") else "sim" if s["url"] is None else "ref" if "Reference" in s["name"] else "oss")
+
     software = [
         {"name": "nba_api", "url": "https://github.com/swar/nba_api", "use": "Client for the NBA.com Stats endpoints"},
         {"name": "PyTorch", "url": "https://pytorch.org", "use": "NBAGPT transformer and the shot model"},
         {"name": "scikit-learn", "url": "https://scikit-learn.org", "use": "Logistic-regression baseline"},
         {"name": "pandas, NumPy, PyArrow", "url": "https://pandas.pydata.org", "use": "Data wrangling and Parquet storage"},
         {"name": "Chart.js 4.4.1", "url": "https://www.chartjs.org", "use": "Charts in this page (from cdnjs)"},
-        {"name": "Barlow Condensed, Source Sans 3", "url": "https://fonts.google.com", "use": "Fonts (Google Fonts)"},
+        {"name": "Geist, Geist Mono, Barlow Condensed", "url": "https://fonts.google.com", "use": "Fonts (Google Fonts)"},
+        {"name": "Wikimedia Commons", "url": "https://commons.wikimedia.org", "use": "Openly licensed photos (credits below)"},
     ]
 
     # training settings straight from the run logs
@@ -105,6 +124,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
                          "seasons": meta.get("seasons"), "metrics": meta.get("metrics")}
     runs["baseline_trained"] = Path(baseline).exists()
     return {"sources": sources, "software": software, "runs": runs, "n_shots": n_shots,
+            "n_games_raw": sum(pbp.values()), "seasons": list(pbp),
             "built": datetime.now().strftime("%Y-%m-%d %H:%M")}
 
 

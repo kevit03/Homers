@@ -3,3 +3,17 @@
   0022500033 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
   0022500045 attempt 1 failed: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
   100/1230
+  200/1230
+  300/1230
+  400/1230
+  500/1230
+  0022500538 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  600/1230
+  700/1230
+  800/1230
+  900/1230
+  1000/1230
+  0022501005 attempt 1 failed: ('Connection aborted.', OSError(65, 'No route to host'))
+  1100/1230
+  1200/1230
+2025-26: done, 0 failed []

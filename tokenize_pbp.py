@@ -35,6 +35,22 @@ def seconds_remaining(period: int, clock: float) -> float:
     return (4 - period) * 720 + clock if period <= 4 else clock
 
 
+def game_order(df: pd.DataFrame) -> pd.DataFrame:
+    """Rows in game-clock order: period, then clock counting down, then the feed's own order.
+
+    Late scorekeeper entries get high actionNumbers, so sorting by actionNumber put about 1% of plays
+    minutes out of place (a block at 3:58 of 2OT landing after the end of the period, say).
+    The feed's row order already has them in the right place, so it breaks ties within a second.
+    """
+    df = df.copy()
+    df["actionNumber"] = pd.to_numeric(df["actionNumber"], errors="coerce")
+    df["period"] = pd.to_numeric(df["period"], errors="coerce").fillna(1).astype(int)
+    df["_clock"] = df["clock"].map(parse_clock)
+    df["_row"] = np.arange(len(df))
+    df = df.sort_values(["period", "_clock", "_row"], ascending=[True, False, True], kind="mergesort")
+    return df.drop(columns=["_clock", "_row"]).reset_index(drop=True)
+
+
 def classify(row, last_shot_side):
     a = str(row.get("actionType", "")).strip().lower()
     desc = str(row.get("description", "")).upper()
@@ -58,9 +74,7 @@ def classify(row, last_shot_side):
 
 
 def process_game(df: pd.DataFrame):
-    df = df.copy()
-    df["actionNumber"] = pd.to_numeric(df["actionNumber"], errors="coerce")
-    df = df.sort_values("actionNumber")
+    df = game_order(df)
     for col in ("scoreHome", "scoreAway"):
         df[col] = pd.to_numeric(df[col], errors="coerce").ffill().fillna(0)
     df["period"] = pd.to_numeric(df["period"], errors="coerce").fillna(1).astype(int)
@@ -69,7 +83,7 @@ def process_game(df: pd.DataFrame):
     if final_h == final_a:
         return None
 
-    tokens, sec, diff, period = [BOS], [2880.0], [0.0], [1]
+    tokens, sec, diff, period, total = [BOS], [2880.0], [0.0], [1], [0]
     last_shot_side = None
     for row in df.to_dict("records"):
         tok = classify(row, last_shot_side)
@@ -81,8 +95,9 @@ def process_game(df: pd.DataFrame):
         tokens.append(STOI[tok])
         sec.append(seconds_remaining(p, parse_clock(row["clock"])))
         diff.append(float(row["scoreHome"] - row["scoreAway"]))
+        total.append(int(row["scoreHome"] + row["scoreAway"]))
         period.append(p)
-    tokens.append(EOS); sec.append(0.0); diff.append(float(final_h - final_a)); period.append(period[-1])
+    tokens.append(EOS); sec.append(0.0); diff.append(float(final_h - final_a)); period.append(period[-1]); total.append(int(final_h + final_a))
 
     return {
         "gameId": str(df["gameId"].iloc[0]),
@@ -91,6 +106,7 @@ def process_game(df: pd.DataFrame):
         "sec": np.array(sec, dtype=np.float32),
         "diff": np.array(diff, dtype=np.float32),
         "period": np.array(period, dtype=np.int8),
+        "total": np.array(total, dtype=np.int16),  # home + away points after each event, from the feed's own score
         "home_win": int(final_h > final_a),
     }
 
@@ -113,9 +129,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--raw", default="data/raw")
     ap.add_argument("--out", default="data/processed/games.pkl")
+    ap.add_argument("--seasons", nargs="*", help="only these season folders, e.g. 2021-22 2022-23 (default: all)")
     args = ap.parse_args()
 
-    files = sorted(Path(args.raw).rglob("*.parquet"))
+    files = sorted(f for f in Path(args.raw).rglob("*.parquet") if not args.seasons or f.parent.name in args.seasons)
     print(f"{len(files)} raw games")
     games = []
     for f in files:

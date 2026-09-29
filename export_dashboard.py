@@ -39,6 +39,25 @@ def r(a, nd=3):
     return [round(float(v), nd) for v in a]
 
 
+B62 = np.frombuffer(b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", dtype=np.uint8)
+
+
+def b62(values, width, scale=1, offset=0):
+    """Fixed-width base-62 string of round(v * scale) + offset; the page reverses it with unpack()."""
+    v = np.rint(np.asarray(values, dtype=np.float64).ravel() * scale).astype(np.int64) + offset
+    assert v.min(initial=0) >= 0 and v.max(initial=0) < 62 ** width, (v.min(), v.max(), width)
+    digits = np.stack([v // 62 ** (width - 1 - j) % 62 for j in range(width)], axis=1)
+    return B62[digits].tobytes().decode()
+
+
+def pack_game(g):
+    """A replay game as base-62 strings: about a third the size of JSON lists (games were 37 of the page's 52 MB)."""
+    return {"id": g["id"], "season": g["season"], "home_win": g["home_win"],
+            "tok": b62(g["tok"], 1), "per": b62(g["per"], 1), "sec": b62(g["sec"], 3, 10), "diff": b62(g["diff"], 2, 1, 100),
+            "pm": b62(g["pm"], 2, 1000), "pb": b62(g["pb"], 2, 1000), "top_i": b62(g["top_i"], 1), "top_p": b62(g["top_p"], 2, 1000),
+            **({"tot": b62(g["tot"], 2)} if g.get("tot") is not None else {})}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default="runs/base/best.pt")
@@ -53,6 +72,7 @@ def main():
     ap.add_argument("--raw", default="data/raw", help="raw play-by-play for player profiles; skipped for synthetic data")
     ap.add_argument("--profile_cache", default="data/processed/profiles_cache.pkl")
     ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch_bbref.py")
+    ap.add_argument("--matchup_run", default="runs/matchups", help="man-to-man model from matchup_model.py; skipped if missing")
     args = ap.parse_args()
 
     ck = torch.load(args.ckpt, map_location="cpu")
@@ -76,6 +96,7 @@ def main():
             "tok": g["tokens"][:L].tolist(), "sec": r(g["sec"][:L], 1), "diff": g["diff"][:L].astype(int).tolist(),
             "per": g["period"][:L].astype(int).tolist(), "pm": r(wm), "pb": r(wb),
             "top_i": top_i.tolist(), "top_p": [r(row) for row in top_p],
+            "tot": g["total"][:L].astype(int).tolist() if "total" in g else None,
         })
     p_m, p_b, y, sec_all = map(np.concatenate, (p_m, p_b, y, sec_all))
     phase = np.clip(4 - (sec_all // 720).astype(int), 1, 4)
@@ -99,7 +120,7 @@ def main():
         "history": history,
         # logistic baseline: p = sigmoid(b + w · [diff, diff/sqrt(min+1), min]) for the what-if calculator
         "baseline": {"w": clf.coef_[0].tolist(), "b": float(clf.intercept_[0])},
-        "games": out_games,
+        "games": [pack_game(g) for g in out_games],
         "shots": None,
     }
     if (Path(args.shot_run) / "best.pt").exists() and Path(args.shots).exists():
@@ -121,6 +142,14 @@ def main():
         sc = payload["shotcharts"]
         print(f"added shot charts for {sum(1 for p in sc['players'] if p['p'])} players ({', '.join(sc['seasons'])}), "
               f"current teams: {sc['roster']['season'] or 'not fetched'}")
+    payload["matchups"] = None
+    if (Path(args.matchup_run) / "best.pt").exists():
+        from export_matchups import build_matchups_payload
+        payload["matchups"] = build_matchups_payload(args.matchup_run, args.rosters)
+        print(f"added man-to-man matchups: {len(payload['matchups']['players'])} players, "
+              f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
+    from export_assets import build_assets_payload
+    payload["assets"] = build_assets_payload(ROOT / "assets")
     from export_sources import build_sources_payload
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
                                                synthetic=payload["meta"]["synthetic"])

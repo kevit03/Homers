@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- The README banner, drawn at 2560×800. `python docs/render_banner.py` screenshots it into
+     docs/images/banner-light.png and banner-dark.png; add #dark to the URL to preview the dark one. -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>HOMERs banner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;1,600;1,700&display=block">
+<style>
+:root { --bg: #F4F5F7; --ink: #14171C; --ink-2: #4B5360; --court: #D9DDE3; --orange: #EB6834; }
+:root.dark { --bg: #0F1216; --ink: #F1F3F6; --ink-2: #B9C0CA; --court: #262C34; }
+html, body { margin: 0; width: 2560px; height: 800px; overflow: hidden; background: var(--bg); }
+.court { position: absolute; left: 0; top: 0; }
+.court * { fill: none; stroke: var(--court); stroke-width: 6; }
+.court .dots { stroke-width: 9; stroke-dasharray: 9 15; }
+.mark { position: absolute; left: 160.6px; top: 90.1px; width: 658.7px; }
+.word { position: absolute; left: 892px; top: 164px; font: 700 335.6px/1 "Barlow Condensed", sans-serif; letter-spacing: 2px; color: var(--ink); white-space: nowrap; }
+.word b { color: var(--orange); font-weight: inherit; }
+.rule { position: absolute; left: 892px; top: 498px; width: 240px; height: 6px; background: var(--ink); }
+.sub { position: absolute; left: 893px; top: 540px; font: italic 700 36px/1 "Barlow Condensed", sans-serif; letter-spacing: .045em; text-transform: uppercase;
+       color: var(--ink); white-space: nowrap; }
+.sub span { color: var(--ink-2); }
+.sub i { font-style: inherit; color: var(--orange); margin: 0 .5em; }
+</style>
+</head>
+<body>
+<!-- half court, with the baseline off the right edge: key, free-throw circle, three-point arc, and a dotted arc behind the name -->
+<svg class="court" width="2560" height="800" viewBox="0 0 2560 800" aria-hidden="true">
+  <circle class="dots" cx="1956.6" cy="400.7" r="704.3"/>
+  <circle cx="2905.4" cy="399.5" r="559.6"/>
+  <circle cx="2160" cy="399.5" r="180.2"/>
+  <path d="M 2566 159.5 H 2159.5 V 639.5 H 2566 M 2279.5 159.5 V 639.5"/>
+</svg>
+<img class="mark" id="mark" src="assets/mark.svg" alt="">
+<div class="word">HOMER<b>s</b></div>
+<div class="rule"></div>
+<div class="sub">Play-by-play <span>transformer</span><i>/</i>Shot-selection <span>model</span><i>/</i>Zero-server <span>dashboard</span></div>
+<script>
+if (location.hash === "#dark") { document.documentElement.classList.add("dark"); document.getElementById("mark").src = "assets/mark-dark.svg"; }
+</script>
+</body>
+</html>

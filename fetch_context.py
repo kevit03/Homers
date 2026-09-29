@@ -104,7 +104,7 @@ def fetch_matchups(seasons, season_type, out, sleep):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seasons", nargs="+", default=["2021-22", "2022-23", "2023-24", "2024-25"])
+    ap.add_argument("--seasons", nargs="+", default=["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"])
     ap.add_argument("--season_type", default="Regular Season")
     ap.add_argument("--out", default="data/context")
     ap.add_argument("--sleep", type=float, default=1.0, help="seconds between requests")

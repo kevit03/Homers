@@ -4,6 +4,7 @@
 set -e
 cd "$(dirname "$0")"
 python3 fetch_context.py                      # resumes; picks up any missing matchups
+python3 fetch_bbref.py --refresh || echo "Basketball-Reference unreachable; keeping the rosters already on disk"  # current teams
 python3 build_shots.py                        # -> data/processed/shots.parquet
 python3 shot_model.py --batch_size 256        # -> runs/shots/
 if [ -f runs/base/best.pt ] && [ -f data/processed/games.pkl ]; then
