@@ -24,9 +24,9 @@
 
 <br>
 
-**HOMERs** reads NBA games the way a scorer does, one play at a time. A GPT-style transformer learns the grammar of a game from raw play-by-play, predicting the next play and the home team's win probability after every possession. A second model learns *who* takes *what* shot: every player's shot diet, and how it bends against a specific defender, a lineup, and an opposing coach's scheme.
+**HOMERs** reads NBA games the way a scorer does, one play at a time. A transformer learns the grammar of a game from raw play-by-play, predicting the next play and the home team's win probability after every possession. A second model learns *who* takes *what* shot: every player's shot diet, and how it bends against a specific defender, a lineup, and an opposing coach's scheme.
 
-Everything lands in a single self-contained HTML dashboard. There's no server: open the file, email it, or drop it on any static host. The shot model even runs inside the page, so the matchup simulator works offline.
+Everything lands in a single self-contained HTML dashboard. 
 
 <br>
 
@@ -55,12 +55,15 @@ Everything lands in a single self-contained HTML dashboard. There's no server: o
   <img alt="Scoreboard and game picker" src="docs/images/overview.png" width="100%">
 </p>
 
+<<<<<<< HEAD
 The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Game replay**, **Model** and **Sources**. A navigation menu (a plain-JavaScript port of shadcn/ui's NavigationMenu) groups them under **Home**, **Games** and **Players**, and each panel links straight to a section, such as the playoffs in Game replay or the What-if calculator. All text is set in one family: Barlow for reading, Barlow Semi Condensed for labels, and Barlow Condensed for headlines and numbers.
 
 - **Home** is the cover: the headline numbers, three featured games from the test season and its playoffs (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, every season in orbit (a port of a radial orbital timeline: click a season for its Finals, its games and shots, and whether NBAGPT trained on it, validated on it or never saw it), season leaders, and a photo card for every tab.
 - **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Pick one season, one season's playoffs, all regular seasons or all playoffs. Each player gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
 - **Sources** tells how the project is built: where the name comes from, the pipeline from fetch to prediction with the real numbers, a card per data source with games per season, each model's type of regression and exact training settings (read from the run logs), and credits for every photo.
 
+=======
+>>>>>>> refs/remotes/origin/main
 <table>
   <tr>
     <td width="50%" valign="top">
