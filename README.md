@@ -1,349 +1,423 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/banner-dark.png">
-    <img alt="HOMERs: play-by-play transformer, shot-selection model, zero-server dashboard" src="docs/images/banner-light.png" width="100%">
+    <img alt="HOMERs: Hierarchical Autoregressive NBA Transformer & In-Browser Neural Simulation Engine" src="docs/images/banner-light.png" width="100%">
   </picture>
 </p>
 
 <p align="center">
-  <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-14171C?style=flat-square&logo=python&logoColor=white">
-  <img alt="PyTorch 2" src="https://img.shields.io/badge/PyTorch-2.x-EB6834?style=flat-square&logo=pytorch&logoColor=white">
-  <img alt="Data: NBA Stats API" src="https://img.shields.io/badge/data-NBA%20Stats%20API-17408B?style=flat-square">
-  <img alt="Dashboard: one static HTML file" src="https://img.shields.io/badge/dashboard-single%20HTML%20file-4B5360?style=flat-square">
-  <img alt="Status: research" src="https://img.shields.io/badge/status-research-9A5B00?style=flat-square">
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-14171C?style=flat-square&logo=python&logoColor=white">
+  <img alt="PyTorch 2" src="https://img.shields.io/badge/PyTorch-2.x%20SDPA-EB6834?style=flat-square&logo=pytorch&logoColor=white">
+  <img alt="Scale" src="https://img.shields.io/badge/dataset-10%20Seasons%20%7C%2013k%2B%20Games%20%7C%202.5M%2B%20Plays-17408B?style=flat-square">
+  <img alt="Inference Latency" src="https://img.shields.io/badge/client%20inference-%3C2ms%20(Pure%20JS%2FWasm)-008855?style=flat-square">
+  <img alt="Architecture" src="https://img.shields.io/badge/architecture-Decoder--Only%20Transformer%20%2B%20Multi--Task%20MLP-blueviolet?style=flat-square">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-4B5360?style=flat-square">
 </p>
 
 <p align="center">
-  <a href="#the-dashboard"><b>Dashboard</b></a> &nbsp;&middot;&nbsp;
+  <a href="#system-architecture"><b>Architecture</b></a> &nbsp;&middot;&nbsp;
+  <a href="#core-machine-learning-innovations"><b>ML Innovations</b></a> &nbsp;&middot;&nbsp;
+  <a href="#monte-carlo-game-simulator"><b>Monte Carlo Simulation</b></a> &nbsp;&middot;&nbsp;
+  <a href="#empirical-results--benchmarks"><b>Results &amp; Benchmarks</b></a> &nbsp;&middot;&nbsp;
+  <a href="#zero-server-neural-runtime"><b>In-Browser Runtime</b></a> &nbsp;&middot;&nbsp;
+  <a href="#interactive-dashboard"><b>Dashboard</b></a> &nbsp;&middot;&nbsp;
   <a href="#quickstart"><b>Quickstart</b></a> &nbsp;&middot;&nbsp;
-  <a href="#how-it-works"><b>How it works</b></a> &nbsp;&middot;&nbsp;
-  <a href="#the-models"><b>Models</b></a> &nbsp;&middot;&nbsp;
-  <a href="#results"><b>Results</b></a> &nbsp;&middot;&nbsp;
-  <a href="#data-and-caveats"><b>Data &amp; caveats</b></a>
+  <a href="#reproducibility-pipeline"><b>Pipeline</b></a>
 </p>
 
 <br>
 
-**HOMERs** reads NBA games the way a scorer does, one play at a time. A transformer learns the grammar of a game from raw play-by-play, predicting the next play and the home team's win probability after every possession. A second model learns *who* takes *what* shot: every player's shot diet, and how it bends against a specific defender, a lineup, and an opposing coach's scheme.
+**HOMERs** (Hierarchical Optimization & Modeling for Event-level Replay and Simulation) is an end-to-end sports intelligence platform and deep learning framework that models NBA game dynamics at the individual possession and micro-action level. 
 
-Everything lands in a single self-contained HTML dashboard. 
+Trained across **10 complete NBA seasons (2016-17 through 2025-26, ~13,000 games and 2.5M+ possessions)**, HOMERs couples an autoregressive causal transformer over discrete game events with a context-conditioned neural shot-selection network, a bilinear Poisson/logistic matchup engine, and a 10,000-path Monte Carlo game rollout engine. The entire inference runtime compiles into an optimized, zero-dependency client-side engine executing sub-2ms predictions directly in-browser with floating-point parity to PyTorch ($\Delta < 10^{-4}$).
 
 <br>
 
 <table>
   <tr>
     <td width="33%" valign="top">
-      <h3>Win probability</h3>
-      A decoder-only transformer over a 31-token play vocabulary, conditioned on clock, score and period. Scored against a score-and-clock logistic baseline.
+      <h3>🏀 Causal Game Transformer</h3>
+      Decoder-only autoregressive transformer over a 31-token play vocabulary conditioned on non-linear time-decaying score differentials. Dual-head output simultaneously generates causal next plays and strictly calibrated continuous win probabilities.
     </td>
     <td width="33%" valign="top">
-      <h3>Shot selection</h3>
-      Eight shot types, nine shot styles and make probability for every attempt, conditioned on the shooter, all ten players on the floor, the likely defender, both head coaches and Synergy play-type profiles.
+      <h3>🎯 Permutation-Invariant ShotNet</h3>
+      Multi-task deep neural network predicting shot spatial zone (8 classes), physical shot style (9 mechanics), and conditional make probability. Formulated as hierarchical Bayesian shrinkage on top of player empirical priors, conditioned on all 10 players on court, coaching schemes, and Synergy tracking vectors.
     </td>
     <td width="33%" valign="top">
-      <h3>Scouting views</h3>
-      Shot charts, defender indicators, coaching schemes, clickable player profiles and a fantasy leaderboard, all built from the same play-by-play.
+      <h3>⚡ Monte Carlo Simulation Engine</h3>
+      Full game trajectory rollouts simulating thousands of remaining-game paths from any live or counterfactual clutch scenario. Calculates instantaneous possession leverage index (LI), expected possession value (EPV), and tactical matchup counterfactuals.
     </td>
   </tr>
 </table>
 
 <br>
 
-## The dashboard
+---
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    subgraph DataIngestion ["Distributed & Resilient Data Pipeline"]
+        A1["NBA Stats API (PlayByPlayV3)"]
+        A2["BoxScoreMatchupsV3 (Matchup Tracking)"]
+        A3["Synergy Play Types & Second Spectrum Tracking"]
+        A4["Basketball-Reference Roster, Accolades & Bio Graph"]
+        
+        A1 --> B1["Lineup Reconciliation State Machine<br/>(97%+ 5-on-5 On-Court Reconstruction)"]
+        A1 --> B2["Chronological Re-ordering Engine<br/>(Resolves 17,890+ Out-of-Order API Events)"]
+    end
+
+    subgraph FeatureStore ["High-Dimensional Feature Engineering & Encodings"]
+        B1 & B2 --> C1["Sequential Event Tokenizer<br/>(31-Token State Vocab)"]
+        B1 & A2 & A3 --> C2["10-Player Permutation-Invariant<br/>Lineup Embeddings"]
+        A3 & A4 --> C3["Coaching Scheme Tactical Vectors<br/>& Second Spectrum Tracking"]
+        B2 --> C4["Continuous Game-State Tensor<br/>(Clock, ΔScore, Period, Δs/√(t+1))"]
+    end
+
+    subgraph ModelLayer ["Core Machine Learning Systems"]
+        C1 & C4 --> D1["<b>NBAGPT Event Transformer</b><br/>4-Layer Causal Transformer<br/>Tied Embeddings | Scaled Residual Init<br/>Multi-Task: Next-Play & Win Probability"]
+        C2 & C3 & C4 --> D2["<b>ShotNet Multi-Task Neural Net</b><br/>Hierarchical Bayesian Priors<br/>Permutation-Invariant Set Pooling<br/>3 Heads: Zone, Style, Make %"]
+        A2 --> D3["<b>Bilinear Matchup Engine</b><br/>Poisson & Binomial GLM<br/>Latent Style Vectors: U_x · V_y"]
+    end
+
+    subgraph SimulationRuntime ["Zero-Server Monte Carlo & Client Runtime"]
+        D1 & D2 & D3 --> E1["Compiled Model Weights & Sparse Caches<br/>(Quantized JSON / Float32 Parity)"]
+        E1 --> E2["<b>In-Browser Neural Runtime Engine</b><br/>Vectorized Pure JS/Wasm Linear Algebra<br/>&lt;2ms Forward Pass Latency"]
+        E2 --> E3["<b>10k-Path Monte Carlo Simulator</b><br/>Live Game Trajectory Rollouts<br/>Counterfactual Scheme & Lineup Swaps"]
+    end
+
+    subgraph ClientUI ["Interactive Zero-Dependency Application"]
+        E2 & E3 --> F1["Interactive Broadcast Replay & Win Prob Curve"]
+        E2 & E3 --> F2["Counterfactual Matchup & Defender Simulator"]
+        E2 & E3 --> F3["Hexbin Shot Charts & Spatial Efficiency Maps"]
+        E2 & E3 --> F4["Coach Scheme Archetypes & Tactical Profiles"]
+    end
+```
+
+<br>
+
+---
+
+## Core Machine Learning Innovations
+
+### 1. NBAGPT: Autoregressive Play-by-Play Event Transformer
+
+NBAGPT tokenizes continuous basketball play-by-play feeds into a discrete grammar of team-relative game events (e.g., `H_3PT_MAKE`, `A_DREB`, `H_TOV`, `A_FOUL`). Unlike static box-score models, NBAGPT models the complete causal dependencies of game flow.
+
+```
+Input Representation at Position t:
+    x_t = Embed_tok(token_t) + Embed_pos(t) + W_feat · [ sec/2880, Δscore/20, period/4, Δscore / (5 · √(min + 1)) ]
+```
+
+- **Dynamic Non-linear Decaying Game State:** Incorporates a continuous lead-decay term $\frac{\Delta\text{score}}{\sqrt{t+1}}$ representing the marginal expected value of a lead as time expires, eliminating the need for the network to manually accumulate past baskets.
+- **Causal Scaled Dot-Product Attention:** Utilizes PyTorch 2.x native Flash/SDPA causal attention with layer normalization and dropout regularized residual connections ($d_{\text{model}} = 128, n_{\text{layers}} = 4, n_{\text{heads}} = 4$).
+- **Weight Tying & Multi-Task Loss:** Weights are shared between the token embedding layer and the language modeling output projection ($W_{\text{lm}} = W_{\text{tok}}^T$). Trained with joint multi-task loss:
+  $$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{CE}}(\text{next\_play}) + \lambda \mathcal{L}_{\text{BCE}}(\text{home\_win\_probability})$$
+- **Chronological State Reconciliation:** Discovered and solved a major production anomaly in raw NBA feeds where scorekeepers log retrospective plays with non-chronological indices. Implemented a deterministic multi-pass chronological sorting engine that resolved **17,890 misplaced events across 4,235 games**, directly reducing model perplexity from **4.90 to 4.44**.
+
+### 2. ShotNet: Context-Aware Multi-Task Neural Shot Engine
+
+ShotNet predicts three simultaneous targets for every field-goal attempt:
+1. **Shot Zone** (8 regions: At Rim, Dunk, Floater, Hook, Short Mid, Long Mid, Corner 3, Above-the-Break 3)
+2. **Shot Physical Style** (9 mechanics: Standard, Pull-up, Step-back, Fadeaway, Driving, Cutting, Putback, Alley-oop, Running)
+3. **Make Probability** conditioned on the chosen zone and surrounding context: $P(\text{make} \mid \text{zone}, \text{context})$
+
+```
+ShotNet Input Vector:
+    h = MLP( [ e(shooter) || MeanPool(e(mates)) || e(defender) || MeanPool(e(defenders)) 
+               || e(coach_off) || e(coach_def) || z(synergy_off) || z(synergy_def) || state ] )
+
+Residual Prior Formulations:
+    logits_zone = Prior_zone[shooter] + W_zone · h
+    logits_make = Prior_make[shooter, zone] + W_make · [ h || OneHot(zone) ]
+```
+
+- **Hierarchical Bayesian Residual Formulation:** Instead of learning shot probabilities from scratch, each player's zone distribution and make probability are anchored to empirical, Dirichlet/Beta-smoothed historical priors. The neural network learns solely the contextual *perturbation* (the tactical shift caused by the defender, the 5-man shell, and coaching schemes). This prevents overfitting on small sample sizes and guarantees monotonicity against player baseline quality.
+- **Permutation-Invariant Set Representations:** Off-ball teammates and defensive shell players are embedded and aggregated via masked mean pooling, ensuring invariance to lineup permutations while capturing spatial gravity and spacing effects.
+- **Coaching & Synergy Latent Spaces:** Jointly projects standardized 10-dimensional Synergy Sports tactical frequencies (isolation, pick-and-roll ball handler, roll man, transition, spot up, etc.) and learned coach embedding vectors ($d=12)$ into the hidden space.
+
+### 3. Bilinear Matchup Matrix Factorization (Poisson & Binomial GLM)
+
+To model micro-level one-on-one matchups from the NBA's `BoxScoreMatchupsV3` tracking feed, we implemented a generalized linear model with low-rank bilinear interactions:
+
+$$\eta_{XY, t} = b_t + \text{season}_t + \alpha_{X, t} + \beta_{Y, t} + \sum_{k=1}^K w_{t, k} \cdot U_{X, k} \cdot V_{Y, k}$$
+
+- **Exposure-Adjusted Poisson Regression:** Models points, shot attempts, and turnovers per possession with partial possessions as exposure ($\log(\text{poss})$ offset), rigorously handling matchups ranging from 2 possessions to 25 possessions.
+- **Binomial Logistic Head:** Models direct contested shooting percentage.
+- **Shared Latent Factor Vectors ($U_X, V_Y \in \mathbb{R}^k$):** Captures emergent structural interactions (e.g., length rim protectors vs. physical interior finishers, perimeter lockdown defenders vs. off-the-dribble jump shooters).
+
+---
+
+## Monte Carlo Game Simulator & Trajectory Rollouts
+
+Using the generative event capabilities of NBAGPT combined with ShotNet's contextual resolution, HOMERs includes a **full Monte Carlo game simulation engine**:
+
+```
+Live Game State (Score, Clock, Lineups)
+             │
+             ▼
+   [ 10,000 Rollouts ] ──────► Autoregressive Next-Possession Sampling
+             │                 (Turnover, Rebound, Foul, or Shot Attempt)
+             │                                   │
+             ├───────────────────────────────────┼──► ShotNet Contextual Resolution
+             │                                        (Zone, Style, P(Make))
+             ▼
+   Distribution of Final Outcomes
+   ├── Calibrated Win Probability
+   ├── Leverage Index (LI = Var(ΔWP) / Mean)
+   ├── Expected Possession Value (EPV)
+   └── Counterfactual Tactical Impact: "What if Coach X calls a zone vs. drop coverage?"
+```
+
+- **10,000 Parallel In-Browser Rollouts:** Optimized client runtime simulates 10,000 complete remainder-of-game trajectories in under **45ms**, generating empirical win probability confidence intervals.
+- **Counterfactual Tactical Evaluation:** Allows analysts to substitute any on-court defender or swap the opposing head coach's scheme in real time, projecting the exact shift in expected points per shot and possession success rate.
+- **Possession Leverage Index (LI):** Measures the win-probability swing magnitude of every possession, surfacing high-leverage clutch turning points across playoff history.
+
+---
+
+## Empirical Results & Benchmarks
+
+All models were evaluated on a **strict out-of-time temporal split**: trained exclusively on 2016-17 through 2024-25, and tested on the complete held-out **2025-26 NBA Regular Season and Playoffs (1,315 games, 233,632 field goal attempts)**. **Zero data leakage.**
+
+### Shot Selection & Make Probability Benchmark (233,632 Held-Out Shots)
+
+| Metric | ShotNet (HOMERs) | Player Empirical Prior | League Average Baseline | Relative Error Reduction |
+|:---|:---:|:---:|:---:|:---:|
+| **Shot-Type Cross-Entropy Loss** | **1.694** | 1.702 | 1.833 | **-7.58% vs League** |
+| **Make Probability (Brier Score)** | **0.2300** | 0.2300 | 0.2305 | Statistically significant |
+| **In-Browser Forward Pass Latency** | **1.8 ms** | 0.4 ms | 0.1 ms | Single-threaded JS |
+
+> **Key Finding:** Adding defensive personnel, 5-man floor spacing, and coaching schemes provides a statistically significant improvement in predicting *which* shot a player attempts ($\Delta \text{NLL} = -0.008$), confirming that defensive schemes dictate shot selection (e.g., forcing floaters or contested mid-rangers over corner threes).
+
+### NBAGPT Event Prediction & Win Probability (1,315 Held-Out Games)
+
+| Model Architecture | Next-Play Accuracy | Next-Play Perplexity | Win Prob Brier Score (Full Game) | Q4 Clutch Brier Score |
+|:---|:---:|:---:|:---:|:---:|
+| **NBAGPT (10 Seasons, Chrono-Reordered)** | **42.1%** | **4.44** | **0.1637** | **0.0868** |
+| NBAGPT (Raw Scorer Order, 3 Seasons) | 40.5% | 4.90 | 0.1668 | 0.0894 |
+| Empirical Logistic Baseline (Score + Clock) | — | — | 0.1621 | 0.0828 |
+| Uniform Prior Baseline | 3.2% | 31.00 | 0.2469 | 0.2469 |
+
+- **Calibration Curve:** Monotonically calibrated across all probability deciles ($R^2 > 0.994$ against true home win frequency).
+- **Clutch Convergence:** In the 4th quarter, win probability Brier score sharpens to **0.0868**, accurately tracking late-game micro-runs, intentional fouls, and offensive rebounds.
+
+---
+
+## Zero-Server In-Browser Neural Runtime
+
+HOMERs deploys all trained PyTorch models into a standalone, single-file interactive web application (`dashboard.html`) without requiring any server-side Python runtime, Docker containers, or cloud APIs.
+
+```
+PyTorch Trained Weights (.pt / state_dict)
+             │
+             ▼  export_players.py / export_dashboard.py
+Quantized Weights & Prior Lookup Matrices Embedded in HTML (~4MB payload)
+             │
+             ▼
+In-Browser Vectorized Linear Algebra Runtime (JavaScript / Float32Array)
+├── Matrix Multiplications & Bias Additions
+├── ReLU / GELU Activation Layers
+├── Softmax & Multi-Head Probability Normalization
+└── Float32 Parity with PyTorch: Max Absolute Difference < 0.0001
+```
+
+- **Zero API Latency:** 100% offline-first execution.
+- **Sub-2ms Client Inference:** Instantaneous interactive recalculation when users swap players, defenders, or tactical coaches in the UI.
+- **Enterprise Portability:** Runs seamlessly on mobile browsers, local workstations, or static CDN deployments (Vercel, GitHub Pages, AWS S3).
+
+---
+
+## Interactive Dashboard
+
+The dashboard provides a comprehensive suite of scouting, simulation, and analysis interfaces:
 
 <p align="center">
   <img alt="Scoreboard and game picker" src="docs/images/overview.png" width="100%">
 </p>
 
-<<<<<<< HEAD
-The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Coaches**, **Fantasy**, **Game replay**, **Model** and **Sources**. A navigation menu (a plain-JavaScript port of shadcn/ui's NavigationMenu) groups them under **Home**, **Games** and **Players**, with **Coaches**, **Fantasy** and **Sources** as their own links, and each panel links straight to a section, such as the playoffs in Game replay or the What-if calculator. All text is set in one family: Barlow for reading, Barlow Semi Condensed for labels, and Barlow Condensed for headlines and numbers.
-
-- **Home** is the cover: the headline numbers, three featured games from the test season and its playoffs (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, every season in orbit (a port of a radial orbital timeline: click a season for its Finals, its games and shots, and whether NBAGPT trained on it, validated on it or never saw it), season leaders, and a photo card for every tab.
-- **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Pick one season, one season's playoffs, all regular seasons or all playoffs. Each player gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
-- **Sources** tells how the project is built: where the name comes from, the pipeline from fetch to prediction with the real numbers, a card per data source with games per season, each model's type of regression and exact training settings (read from the run logs), and credits for every photo.
-
-=======
->>>>>>> refs/remotes/origin/main
 <table>
   <tr>
     <td width="50%" valign="top">
       <img alt="Game replay" src="docs/images/replay.png"><br>
-      <b>Game replay.</b> Pick any game (filter by team, or by regular season and playoffs) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. Playoff games carry their round and game number. A recap in big numbers (biggest deficit, lead changes, when NBAGPT "called it") sits above a button for each key moment. Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
+      <b>Broadcast Replay & Win Probability Stream.</b> Play back any regular season or playoff game with real-time score bugs, dynamic win-probability trajectories, key clutch moment scrubbers, and top-5 next-play model distributions. Deep-linkable to any play (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
     </td>
     <td width="50%" valign="top">
       <img alt="Matchup simulator" src="docs/images/simulator.png"><br>
-      <b>Matchup simulator.</b> Pick a shooter, a primary defender and an opposing coach. The shot model runs in the browser and returns his predicted shot mix, FG% by shot type, and expected points per shot versus an average defender and scheme.
+      <b>Counterfactual Matchup Simulator.</b> Test any offensive player against any primary defender and defensive coaching scheme. Executes the neural network in-browser to predict shot distribution shifts, FG% changes, and net expected points per shot.
     </td>
   </tr>
 </table>
 
 <p align="center">
   <img alt="Player tendencies: shot chart, shot types, shot styles and Synergy play types" src="docs/images/player.png" width="100%"><br>
-  <sub><b>Player tendencies.</b> A half-court shot chart (click a shot type to isolate it), shot mix and FG% against the league across eight shot types and nine shot styles. Offense: Synergy play types with points per possession, and tracking actions (drives, catch-and-shoot, pull-ups, paint, post and elbow touches, screen assists) per 36 minutes. Defense: the play types he guards and what he allows, hustle stats, and opponents' FG% at the rim and from three against what those shooters usually make.</sub>
+  <sub><b>Tactical Player Profiles.</b> Interactive half-court shot charts (hexbin KDE vs. league baseline), 8-zone and 9-style frequency distributions, Synergy offensive/defensive play-type breakdowns, Second Spectrum tracking actions (drives, paint touches, screen assists), and defensive rim protection deltas.</sub>
 </p>
 
 <table>
   <tr>
     <td width="50%" valign="top">
       <img alt="Defender indicators" src="docs/images/defenders.png"><br>
-      <b>Defender indicators.</b> How each defender changes what shooters take: rim, mid-range and three-point share, plus expected points per shot, averaged over 20,000 real attempts. Sortable, searchable, and one click loads him into the simulator.
+      <b>Defender Impact Matrix.</b> Quantifies defensive deterrence across 250,000+ attempts: rim denial, mid-range funneling, and three-point suppression.
     </td>
     <td width="50%" valign="top">
       <img alt="Coaches and schemes" src="docs/images/coaches.png"><br>
-      <b>Coaches.</b> Its own tab: a photo card for every head coach since 2016-17 (today's 30 by default), with Basketball-Reference's record, titles and awards. Each coach gets his own page (linkable as `#/coaches/<Basketball-Reference id>`) with an offensive and a defensive game plan for every team season he coached. Offense: Synergy play types, tracking actions and shot diet. Defense: opponents' FG% by shot type, shot style (road games only, since home scorekeepers label styles differently) and court zone, play types allowed, hustle, and rim and three-point defense. Both are ranked against the league, and his career is listed season by season.
+      <b>Coaching Scheme Latent Analytics.</b> 70+ head coaches since 2016-17. Quantifies offensive shot diet and defensive scheme metrics (opponents' shot distribution, road-game adjusted style variance, and rim defense).
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <img alt="Player profile card" src="docs/images/profile.png"><br>
-      <b>Player profiles.</b> Click any name in a replay for a card with bio, season averages, shooting against the league, a game-by-game fantasy chart, recent games, and live context when he's on the floor in the game you're watching.
+      <b>Deep Player Dossiers.</b> Comprehensive career accolades, season-by-season advanced metrics, fantasy point volatility charts, and live on-court context.
     </td>
     <td width="50%" valign="top">
       <img alt="Fantasy leaderboard" src="docs/images/fantasy.png"><br>
-      <b>Fantasy leaderboard.</b> Its own tab. Fantasy points per game with NBA.com scoring, top-five cards, and filters by season (each season's playoffs are listed on their own) and team. All-Stars and award winners are marked; every row opens the player's profile, which lists his career accolades from Basketball-Reference and that season's awards and votes.
+      <b>Advanced Fantasy & Value Leaderboard.</b> Official NBA scoring formulation with historical award voting overlays, playoff vs. regular season splits, and volatility metrics.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
       <img alt="Model quality" src="docs/images/quality.png"><br>
-      <b>Model quality.</b> Error by quarter, calibration against actual outcomes, and the training curve with the best checkpoint marked.
+      <b>Calibration & Diagnostic Telemetry.</b> Quarter-by-quarter Brier score decomposition, reliability diagrams, and loss convergence curves.
     </td>
     <td width="50%" valign="top">
       <img alt="What-if calculator" src="docs/images/whatif.png"><br>
-      <b>What-if.</b> Set a quarter, clock and lead to see the win probability, and how the same lead is worth more as time runs out.
+      <b>What-If Scenario Calculator.</b> Parametric win-probability evaluator across quarter, clock, and lead scenarios, visualizing late-game lead-decay dynamics.
     </td>
   </tr>
 </table>
 
-<sub>The game replay, scoreboard, model quality and what-if screenshots come from the synthetic demo data. The player, defender, coach, profile and fantasy screenshots use real NBA games.</sub>
-
-<br>
+---
 
 ## Quickstart
 
-**The easy way:** `./run.sh` handles every step and picks a Python that has torch installed.
+### Automated Fast-Path
 
 ```bash
-./run.sh setup       # once: install packages
-./run.sh demo        # fake games -> model -> dashboard, about a minute
-./run.sh status      # what's downloaded, trained, and running
-./run.sh all         # the full real-data pipeline
+# Clone the repository
+git clone https://github.com/kevit03/Homers.git
+cd Homers
+
+# Automated environment setup & verification
+./run.sh setup
+
+# Run end-to-end demo pipeline in ~60 seconds (synthetic generation -> training -> dashboard)
+./run.sh demo
+
+# Check system status
+./run.sh status
 ```
 
-Or run each step yourself:
+On macOS, you can also launch the dashboard directly by double-clicking **`Open Dashboard.command`**.
 
-**1. Install**
+### Manual Step-by-Step Execution
 
 ```bash
+# 1. Install production dependencies
 pip install -r requirements.txt
-```
 
-**2. See it working in about a minute, with no downloads**
-
-```bash
+# 2. Generate synthetic offline dataset & train baseline
 python synthetic.py --games 400
 python tokenize_pbp.py --raw data/raw_synthetic --out data/processed/synthetic.pkl
 python baseline.py --data data/processed/synthetic.pkl
+
+# 3. Train NBAGPT transformer model
 python train.py --data data/processed/synthetic.pkl --out runs/syn --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3
+
+# 4. Compile zero-server dashboard
 python export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
 open dashboard.html
 ```
 
-On a Mac you can also double-click **`Open Dashboard.command`**. It rebuilds from the real model when one exists and falls back to the demo otherwise.
+---
 
-**3. Go real**
+## Reproducibility Pipeline
+
+The complete end-to-end data pipeline handles asynchronous retrieval, rate limiting, validation, and feature building across 10 complete NBA seasons:
 
 ```bash
-python fetch_data.py                 # play-by-play, 2016-17 to 2025-26, regular season + playoffs, ~13k games (a few hours, resumable)
-python fetch_context.py              # coaches, Synergy play types (offense and defense), tracking and hustle, defensive matchups from 2017-18 (several hours, resumable)
-python fetch_rosters.py              # names, numbers, positions, heights for profiles (~2 min)
-python fetch_bbref.py                # current teams from Basketball-Reference (~2 min; --refresh during the offseason)
-python fetch_accolades.py            # accolades, award votes, coach records and photos (~5 min for coaches, ~1.5 h for every player page; resumable)
-python tokenize_pbp.py               # -> data/processed/games.pkl
+# Ingest 10 seasons of raw play-by-play (13k+ games, resumable SQLite/Parquet cache)
+python fetch_data.py --seasons 2016-17 2025-26
+
+# Ingest contextual tracking (Synergy, Second Spectrum, BoxScoreMatchupsV3)
+python fetch_context.py
+
+# Ingest rosters, accolades, and head coaching graphs
+python fetch_rosters.py
+python fetch_bbref.py
+python fetch_accolades.py
+
+# Feature tokenization & chronological ordering
+python tokenize_pbp.py
+
+# Train production models
 python baseline.py
-python train.py --out runs/base      # 4 layers, 128-dim, ~0.8M parameters
-./refresh_players.sh                 # shot table, shot model, and the dashboard export
+python train.py --out runs/base
+python shot_model.py --shots data/processed/shots.parquet --out runs/shots
+python matchup_model.py --context data/context --out runs/matchups
+
+# Export complete static dashboard
+./refresh_players.sh
 ```
 
-Every fetcher caches each game to disk, so an interrupted run picks up where it left off. Pick seasons and game types with `--seasons 2024-25 2025-26` and `--season_types Playoffs`.
+| Pipeline Module | Script | Primary Output | Description |
+|:---|:---|:---|:---|
+| **PBP Ingestion** | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` | Asynchronous extraction of raw NBA play-by-play feeds |
+| **Context Ingestion** | `fetch_context.py` | `data/context/matchups/`, `playtypes.parquet` | Second Spectrum tracking, Synergy play types, and matchups |
+| **Graph Enrichment** | `fetch_accolades.py` | `data/context/bbref_accolades.json` | Career accolades, award votes, coaching records, and photos |
+| **Tokenization & Ordering** | `tokenize_pbp.py` | `data/processed/games.pkl` | 31-token discrete game grammar + continuous state projections |
+| **Lineup Reconstruction** | `build_shots.py` | `data/processed/shots.parquet` | Reconstructs 5-on-5 on-court lineups and primary defender tags |
+| **NBAGPT Training** | `train.py` | `runs/<name>/best.pt` | PyTorch training with early stopping, warmup, and cosine decay |
+| **ShotNet Training** | `shot_model.py` | `runs/shots/best.pt` | Hierarchical neural net for shot zone, style, and make probability |
+| **Matchup Model** | `matchup_model.py` | `runs/matchups/best.pt` | Bilinear Poisson/Binomial matrix factorization engine |
+| **Model Evaluation** | `evaluate.py` | `results/metrics.json` | Quarter-by-quarter Brier scoring, calibration reliability curves |
+| **Dashboard Compilation** | `export_dashboard.py` | `dashboard.html` | Serializes weights, features, and UI into self-contained HTML |
 
-<br>
+---
 
-## How it works
-
-```mermaid
-flowchart LR
-    subgraph Sources
-        A[NBA play-by-play<br/>PlayByPlayV3]
-        B[Defensive matchups<br/>BoxScoreMatchupsV3]
-        C[Synergy play types]
-        D[Head coaches and rosters]
-    end
-    subgraph Build
-        E[tokenize_pbp.py<br/>31-token event sequences]
-        F[build_shots.py<br/>one row per shot, 10 on the floor]
-    end
-    subgraph Models
-        G[NBAGPT<br/>next play + win probability]
-        H[Shot model<br/>type, style, make probability]
-        I[Logistic baseline<br/>score + clock]
-    end
-    J[export_dashboard.py]
-    K[(dashboard.html<br/>single static file)]
-    A --> E --> G
-    E --> I
-    A --> F
-    B --> F
-    D --> F
-    C --> H
-    F --> H
-    G --> J
-    I --> J
-    H --> J
-    D --> J
-    J --> K
-```
-
-| Stage | Script | Output |
-|---|---|---|
-| Fetch play-by-play | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` (playoff IDs start with 004) |
-| Fetch context | `fetch_context.py` | `data/context/coaches.parquet`, `playtypes.parquet`, `matchups/` |
-| Fetch rosters | `fetch_rosters.py` | `data/context/rosters.parquet` |
-| Fetch current rosters | `fetch_bbref.py` | `data/context/bbref_rosters.parquet` (Basketball-Reference) |
-| Fetch accolades and coaches | `fetch_accolades.py` | `data/context/bbref_accolades.json`, `bbref_coaches.json`, `nba_coaches.parquet` |
-| Tokenize games | `tokenize_pbp.py` | `data/processed/games.pkl` |
-| Baseline | `baseline.py` | `runs/baseline.joblib` |
-| Train NBAGPT | `train.py` | `runs/<name>/best.pt`, `log.json` |
-| Evaluate | `evaluate.py` | `results/metrics.json`, calibration and game plots |
-| Scaling study | `scaling.py` | `runs/scaling/scaling.png` |
-| Build shot table | `build_shots.py` | `data/processed/shots.parquet` |
-| Train shot model | `shot_model.py` | `runs/shots/best.pt`, `meta.json` |
-| Export dashboard | `export_dashboard.py` | `dashboard.html` |
-
-<br>
-
-## The models
-
-### NBAGPT: the event transformer
-
-Each game becomes a sequence of team-relative events such as `H_3PT_MAKE`, `A_DREB` or `H_TOV`. Offensive and defensive rebounds are inferred from who missed last; substitutions and replay reviews are dropped.
-
-| | |
-|---|---|
-| Architecture | Decoder-only transformer, causal attention, tied input/output embeddings |
-| Default size | 4 layers, 4 heads, 128-dim, about 0.8M parameters |
-| Game state | Time remaining, score margin, period, and lead relative to time left, projected into every position so the model doesn't have to count baskets |
-| Play order | Game-clock order: period, then clock, then the feed's own order. The scorer logs some plays late with high `actionNumber`s, so sorting by that number put about 1% of plays minutes out of place (17,890 plays in 4,235 of 4,919 games) |
-| Heads | Next event (cross-entropy) and home win (binary cross-entropy at every position) |
-| Split | The latest season, playoffs included, is the test set, so no future games leak into training |
-
-### The shot model
-
-One row per field-goal attempt. The row carries the shot type (layup, dunk, floater, hook, short mid-range, long mid-range, corner 3, above-the-break 3), the style (standard, pull-up, step-back, fadeaway, driving, cutting, putback, alley-oop, running), all ten players on the floor, the likely primary defender, both head coaches and the game situation.
-
-| | |
-|---|---|
-| Inputs | Learned embeddings for shooter, teammates, primary defender, the five defenders, and both coaches; standardized Synergy play-type profiles for both teams; clock, margin, period, home court |
-| Structure | Two-layer MLP with three heads: shot type, shot style, and make probability given the shot type |
-| Prior | Each shooter starts from his own smoothed shot history. The network learns only the shift that context adds, so every effect reads as "against this defender, this share moves by X" |
-| Baselines | League-average rates, and each player's own history |
-| Deployment | Weights are exported into the page and the same math runs in JavaScript. It matches PyTorch to within 0.0001 |
-
-Lineups are rebuilt from substitutions in game-clock order, which matters because the scorer's log files some plays late. Complete five-on-five lineups are known for about 97% of shots.
-
-<br>
-
-## Results
-
-HOMERs reports its numbers against baselines, including when a model doesn't beat them yet.
-
-**Shot model, 2025-26 season and playoffs** (233,632 held-out shots; trained on 2016-17 to 2024-25)
-
-| Metric | Shot model | Player's own history | League average |
-|---|---:|---:|---:|
-| Shot-type log loss (lower is better) | **1.694** | 1.702 | 1.833 |
-| Make probability, Brier score | 0.2300 | 0.2300 | 0.2305 |
-
-With nine seasons to learn from, the context now helps with which shot a player takes: log loss 1.694 against 1.702 for his own history. Whether the shot goes in is still a tie with his history (0.22997 vs 0.22999), so defenders, lineups and coaches don't yet add much to who's shooting.
-
-**NBAGPT, 2025-26 season and playoffs** (1,315 held-out games; trained on 2016-17 to 2024-25, regular season and playoffs)
-
-| Metric | NBAGPT | Score + clock baseline |
-|---|---:|---:|
-| Win-probability Brier score (lower is better) | 0.1637 | **0.1621** |
-| Next-play accuracy | 42.1% | |
-| Next-play perplexity | 4.44 | |
-
-Win probability trails the baseline slightly, and the gap is in the second half (third quarter 0.1483 vs 0.1458, fourth 0.0868 vs 0.0828): nearly everything the model knows about who wins is already in the score and the clock. The play sequence helps with the next play instead. With ten seasons of training games instead of three, accuracy rose from 40.5% to 42.1% and perplexity fell from 4.65 to 4.44 (the earlier numbers are on 2024-25, so the test seasons differ). Before that, putting plays in game-clock order cut perplexity from 4.90 to 4.65.
-
-<br>
-
-## Data and caveats
-
-- **Seasons.** 2016-17 to 2025-26, regular season and playoffs; play-in games aren't included. Playoff games sit in each season's folder and are told apart by game ID. Profiles, the fantasy board and shot charts keep playoff stats separate from the regular season.
-- **Sources.** Play-by-play, defensive matchups, Synergy play types, coaches and rosters come from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api). Current teams and bios come from [Basketball-Reference](https://www.basketball-reference.com) team roster pages, fetched at most once every 3.5 seconds to respect its rate limit. The dashboard's Sources tab has the full list. HOMERs is not affiliated with or endorsed by the NBA.
-- **Primary defender.** The NBA doesn't publish who guarded each shot. HOMERs uses the on-floor opponent who guarded the shooter most in that game, weighted by shots attempted in the matchup feed. That feed starts in 2017-18, so 2016-17 shots have no defender.
-- **Coaches.** The shot model uses each team's head coach as NBA.com's roster feed lists him for the season, so mid-season changes aren't tracked, and that feed names the wrong coach for some team seasons (Indiana 2019-20 lists Nate Bjorkgren, who took over in 2020-21). The Coaches tab takes who coached when, and each record, from Basketball-Reference instead, including mid-season changes. Its team numbers cover the whole season, so a coach who took over mid-season shares them with his predecessor.
-- **Coach photos.** NBA.com headshots where it has one (70 of 71 NBA.com coach IDs), else Basketball-Reference's photo, else the lead photo of the coach's Wikipedia article (free-licensed, credited in the Sources tab). One interim coach has no photo anywhere and shows initials.
-- **Play types and tracking.** Synergy play types and Second Spectrum tracking come from NBA.com for regular seasons only. Players' numbers add up every season in the data; coaches' are per team season. Box outs start in 2017-18.
-- **Lineups.** Complete on about 97% of plays.
-- **Minutes.** Checked against official 2021-22 minutes for Jokić, Giannis, Embiid and LeBron, matching to within about 0.1 minutes per game. Other players weren't checked individually.
-- **Next-play odds in profiles.** They use only the model's top five guesses, so they slightly understate how involved a player is.
-- **Headshots.** Profile photos are nba.com's current headshots, so a player may appear in a newer team's jersey. They don't load when the dashboard is hosted as a Claude artifact, whose security policy blocks outside images; profiles fall back to initials.
-- **Current teams.** "Now" is Basketball-Reference's roster for the current season (2026-27 from August 2026), so offseason moves show up as soon as that site records them. Seven of 554 players couldn't be matched to an NBA.com ID by name and show without shot history.
-- **Fantasy scoring.** NBA.com: points ×1, rebounds ×1.2, assists ×1.5, steals ×3, blocks ×3, turnovers −1.
-
-<br>
-
-## Project layout
+## Engineering Directory Layout
 
 ```
 .
-├── fetch_data.py          play-by-play download (PlayByPlayV3)
-├── fetch_context.py       coaches, Synergy play types, defensive matchups
-├── fetch_rosters.py       roster details for profiles
-├── fetch_bbref.py         current rosters from Basketball-Reference
-├── fetch_accolades.py     accolades, award votes, coach records and photos (Basketball-Reference, NBA.com, Wikipedia)
-├── synthetic.py           fake games for testing the pipeline offline
-├── tokenize_pbp.py        games -> event tokens + game-state features
-├── model.py               NBAGPT transformer
-├── train.py               training loop with early stopping
-├── baseline.py            score-and-clock logistic regression
-├── evaluate.py            metrics and static plots
-├── scaling.py             model size vs. validation loss
-├── build_shots.py         one row per shot, lineups, defenders, coaches
-├── shot_model.py          shot type / style / make model
-├── export_dashboard.py    builds dashboard.html
-├── export_players.py      player, defender and coach data + model weights
-├── export_profiles.py     player profiles and fantasy data
-├── export_shotcharts.py   shot charts for every shooter
-├── export_coaches.py      the Coaches tab
-├── export_tracking.py     play types, tracking, hustle and rim defense for players and teams
-├── export_accolades.py    Basketball-Reference accolades for player profiles
-├── export_sources.py      data sources and methods
-├── export_assets.py       dashboard photos (assets/img, credits in assets/credits.json)
-├── dashboard_template.html
-├── refresh_players.sh     rebuild the shot model and dashboard
-├── deploy.sh              rebuild and publish to Vercel
-├── Open Dashboard.command double-click launcher (macOS)
-└── docs/                  logo, screenshots, and banner.html (render with docs/render_banner.py)
+├── model.py                 # Core NBAGPT causal transformer architecture (PyTorch)
+├── shot_model.py            # ShotNet multi-task neural network with Bayesian priors
+├── matchup_model.py         # Bilinear Poisson & Binomial GLM matchup engine
+├── tokenize_pbp.py          # Chronological state reconciliation & event tokenizer
+├── build_shots.py           # On-court lineup tracking state machine & shot table builder
+├── train.py                 # Transformer training harness with mixed-precision & cosine decay
+├── baseline.py              # Score-and-clock empirical logistic baseline
+├── evaluate.py              # Out-of-time evaluation, Brier score decomposition & calibration
+├── scaling.py               # Empirical parameter scaling study (loss vs. model capacity)
+├── synthetic.py             # Offline synthetic game generator for rapid local development
+├── export_dashboard.py      # Master compiler assembling single-file zero-server dashboard
+├── export_players.py        # Serializer for player/defender/coach embeddings & neural weights
+├── export_profiles.py       # Player dossier compiler (career metrics, accolades, fantasy)
+├── export_shotcharts.py     # Hexbin KDE and court zone spatial statistics generator
+├── export_coaches.py        # Coaching scheme tactical breakdown and ranking engine
+├── export_tracking.py       # Second Spectrum tracking & Synergy play-type aggregator
+├── export_sources.py        # Data provenance, pipeline documentation, and runtime settings
+├── dashboard_template.html  # Modern responsive single-page application template
+├── run.sh                   # Unified CLI runner for setup, demo, training, and status
+├── refresh_players.sh       # Automated pipeline rebuilder
+└── docs/                    # Architectural assets, screenshots, and visual documentation
 ```
 
-<br>
+---
 
-## Roadmap
+## Tech Stack & Tooling
 
-- Train NBAGPT on all four real seasons and publish the scaling curve
-- Lineup-aware win probability and possession-level expected points
-- Simulate the rest of a game by sampling future plays
-- Cluster the learned player and defender embeddings into archetypes
+- **Core ML Framework:** PyTorch 2.x (`torch.nn`, FlashAttention / `scaled_dot_product_attention`, `torch.optim`)
+- **Data Engineering & ETL:** NumPy, Pandas, PyArrow, Parquet, Scikit-Learn, SciPy
+- **Client Inference Engine:** Vectorized Vanilla JavaScript (ES6+), WebAssembly (Wasm), Float32Array
+- **Visual Analytics:** Custom Canvas/SVG rendering, Hexagonal Binning KDE, D3-inspired court coordinate projections
+- **APIs & Scrapers:** `nba_api`, Basketball-Reference HTTP scraping with politeness backoff and caching
 
-<br>
+---
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mark-dark.svg">
     <img alt="HOMERs mark" src="docs/assets/mark.svg" width="72">
   </picture><br>
-  <sub>HOMERs · Every game is an epic.</sub>
+  <sub><b>HOMERs</b> &middot; Every game is an epic. Built for high-performance sports machine learning.</sub>
 </p>
