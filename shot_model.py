@@ -28,6 +28,7 @@ import torch.nn.functional as F
 
 from build_shots import STYLES, ZONES
 from fetch_context import PLAY_TYPES
+from tokenize_pbp import chrono_games
 
 N_STATE = 5  # sec, margin, period, is_home, defender confidence
 
@@ -206,10 +207,10 @@ def split_shots(shots):
     if len(seasons) > 1:
         test = shots["season"] == seasons[-1]
     else:
-        games = sorted(shots["gameId"].unique())
+        games = chrono_games(shots)
         test = shots["gameId"].isin(games[-max(1, len(games) // 10):])
     rest = shots[~test]
-    games = sorted(rest["gameId"].unique())
+    games = chrono_games(rest)
     val = rest["gameId"].isin(games[-max(1, len(games) // 10):])
     return rest[~val].reset_index(drop=True), rest[val].reset_index(drop=True), shots[test].reset_index(drop=True)
 

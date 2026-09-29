@@ -23,6 +23,22 @@ STOI = {t: i for i, t in enumerate(VOCAB)}
 PAD, BOS, EOS = 0, 1, 2
 SIMPLE = {"turnover": "TOV", "foul": "FOUL", "violation": "VIOLATION",
           "timeout": "TIMEOUT", "jump ball": "JUMPBALL"}
+GAME_TYPES = {"002": "Regular Season", "004": "Playoffs", "005": "Play-In"}  # game ID prefix -> type
+
+
+def game_type(gid) -> str:
+    return GAME_TYPES.get(str(gid)[:3], "Other")
+
+
+def season_key(season, gid) -> str:
+    """How stats are grouped: '2024-25' for the regular season, '2024-25 Playoffs' for its playoffs."""
+    t = game_type(gid)
+    return season if t == "Regular Season" else f"{season} {t}"
+
+
+def chrono_games(df) -> list:
+    """Game IDs in time order. Sorting IDs alone puts every regular-season game (002...) before any playoff game (004...)."""
+    return df.drop_duplicates("gameId").sort_values(["season", "gameId"])["gameId"].tolist()
 
 
 def parse_clock(c) -> float:
@@ -75,8 +91,11 @@ def classify(row, last_shot_side):
 
 def process_game(df: pd.DataFrame):
     df = game_order(df)
+    # A team's score never goes down, so carry its running max. Older feeds zero-fill non-scoring rows
+    # (a miss reads 0-0), and period rows can repeat a stale score: 0022500232's "End of 4th Period"
+    # reads 60-55, the halftime score, which made MIN the winner of a game DEN won 123-112.
     for col in ("scoreHome", "scoreAway"):
-        df[col] = pd.to_numeric(df[col], errors="coerce").ffill().fillna(0)
+        df[col] = pd.to_numeric(df[col], errors="coerce").ffill().fillna(0).cummax()
     df["period"] = pd.to_numeric(df["period"], errors="coerce").fillna(1).astype(int)
 
     final_h, final_a = df["scoreHome"].iloc[-1], df["scoreAway"].iloc[-1]
@@ -155,6 +174,7 @@ def main():
     lens = [len(g["tokens"]) for g in games]
     print(f"{len(games)} games | tokens: {sum(lens):,} | mean len {np.mean(lens):.0f}, max {max(lens)}")
     print({k: len(v) for k, v in splits.items()})
+    print(pd.Series([game_type(g["gameId"]) for g in games]).value_counts().to_dict())
     print(f"home win rate: {np.mean([g['home_win'] for g in games]):.3f}")
 
 

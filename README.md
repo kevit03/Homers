@@ -55,17 +55,17 @@ Everything lands in a single self-contained HTML dashboard. There's no server: o
   <img alt="Scoreboard and game picker" src="docs/images/overview.png" width="100%">
 </p>
 
-The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Game replay**, **Model** and **Sources**.
+The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Game replay**, **Model** and **Sources**. A navigation menu (a plain-JavaScript port of shadcn/ui's NavigationMenu) groups them under **Home**, **Games** and **Players**, and each panel links straight to a section, such as the playoffs in Game replay or the What-if calculator. All text is set in one family: Barlow for reading, Barlow Semi Condensed for labels, and Barlow Condensed for headlines and numbers.
 
-- **Home** is the cover: the headline numbers, three featured games from the test season (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, season leaders, and a photo card for every tab.
-- **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Each gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
+- **Home** is the cover: the headline numbers, three featured games from the test season and its playoffs (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, every season in orbit (a port of a radial orbital timeline: click a season for its Finals, its games and shots, and whether NBAGPT trained on it, validated on it or never saw it), season leaders, and a photo card for every tab.
+- **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Pick one season, one season's playoffs, all regular seasons or all playoffs. Each player gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
 - **Sources** tells how the project is built: where the name comes from, the pipeline from fetch to prediction with the real numbers, a card per data source with games per season, each model's type of regression and exact training settings (read from the run logs), and credits for every photo.
 
 <table>
   <tr>
     <td width="50%" valign="top">
       <img alt="Game replay" src="docs/images/replay.png"><br>
-      <b>Game replay.</b> Pick any game (filter by team) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. A written story of the game marks the key moments, including when NBAGPT "called it". Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
+      <b>Game replay.</b> Pick any game (filter by team, or by regular season and playoffs) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. Playoff games carry their round and game number. A written story of the game marks the key moments, including when NBAGPT "called it". Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
     </td>
     <td width="50%" valign="top">
       <img alt="Matchup simulator" src="docs/images/simulator.png"><br>
@@ -97,7 +97,7 @@ The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players*
     </td>
     <td width="50%" valign="top">
       <img alt="Fantasy leaderboard" src="docs/images/fantasy.png"><br>
-      <b>Fantasy leaderboard.</b> Fantasy points per game with NBA.com scoring, top-five cards, and filters by season and team. Every row opens the player's profile.
+      <b>Fantasy leaderboard.</b> Fantasy points per game with NBA.com scoring, top-five cards, and filters by season (each season's playoffs are listed on their own) and team. Every row opens the player's profile.
     </td>
   </tr>
   <tr>
@@ -151,8 +151,8 @@ On a Mac you can also double-click **`Open Dashboard.command`**. It rebuilds fro
 **3. Go real**
 
 ```bash
-python fetch_data.py                 # play-by-play, 2021-22 to 2025-26, ~6k games (a few hours, resumable)
-python fetch_context.py              # coaches, Synergy play types, defensive matchups (~4 h, resumable)
+python fetch_data.py                 # play-by-play, 2016-17 to 2025-26, regular season + playoffs, ~13k games (a few hours, resumable)
+python fetch_context.py              # coaches, Synergy play types, defensive matchups from 2017-18 (several hours, resumable)
 python fetch_rosters.py              # names, numbers, positions, heights for profiles (~2 min)
 python fetch_bbref.py                # current teams from Basketball-Reference (~2 min; --refresh during the offseason)
 python tokenize_pbp.py               # -> data/processed/games.pkl
@@ -161,7 +161,7 @@ python train.py --out runs/base      # 4 layers, 128-dim, ~0.8M parameters
 ./refresh_players.sh                 # shot table, shot model, and the dashboard export
 ```
 
-Every fetcher caches each game to disk, so an interrupted run picks up where it left off.
+Every fetcher caches each game to disk, so an interrupted run picks up where it left off. Pick seasons and game types with `--seasons 2024-25 2025-26` and `--season_types Playoffs`.
 
 <br>
 
@@ -202,7 +202,7 @@ flowchart LR
 
 | Stage | Script | Output |
 |---|---|---|
-| Fetch play-by-play | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` |
+| Fetch play-by-play | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` (playoff IDs start with 004) |
 | Fetch context | `fetch_context.py` | `data/context/coaches.parquet`, `playtypes.parquet`, `matchups/` |
 | Fetch rosters | `fetch_rosters.py` | `data/context/rosters.parquet` |
 | Fetch current rosters | `fetch_bbref.py` | `data/context/bbref_rosters.parquet` (Basketball-Reference) |
@@ -230,7 +230,7 @@ Each game becomes a sequence of team-relative events such as `H_3PT_MAKE`, `A_DR
 | Game state | Time remaining, score margin, period, and lead relative to time left, projected into every position so the model doesn't have to count baskets |
 | Play order | Game-clock order: period, then clock, then the feed's own order. The scorer logs some plays late with high `actionNumber`s, so sorting by that number put about 1% of plays minutes out of place (17,890 plays in 4,235 of 4,919 games) |
 | Heads | Next event (cross-entropy) and home win (binary cross-entropy at every position) |
-| Split | The latest season is the test set, so no future games leak into training |
+| Split | The latest season, playoffs included, is the test set, so no future games leak into training |
 
 ### The shot model
 
@@ -252,31 +252,32 @@ Lineups are rebuilt from substitutions in game-clock order, which matters becaus
 
 HOMERs reports its numbers against baselines, including when a model doesn't beat them yet.
 
-**Shot model, 2021-22 season** (held-out last 10% of games)
+**Shot model, 2025-26 season and playoffs** (233,632 held-out shots; trained on 2016-17 to 2024-25)
 
 | Metric | Shot model | Player's own history | League average |
 |---|---:|---:|---:|
-| Shot-type log loss (lower is better) | 1.664 | **1.656** | 1.850 |
-| Make probability, Brier score | 0.2306 | **0.2304** | 0.2308 |
+| Shot-type log loss (lower is better) | **1.694** | 1.702 | 1.833 |
+| Make probability, Brier score | 0.2300 | 0.2300 | 0.2305 |
 
-With one season and defender data on only part of it, the context adds nothing measurable yet over a player's own history. The multi-season run with full matchup coverage is the real test.
+With nine seasons to learn from, the context now helps with which shot a player takes: log loss 1.694 against 1.702 for his own history. Whether the shot goes in is still a tie with his history (0.22997 vs 0.22999), so defenders, lineups and coaches don't yet add much to who's shooting.
 
-**NBAGPT, 2024-25 season** (1,230 held-out games; trained on 2021-22 to 2023-24)
+**NBAGPT, 2025-26 season and playoffs** (1,315 held-out games; trained on 2016-17 to 2024-25, regular season and playoffs)
 
 | Metric | NBAGPT | Score + clock baseline |
 |---|---:|---:|
-| Win-probability Brier score (lower is better) | 0.1653 | **0.1651** |
-| Next-play accuracy | 40.5% | |
-| Next-play perplexity | 4.65 | |
+| Win-probability Brier score (lower is better) | 0.1637 | **0.1621** |
+| Next-play accuracy | 42.1% | |
+| Next-play perplexity | 4.44 | |
 
-Win probability is a dead heat with the baseline: nearly everything the model knows about who wins is already in the score and the clock. The play sequence helps with the next play instead. Putting plays in game-clock order cut perplexity from 4.90 to 4.65 and raised accuracy from 40.2% to 40.5%, while the Brier score moved by 0.0003, which is noise.
+Win probability trails the baseline slightly, and the gap is in the second half (third quarter 0.1483 vs 0.1458, fourth 0.0868 vs 0.0828): nearly everything the model knows about who wins is already in the score and the clock. The play sequence helps with the next play instead. With ten seasons of training games instead of three, accuracy rose from 40.5% to 42.1% and perplexity fell from 4.65 to 4.44 (the earlier numbers are on 2024-25, so the test seasons differ). Before that, putting plays in game-clock order cut perplexity from 4.90 to 4.65.
 
 <br>
 
 ## Data and caveats
 
+- **Seasons.** 2016-17 to 2025-26, regular season and playoffs; play-in games aren't included. Playoff games sit in each season's folder and are told apart by game ID. Profiles, the fantasy board and shot charts keep playoff stats separate from the regular season.
 - **Sources.** Play-by-play, defensive matchups, Synergy play types, coaches and rosters come from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api). Current teams and bios come from [Basketball-Reference](https://www.basketball-reference.com) team roster pages, fetched at most once every 3.5 seconds to respect its rate limit. The dashboard's Sources tab has the full list. HOMERs is not affiliated with or endorsed by the NBA.
-- **Primary defender.** The NBA doesn't publish who guarded each shot. HOMERs uses the on-floor opponent who guarded the shooter most in that game, weighted by shots attempted in the matchup feed.
+- **Primary defender.** The NBA doesn't publish who guarded each shot. HOMERs uses the on-floor opponent who guarded the shooter most in that game, weighted by shots attempted in the matchup feed. That feed starts in 2017-18, so 2016-17 shots have no defender.
 - **Coaches.** Each team's listed head coach for the season. Mid-season coaching changes aren't tracked.
 - **Lineups.** Complete on about 97% of plays.
 - **Minutes.** Checked against official 2021-22 minutes for Jokić, Giannis, Embiid and LeBron, matching to within about 0.1 minutes per game. Other players weren't checked individually.
@@ -325,7 +326,6 @@ Win probability is a dead heat with the baseline: nearly everything the model kn
 - Lineup-aware win probability and possession-level expected points
 - Simulate the rest of a game by sampling future plays
 - Cluster the learned player and defender embeddings into archetypes
-- Extend to ten or more seasons
 
 <br>
 

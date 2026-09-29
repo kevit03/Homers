@@ -110,7 +110,7 @@ cmd_status() {
   bold "Downloaded play-by-play"
   if [ -d data/raw ]; then
     for s in data/raw/*/; do
-      [ -d "$s" ] && printf '  %s  %5d games\n' "$(basename "$s")" "$(ls "$s" | grep -c parquet)"
+      [ -d "$s" ] && printf '  %s  %5d games (%d playoffs)\n' "$(basename "$s")" "$(ls "$s" | grep -c parquet)" "$(ls "$s" | grep -c '^004')"
     done
   else
     echo "  none yet (./run.sh fetch)"
