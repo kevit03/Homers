@@ -291,6 +291,109 @@ def fetch_coach_pages(f, ids, out_path, names, refresh):
     return have
 
 
+def nba_coach_photos(context, sleep=1.0):
+    """NBA.com ids for every head coach (data/context/coaches.parquet, plus this season's rosters from
+    commonteamroster) and whether cdn.nba.com has a real headshot for each -> data/context/nba_coaches.parquet.
+    The CDN answers unknown ids with a grey silhouette, not a 404, so each photo is compared against it."""
+    import hashlib
+    from nba_api.stats.endpoints import commonteamroster
+    from nba_api.stats.static import teams
+    ctx = Path(context)
+    rows = []
+    if (ctx / "coaches.parquet").exists():
+        c = pd.read_parquet(ctx / "coaches.parquet").dropna(subset=["coachId"])
+        rows += [{"season": s, "team": t, "coachId": int(i), "coach": n} for s, t, i, n in zip(c["season"], c["team"], c["coachId"], c["coach"])]
+    season = current_season()
+    for t in teams.get_teams():
+        try:
+            dfs = commonteamroster.CommonTeamRoster(team_id=t["id"], season=season, timeout=30).get_data_frames()
+            head = dfs[1][dfs[1]["COACH_TYPE"] == "Head Coach"] if len(dfs) > 1 else []
+            if len(head):
+                rows.append({"season": season, "team": t["abbreviation"], "coachId": int(head["COACH_ID"].iloc[0]), "coach": head["COACH_NAME"].iloc[0]})
+        except Exception as e:  # stats.nba.com unreachable: past coaches still get photos
+            print(f"  {t['abbreviation']} {season} roster failed: {e}")
+        time.sleep(sleep)
+    df = pd.DataFrame(rows)
+
+    def get(url):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=20) as r:
+                return r.read()
+        except Exception:
+            return b""
+    cdn = "https://cdn.nba.com/headshots/nba/latest/260x190/{}.png"
+    blank = hashlib.md5(get(cdn.format(999999991))).hexdigest()
+    has = {}
+    for cid in df["coachId"].unique():
+        img = get(cdn.format(cid))
+        has[cid] = bool(img) and hashlib.md5(img).hexdigest() != blank
+    df["photo"] = df["coachId"].map(has)
+    df.to_parquet(ctx / "nba_coaches.parquet")
+    print(f"NBA.com coaches: {df['coachId'].nunique()} ids, {sum(has.values())} with a headshot on cdn.nba.com")
+    return df
+
+
+def wiki_coach_photos(context, need):
+    """Lead photo of each coach's Wikipedia article, for coaches neither NBA.com nor Basketball-Reference has a
+    photo of -> data/context/coach_photos_wiki.json with author and license from Wikimedia Commons.
+    `need` is {name: bbref coach id}. Wikipedia only allows free images of living people, so these can be shown
+    with credit."""
+    import urllib.parse
+    ua = {"User-Agent": "HOMERs-dashboard/1.0 (NBA research project)"}
+
+    def api(url):
+        for attempt in range(3):
+            time.sleep(1.5)
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers=ua), timeout=20) as r:
+                    return json.loads(r.read().decode())
+            except urllib.error.HTTPError as e:
+                if e.code != 429 or attempt == 2:
+                    raise
+                time.sleep(20 * (attempt + 1))
+    path = Path(context) / "coach_photos_wiki.json"
+    have = json.loads(path.read_text()) if path.exists() else {}
+    for name, bid in need.items():
+        if bid in have:
+            continue
+        try:
+            q = urllib.parse.quote(f"{name} basketball coach")
+            hits = api(f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={q}&srlimit=5&format=json")["query"]["search"]
+            for h in hits:
+                s = api("https://en.wikipedia.org/api/rest_v1/page/summary/" + urllib.parse.quote(h["title"].replace(" ", "_")))
+                desc = (s.get("description") or "").lower()
+                img = (s.get("originalimage") or {}).get("source", "")
+                if "basketball" in desc and "coach" in desc and "commons" in img and name.split()[-1][:4].lower() in s.get("title", "").lower():
+                    file = urllib.parse.unquote(img.split("?")[0].rsplit("/", 1)[-1])
+                    meta = api("https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata|url&iiurlwidth=400&format=json&titles="
+                               + urllib.parse.quote("File:" + file))
+                    info = next(iter(meta["query"]["pages"].values()))["imageinfo"][0]
+                    em = info["extmetadata"]
+                    have[bid] = {"name": name, "photo": info.get("thumburl") or img.split("?")[0],
+                                 "author": cell_text(em.get("Artist", {}).get("value", "Unknown")),
+                                 "license": em.get("LicenseShortName", {}).get("value", ""),
+                                 "license_url": em.get("LicenseUrl", {}).get("value"),
+                                 "source": "https://commons.wikimedia.org/wiki/File:" + urllib.parse.quote(file.replace(" ", "_"))}
+                    print(f"  {name}: {have[bid]['license']} photo by {have[bid]['author']}")
+                    break
+            else:
+                have[bid] = None
+                print(f"  {name}: no free photo on Wikipedia")
+        except Exception as e:
+            print(f"  {name}: Wikipedia lookup failed ({e})")
+        time.sleep(1)
+    path.write_text(json.dumps(have, ensure_ascii=False, indent=1))
+    return have
+
+
+def coach_photos(context):
+    """NBA.com headshots first; Wikipedia for coaches neither NBA.com nor Basketball-Reference has a photo of."""
+    nba_coach_photos(context)
+    from export_coaches import build_coaches_payload
+    p = build_coaches_payload(context)
+    wiki_coach_photos(context, {c["name"]: c["id"] for c in p["coaches"] if not c["photos"]})
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seasons", nargs="+", default=SEASONS)
@@ -299,8 +402,12 @@ def main():
     ap.add_argument("--refresh", action="store_true", help="re-download player and coach pages already parsed")
     ap.add_argument("--skip_players", action="store_true")
     ap.add_argument("--limit", type=int, default=None, help="fetch at most this many player pages this run")
+    ap.add_argument("--photos_only", action="store_true", help="only refresh NBA.com coach ids and headshots")
     args = ap.parse_args()
     ctx = Path(args.context)
+    if args.photos_only:
+        coach_photos(args.context)
+        return
     cache = ctx / "bbref"
     f = Fetcher(args.sleep)
 
@@ -312,6 +419,7 @@ def main():
     names = dict(zip(allc["bbref_coach"], allc["coach"]))
     order = allc.groupby("bbref_coach")["season"].max().sort_values(ascending=False).index.tolist()
     fetch_coach_pages(f, order, ctx / "bbref_coaches.json", names, args.refresh)
+    coach_photos(args.context)
 
     print("players")
     ps = fetch_player_seasons(f, args.seasons, cache)

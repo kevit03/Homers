@@ -41,7 +41,7 @@
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
        padding-inline: 16px; padding-block: 0 48px; }
-.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
 /* every section headline is set like a broadcast graphic; smaller headings are condensed caps */
 h2 { font-size: 34px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 0; line-height: .95; }
@@ -152,7 +152,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; display: g
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 /* navigation menu: a port of shadcn/ui's NavigationMenu (Radix) without React. Triggers open a panel on hover or click;
    the links in it switch tabs and jump to a section. One view at a time instead of one long scroll. */
-.nm { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bottom: 1px solid var(--line-strong);
+nav.nm { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bottom: 1px solid var(--line-strong);
       display: flex; align-items: center; gap: 8px; padding-block: 8px; margin-top: -12px; }
 .nm-list { display: flex; flex: 1; align-items: center; gap: 4px; list-style: none; margin: 0; padding: 0; min-width: 0; }
 .nm-list::-webkit-scrollbar { display: none; }
@@ -306,9 +306,9 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
 .ss-btn > svg { width: 17px; height: 17px; flex: none; color: var(--muted); }
 .ss-btn .ss-chev { margin-left: auto; transition: transform .15s; }
 .ss-btn[aria-expanded=true] .ss-chev { transform: rotate(180deg); }
-#ssVal { display: grid; min-width: 0; line-height: 1.12; }
-#ssVal b { font-size: 15px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-#ssVal small { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--muted); white-space: nowrap; }
+.ss-val { display: grid; min-width: 0; line-height: 1.12; }
+.ss-val b { font-size: 15px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ss-val small { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; color: var(--muted); white-space: nowrap; }
 .ss-pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 25; width: min(540px, calc(100vw - 32px)); display: grid; gap: 12px; padding: 14px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px rgb(16 24 40 / .16); transform-origin: top; animation: nm-in .16s ease-out; }
 .ss-pop[hidden] { display: none; }
@@ -343,6 +343,13 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
   .ss-chip { grid-column: var(--c5); grid-row: var(--r5); }
 }
 @media (prefers-reduced-motion: reduce) { .ss-pop, .ss-btn .ss-chev { animation: none; transition: none; } }
+/* the other dropdowns (.dd, see selKeep): the season picker's button and panel holding a team grid or a season grid */
+.dd { position: relative; }
+.ss-btn .gp-lg { margin-left: -4px; }
+.ss-pop.tm { width: min(600px, calc(100vw - 32px)); }
+.ss-pop .gp-pop-top { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+.gp-all.txt { padding-left: 12px; }
+.sel-seg button { flex: 1; }
 
 /* player profiles (pf-*): clickable names, on-floor strip, fantasy leaderboard, player card */
 .pf-link { all: unset; cursor: pointer; font-weight: 600; text-decoration: underline dotted var(--muted); text-underline-offset: 3px; }
@@ -362,7 +369,7 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
 .pf-chip { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 1px 8px; align-items: center; text-align: left; padding: 8px 9px; min-width: 0;
            border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
 .pf-chip .pf-av { grid-row: span 2; }
-.pf-chip .nm { font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-chip .nm { font-weight: 700; font-size: 13.5px; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }  /* full names: long ones wrap to a second line */
 .pf-chip .ln { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .pf-chip .inv { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-top: 6px;
                 font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -478,10 +485,11 @@ body:has(.pf-modal[open]) { overflow: hidden; }
        border-radius: 50%; border: 1.5px solid var(--line-strong); color: var(--muted); cursor: help;
        font: italic 700 11px/1 Georgia, serif; letter-spacing: 0; text-transform: none; }
 .tip:hover, .tip:focus-visible { color: var(--ink); border-color: var(--ink-2); outline: none; }
-.tip::after { content: attr(data-tip); position: absolute; left: -10px; top: calc(100% + 8px); z-index: 60; width: max-content; max-width: min(320px, 76vw);
+.tip::after { content: attr(data-tip); position: absolute; left: -10px; top: calc(100% + 8px); z-index: 60; width: max-content; max-width: min(320px, calc(100vw - 48px));
               padding: 9px 11px; border-radius: 8px; background: var(--ink); color: var(--surface); box-shadow: 0 6px 24px rgb(0 0 0 / .25);
-              font: 400 13px/1.45 var(--font-body); text-align: left; white-space: normal; opacity: 0; visibility: hidden; transition: opacity .12s; pointer-events: none; }
-.tip:hover::after, .tip:focus-visible::after { opacity: 1; visibility: visible; }
+              font: 400 13px/1.45 var(--font-body); text-align: left; white-space: normal; pointer-events: none; display: none; }
+/* closed tips are out of the layout entirely, so they never widen the page on a phone */
+.tip:hover::after, .tip:focus-visible::after { display: block; }
 .tip.up::after { top: auto; bottom: calc(100% + 8px); }
 .tip.end::after { left: auto; right: -10px; }
 /* keys drawn as marks instead of sentences */
@@ -496,6 +504,8 @@ kbd { font: 600 11px/1 var(--font-label); padding: 3px 6px; border-radius: 5px; 
 .story .facts b { font: 800 32px/1 var(--font-cast); color: var(--ink); letter-spacing: 0; font-variant-numeric: tabular-nums; }
 .story .swing { font-size: 14px; color: var(--ink-2); }
 .story .swing b { color: var(--model); font-weight: 700; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sec-head .keys { align-self: center; }
 </style>
 <style>
 /* shot charts: every player, counts from play-by-play */
@@ -881,7 +891,11 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .src-f h4 a { color: inherit; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
 .src-f h4 a:hover { text-decoration-color: currentColor; }
 .src-f .org { font-size: 12.5px; color: var(--muted); }
-.src-f .use { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.src-f .use { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.method .m-lead { font-size: 14px; color: var(--ink-2); }
+.method details summary { cursor: pointer; font: 600 12px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.method details[open] summary { margin-bottom: 10px; }
+.soft a { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line-strong); text-decoration: none; }
 /* coverage strip: one slot per season; a bar's height is the games fetched against the fullest season */
 .src-cov { display: grid; gap: 6px; align-content: start; }
 .src-strip { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; height: 30px; }
@@ -915,7 +929,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .method dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; padding-top: 2px; }
 .method dd { margin: 0; color: var(--ink-2); min-width: 0; overflow-x: auto; }
 @media (max-width: 480px) { .method dl { grid-template-columns: minmax(0, 1fr); } .method dt { padding-top: 6px; } }
-.soft { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; }
+.soft { display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; }
 .soft a { color: var(--ink); font-weight: 600; }
 .soft span { color: var(--muted); }
 </style>
@@ -933,12 +947,15 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .mu-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 560px) { .mu-lists { grid-template-columns: minmax(0, 1fr); } }
 .mu-list { display: grid; gap: 2px; align-content: start; }
-.mu-row { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center;
+.mu-row { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; gap: 8px; align-items: center;
           padding: 6px 8px; border-radius: 8px; font-size: 13.5px; }
 .mu-row:hover, .mu-row:focus-visible { background: var(--bg); }
 .mu-row:focus-visible { outline: 2px solid var(--model); }
 .mu-row .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mu-row .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+.mu-d { height: 6px; border-radius: 3px; background: var(--bg); position: relative; overflow: hidden; }
+.mu-d::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 3px; background: var(--dv-5); }
+.mu-d.cold::before { background: var(--dv-1); }
 .mu-grid { border-collapse: separate; border-spacing: 3px; width: auto; min-width: 100%; }
 .mu-grid th { font-size: 12px; font-weight: 500; color: var(--ink-2); border: 0; padding: 4px 6px; white-space: nowrap; text-transform: none; letter-spacing: 0; }
 .mu-grid thead th { vertical-align: bottom; text-align: center; max-width: 92px; white-space: normal; line-height: 1.2; }
@@ -954,6 +971,99 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .mu-grid td button.sw { opacity: .42; background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / .18) 0 2px, transparent 2px 6px) !important; }
 .mu-assign { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink-2); }
 .mu-assign b { color: var(--ink); font-weight: 600; }
+</style>
+<style>
+/* coaches tab, offense/defense play blocks (coaches and player tendencies), Basketball-Reference accolades */
+#coaches[hidden], #coaches [hidden] { display: none !important; }
+.co-hero-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.co-wall { display: grid; grid-template-columns: repeat(6, 58px); gap: 8px; padding: 34px 40px 24px 0; }
+.co-wall span { width: 58px; height: 58px; border-radius: 50%; overflow: hidden; background: linear-gradient(160deg, var(--tc), color-mix(in srgb, var(--tc) 55%, #000));
+  box-shadow: inset 0 -3px 0 var(--ta), 0 4px 14px rgb(0 0 0 / .35); }
+.co-wall img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform: scale(1.35); transform-origin: 50% 10%; }
+@media (max-width: 980px) { .co-wall { grid-template-columns: repeat(5, 44px); } .co-wall span { width: 44px; height: 44px; } .co-wall span:nth-child(n+16) { display: none; } }
+@media (max-width: 760px) { .co-hero-row { grid-template-columns: minmax(0, 1fr); } .co-wall { display: none; } }
+.co-bar { align-items: center !important; flex-direction: row !important; justify-content: space-between; }
+.co-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .co-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+.co-pod { all: unset; box-sizing: border-box; cursor: pointer; position: relative; overflow: hidden; isolation: isolate; display: grid; align-content: space-between; min-height: 196px;
+  padding: 10px 12px 14px; border-radius: var(--radius); color: #fff; background: linear-gradient(160deg, var(--tc), color-mix(in srgb, var(--tc) 55%, #000)); }
+.co-pod::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--ta); }
+.co-pod:hover { filter: brightness(1.1); }
+.co-pod:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
+.co-pod[aria-pressed=true] { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--model); }
+.co-pod img { position: absolute; z-index: -1; right: -18px; bottom: 4px; height: 120px; width: auto; }
+.co-pod img.framed { right: 10px; bottom: 58px; height: 88px; border-radius: 8px; box-shadow: 0 4px 14px rgb(0 0 0 / .4); }
+.co-pod:has(img:not(.framed)) .ini { display: none; }
+.co-pod .ini { position: absolute; z-index: -2; right: 14px; bottom: 50px; font-family: var(--font-display); font-size: 64px; font-weight: 700; line-height: 1; color: rgb(255 255 255 / .18); }
+.co-pod .tm { display: flex; align-items: center; gap: 6px; font-family: var(--font-label); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
+.co-pod .tm img { position: static; height: 22px; width: 22px; z-index: 0; }
+.co-pod .who { display: grid; gap: 2px; text-shadow: 0 1px 10px rgb(0 0 0 / .5); }
+.co-pod .who b { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1; text-transform: uppercase; max-width: 80%; }
+.co-pod .who span { font-size: 12.5px; opacity: .92; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+.rings { display: inline-flex; align-items: center; gap: 2px; color: #f6d27a; font-weight: 700; }
+.rings svg { width: 13px; height: 13px; }
+#coCard { padding: 0; overflow: hidden; }
+.co-top.pf-hero { min-height: 220px; }
+.co-top .pf-shot img.framed { height: 78%; margin: 0 28px 26px 0; border-radius: 10px; border: 3px solid rgb(255 255 255 / .85); }
+.co-body { padding: 18px 20px 22px; display: grid; gap: 18px; }
+@media (max-width: 680px) { .co-body { padding: 14px; } }
+.co-ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.seg.co-stints { flex-wrap: wrap; }
+.seg.co-stints button { font-variant-numeric: tabular-nums; }
+.co-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.co-tiles > div { display: grid; gap: 2px; padding: 12px 14px; border-left: 1px solid var(--line); min-width: 0; }
+.co-tiles > div:first-child { border-left: 0; }
+.co-tiles b { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.co-tiles small { font-size: 12px; color: var(--muted); }
+@media (max-width: 640px) { .co-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .co-tiles > div:nth-child(3) { border-left: 0; } .co-tiles > div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+.plays { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
+.plays[hidden] { display: none; }
+.plays-col { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.plays-note { grid-column: 1 / -1; }
+@media (max-width: 860px) { .plays { grid-template-columns: minmax(0, 1fr); } }
+h3.co-side { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+h3.co-side::before { content: ""; width: 12px; height: 12px; border-radius: 3px; background: var(--model); }
+h3.co-side.def::before { background: var(--base); }
+/* a coach's own page: the list (hero, grid) and the page swap in place, and stay items of the section's grid */
+.co-list, .co-page { display: contents; }
+.co-back { justify-self: start; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px 6px 8px; }
+.co-back svg { width: 16px; height: 16px; }
+/* offensive and defensive game plans: one tab each */
+.co-plan { display: grid; gap: 14px; }
+.co-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); }
+.co-tabs button { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 11px; margin-bottom: -1px;
+  border-bottom: 3px solid transparent; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.co-tabs button::before { content: ""; width: 11px; height: 11px; border-radius: 3px; background: var(--model); opacity: .5; }
+.co-tabs button.def::before { background: var(--base); }
+.co-tabs button:hover { color: var(--ink-2); }
+.co-tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--model); }
+.co-tabs button.def[aria-selected=true] { border-bottom-color: var(--base); }
+.co-tabs button[aria-selected=true]::before { opacity: 1; }
+.co-tabs button:focus-visible { outline: 2px solid var(--model); outline-offset: -2px; border-radius: 6px 6px 0 0; }
+@media (max-width: 520px) { .co-tabs button { font-size: 17px; padding: 8px 10px 10px; gap: 6px; } .co-gp { display: none; } }
+.co-pane { display: grid; gap: 22px; }
+.co-court-head { grid-template-columns: auto minmax(0, 1fr); }
+#coDefCourt { max-width: 520px; justify-self: center; }
+.bars:empty { display: none; }
+.co-model { display: grid; gap: 8px; }
+.co-model[hidden], #coHistWrap[hidden] { display: none; }
+.co-hist tr.champ td { font-weight: 700; }
+.co-hist tr.champ td:last-child { color: #b8860b; }
+.co-hist tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--model); }
+.acc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; position: relative; }
+.acc span { font-family: var(--font-label); font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
+  color: #fff; background: rgb(255 255 255 / .12); border: 1px solid rgb(255 255 255 / .32); white-space: nowrap; }
+.acc span.gold { color: #2b1d00; background: linear-gradient(180deg, #f8dc8c, #dcaa3f); border-color: #f8dc8c; }
+.acc a { font-size: 12px; color: rgb(255 255 255 / .8); align-self: center; }
+.aw { display: inline-block; font-family: var(--font-label); font-size: 10.5px; font-weight: 700; letter-spacing: .04em; line-height: 16px; padding: 0 5px; margin-left: 6px; border-radius: 4px;
+  vertical-align: 1px; color: var(--ink); background: color-mix(in srgb, #dcaa3f 20%, var(--surface)); border: 1px solid #dcaa3f; white-space: nowrap; }
+.aw.star { border: 0; background: none; color: #dcaa3f; font-size: 13px; padding: 0; margin-left: 5px; }
+.aw-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.aw-row .aw { margin: 0; font-size: 11.5px; line-height: 20px; padding: 0 8px; }
+.aw-row .aw.lo { background: var(--surface); border-color: var(--line-strong); color: var(--ink-2); }
+.hm-card.faces::before { background: linear-gradient(150deg, #2b313a, #0b0d11); }
+.hm-faces { position: absolute; z-index: -1; right: 6px; top: 12px; display: flex; }
+.hm-faces img { height: 118px; width: auto; margin-left: -46px; filter: drop-shadow(0 6px 12px rgb(0 0 0 / .45)); }
 </style>
 
 <div class="wrap">
@@ -994,11 +1104,11 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
             <li><a class="nm-link" href="#/matchups" data-nav="matchups"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Matchups</span><p>Who guards whom, and what it does to the scorer.</p></a></li>
             <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-players"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tendencies</span><p>A player's shot diet and the matchup simulator.</p></a></li>
             <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-defenders"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Defenders</span><p>How each defender changes what shooters take.</p></a></li>
-            <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-coaches"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>Coaches</span><p>Each coach's play types and what his scheme gives up.</p></a></li>
-            <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-profiles"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Fantasy</span><p>Fantasy points per game, by season and team.</p></a></li>
           </ul>
         </div>
       </li>
+      <li class="nm-item"><a class="nm-plain" href="#/coaches" data-nav="coaches">Coaches</a></li>
+      <li class="nm-item"><a class="nm-plain" href="#/fantasy" data-nav="fantasy">Fantasy</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/sources" data-nav="sources">Sources</a></li>
     </ul>
     <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch colour theme">◐ <span>Theme</span></button>
@@ -1040,7 +1150,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     <div class="field grow"><label class="label" for="scFind">Player</label>
       <div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="scFind" placeholder="Search a player or team…" autocomplete="off" spellcheck="false"></div></div></div>
     <div class="field ss"><span class="label" id="ssLabel">Season</span>
-      <button type="button" class="ss-btn" id="ssBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="ssPop" aria-labelledby="ssLabel ssVal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="ssVal"></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button type="button" class="ss-btn" id="ssBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="ssPop" aria-labelledby="ssLabel ssVal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="ss-val" id="ssVal"></span><svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="ss-pop" id="ssPop" role="dialog" aria-label="Choose seasons" hidden></div>
       <select id="scSeason" hidden aria-hidden="true" tabindex="-1"></select></div>
     <div class="field"><span class="label">Chart</span>
@@ -1056,8 +1166,8 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     </div>
     <div class="panel" style="display:grid;gap:8px;align-content:start">
       <div class="sec-head"><h3 id="scKindTitle">Shot types</h3>
-        <div class="seg" role="group" aria-label="Breakdown"><button id="scByType" aria-pressed="true">Shot type</button><button id="scByStyle" aria-pressed="false">How he gets it</button></div></div>
-      <div class="table-wrap"><table><thead><tr><th id="scKindCol">Type</th><th class="r">FGM–FGA</th><th class="r">FG%</th><th class="r">vs league</th><th class="r">Share <span class="lg-mark" aria-hidden="true"></span><span style="font-weight:400">league</span></th></tr></thead><tbody id="scKinds"></tbody></table></div>
+        <div class="seg" role="group" aria-label="Breakdown"><button id="scByType" aria-pressed="true">Shot type</button><button id="scByStyle" aria-pressed="false">Style</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th id="scKindCol">Type</th><th class="r">FGM–FGA</th><th class="r">FG%</th><th class="r">vs league</th><th class="r" title="Bar: his share of shots. Marker: league average">Share <span class="lg-mark" aria-hidden="true"></span></th></tr></thead><tbody id="scKinds"></tbody></table></div>
     </div>
     </div>
     <div class="panel sc-side">
@@ -1078,15 +1188,14 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     <div class="sec-head"><h3>All players</h3><p class="caption" id="lbCount"></p></div>
     <div class="controls">
       <div class="field grow"><label class="label" for="lbFind">Filter</label><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="lbFind" placeholder="Player or team (e.g. Knicks)" autocomplete="off" spellcheck="false"></div></div>
-      <div class="field"><label class="label" for="lbTeam">Current team</label><select id="lbTeam"></select></div>
-      <div class="field"><label class="label" for="lbMin">Min. attempts</label>
+      <div class="field"><label class="label" for="lbTeam">Team</label><select id="lbTeam"></select></div>
+      <div class="field"><label class="label" for="lbMin">Min. FGA</label>
         <select id="lbMin"><option value="1">Any</option><option value="100">100</option><option value="250" selected>250</option><option value="500">500</option><option value="1000">1,000</option></select></div>
     </div>
     <div class="table-wrap lb"><table>
       <thead id="lbHead"></thead>
       <tbody id="lbBody"></tbody>
     </table></div>
-    <p class="caption">Click a column to sort and a row to open that player's chart. <b>Now</b> = current team from Basketball-Reference; <b>Shot for</b> = team(s) in the play-by-play for the selected season. Rim = restricted area; mid = mid-range outside the paint; 3PA rate = share of attempts that are threes.</p>
   </div>
 </section>
 
@@ -1106,7 +1215,6 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
       <div class="mu-head" id="muHead"></div>
       <div class="tiles" id="muTiles"></div>
       <div class="mu-h2h" id="muH2H"></div>
-      <p class="caption">Predictions are per 100 possessions in which this defender was the one guarding him, for the scorer only: his points, shot attempts and turnovers, and his FG% on those shots. Badges compare with his average against a typical defender.</p>
     </div>
     <div class="panel" style="display:grid;gap:14px;align-content:start">
       <div class="mu-lists">
@@ -1117,28 +1225,25 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
         <div class="mu-list"><h3 id="muStopsT">Who he slows down most</h3><div id="muStops"></div></div>
         <div class="mu-list"><h3 id="muBeatsT">Who scores on him</h3><div id="muBeats"></div></div>
       </div>
-      <p class="caption">Among players on current rosters with enough tracked possessions. Click anyone to load the matchup.</p>
     </div>
   </div>
 
   <div class="panel" style="display:grid;gap:12px">
-    <div class="sec-head"><h3>Team vs team: who should guard whom</h3>
-      <p class="caption" id="muTeamCap"></p></div>
+    <div class="sec-head"><h3>Who should guard whom<span id="muTeamCap"></span></h3></div>
     <div class="controls">
       <div class="field"><label class="label" for="muTeamO">Offense</label><select id="muTeamO"></select></div>
       <div class="field"><span class="label">&nbsp;</span><button type="button" id="muTeamSwap" aria-label="Swap teams">⇄</button></div>
       <div class="field"><label class="label" for="muTeamD">Defense</label><select id="muTeamD"></select></div>
     </div>
     <div class="table-wrap"><table class="mu-grid" id="muGrid"></table></div>
-    <div class="sc-legend"><span class="sc-ramp">Scorer colder <span class="sw" id="muRamp"></span> hotter than his average</span><span><span class="lg-cell"></span> Suggested assignment for the top five</span><span style="opacity:.6">▨ Guard vs center: usually only happens on a switch</span></div>
+    <div class="sc-legend"><span class="sc-ramp">Scorer colder <span class="sw" id="muRamp"></span> hotter than his average</span><span><span class="lg-cell"></span> Best assignment</span><span style="opacity:.6" title="Guard vs center: usually only happens on a switch">▨ Switch only</span></div>
     <div class="mu-assign" id="muAssign"></div>
   </div>
 
   <div class="panel" style="display:grid;gap:10px" id="muCalPanel">
-    <div class="sec-head"><h3>How accurate is it?</h3>
-      <p class="caption" id="muCalCap"></p></div>
+    <div class="sec-head"><h3>How accurate is it?<span id="muCalCap"></span></h3></div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Predicted pts / 100</th><th class="r">Pairs</th><th class="r">Possessions</th><th class="r">Predicted</th><th class="r">Actually scored</th><th style="width:40%"><span class="lg-mark" aria-hidden="true"></span>predicted · bar = actual</th></tr></thead>
+      <thead><tr><th>Predicted pts / 100</th><th class="r">Predicted</th><th class="r">Actual</th><th style="width:50%"><span class="keys"><span><i class="kb blue"></i>actual</span><span><span class="lg-mark" aria-hidden="true"></span>predicted</span></span></th></tr></thead>
       <tbody id="muCal"></tbody></table></div>
   </div>
 </section>
@@ -1146,14 +1251,14 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
   <div class="notice" id="synNotice" data-tab="games model" hidden><b>Synthetic data.</b> These are simulated games used to test the pipeline. Train on real NBA seasons and re-export to see real results.</div>
 
   <section aria-labelledby="h-board" data-tab="model">
-    <h2 id="h-board" class="label" style="font-style:normal;line-height:1.4">Scoreboard · held-out test games</h2>
+    <h2 id="h-board" class="label" style="font-style:normal;line-height:1.4">Scoreboard · held-out games</h2>
     <div class="board" id="board"></div>
   </section>
 
   <section aria-labelledby="h-replay" id="replay" data-tab="games">
     <div class="sec-head">
       <h2 id="h-replay">Game replay</h2>
-      <p class="caption">Pick a game and press Watch, or drag the slider to step through it play by play. Space plays and pauses; the arrow keys step.</p>
+      <p class="keys" aria-label="Keyboard: space plays and pauses, arrow keys step"><span><kbd>Space</kbd>play</span><span><kbd>←</kbd><kbd>→</kbd>step</span></p>
     </div>
     <div class="panel gp" id="gp">
       <div class="gp-bar">
@@ -1185,7 +1290,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
           <h3 id="gameTitle">Win chance</h3>
           <div class="legend">
             <span class="key"><i style="border-color:var(--model)"></i>NBAGPT</span>
-            <span class="key"><i class="dash" style="border-color:var(--base)"></i>Baseline (score + clock)</span>
+            <span class="key" title="Logistic regression on score and clock only"><i class="dash" style="border-color:var(--base)"></i>Baseline</span>
             <span id="wpTeams" style="display:contents"></span>
           </div>
         </div>
@@ -1193,7 +1298,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
         <div class="label" style="margin-top:4px" id="marginLabel">Score margin (home − away)</div>
         <div class="chart-margin"><canvas id="marginChart" aria-label="Score margin over the game"></canvas></div>
         <div class="scrub">
-          <label class="label" for="scrub">Scrub through the game</label>
+          <label class="sr" for="scrub">Scrub through the game</label>
           <div class="scrub-row">
             <button id="stepBack" aria-label="Previous play">‹</button>
             <input type="range" id="scrub" min="0" max="1" value="0">
@@ -1213,7 +1318,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
           <div><div class="label">Baseline</div><div class="val" id="mPb"></div></div>
         </div>
         <div class="next">
-          <div class="label">Model's guesses for the next play</div>
+          <div class="label">Next play</div>
           <div id="mNext"></div>
           <p class="caption" id="mActual"></p>
         </div>
@@ -1221,17 +1326,16 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     </div>
 
     <div class="panel pf-floor" id="pfFloor" hidden>
-      <div class="sec-head"><h3>On the floor</h3><p class="caption">Box score so far and each player's chance of making the next play. Click a player for his profile.</p></div>
+      <div class="sec-head"><h3>On the floor<span class="tip" tabindex="0" role="note" aria-label="Box score so far and each player's chance of making the next play. Click a player for his profile." data-tip="Box score so far and each player's chance of making the next play. Click a player for his profile.">i</span></h3></div>
       <div id="pfFloorRows"></div>
     </div>
 
     <div class="panel" style="display:grid;gap:10px">
       <h3>Biggest momentum swings</h3>
       <div class="table-wrap"><table>
-        <thead><tr><th>When</th><th>Play</th><th class="r">Margin</th><th class="r">Win-prob change</th><th class="r">P(home) after</th></tr></thead>
+        <thead><tr><th>When</th><th>Play</th><th class="r">Margin</th><th class="r" title="Change in NBAGPT's home-win chance on this play">Swing</th></tr></thead>
         <tbody id="swings"></tbody>
       </table></div>
-      <p class="caption">Click a row to jump to that moment.</p>
       <details>
         <summary>Full play-by-play</summary>
         <div class="pbp"><table>
@@ -1266,82 +1370,127 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
         </div>
         <div style="display:grid;gap:16px;align-content:start">
           <div class="bars" id="zoneBars"></div>
-          <p class="caption">Bar = share of his shots. <span class="lg-mark" aria-hidden="true"></span> league average. Click a shot type to highlight it on the chart.</p>
+          <p class="keys"><span><i class="kb"></i>his share</span><span><span class="lg-mark" aria-hidden="true"></span>league</span><span>click a type to find it on the chart</span></p>
           <div class="bars" id="styleBars"></div>
         </div>
       </div>
-      <div id="ptWrap" style="display:grid;gap:8px">
-        <h3>Play types (Synergy)</h3>
-        <div class="bars" id="ptBars"></div>
+      <div id="ptWrap" class="plays">
+        <div class="plays-col"><h3 class="co-side">Offense</h3><div class="bars" id="ptBars"></div><div class="bars" id="ptAct"></div></div>
+        <div class="plays-col" id="ptDefCol"><h3 class="co-side def">Defense</h3><div class="bars" id="ptDef"></div><div class="bars" id="ptHus"></div></div>
+        <p class="caption plays-note" id="ptNote"></p>
       </div>
     </div>
 
     <div class="panel" style="display:grid;gap:12px" id="simPanel">
-      <div class="sec-head"><h3>Matchup simulator</h3><p class="caption">The shot model's prediction for this player against a chosen defender and opposing coach's scheme, compared with a league-average defender and coach.</p></div>
+      <div class="sec-head"><h3>Matchup simulator<span class="tip" tabindex="0" role="note" aria-label="The shot model's prediction for this player against a chosen defender and opposing coach's scheme, compared with a league-average defender and coach." data-tip="The shot model's prediction for this player against a chosen defender and opposing coach's scheme, compared with a league-average defender and coach.">i</span></h3></div>
       <div class="sim">
         <div style="display:grid;gap:12px;align-content:start">
-          <div class="field"><label class="label" for="simDef">Primary defender</label><select id="simDef"></select></div>
-          <div class="field"><label class="label" for="simCoach">Opposing coach (defensive scheme)</label><select id="simCoach"></select></div>
+          <div class="field"><label class="label" for="simDef">Defender</label><select id="simDef"></select></div>
+          <div class="field"><label class="label" for="simCoach" title="His defensive scheme">Opposing coach</label><select id="simCoach"></select></div>
           <div class="field"><label class="label" for="simQ">Quarter</label><select id="simQ"><option value="1">Q1</option><option value="2" selected>Q2</option><option value="3">Q3</option><option value="4">Q4</option></select></div>
-          <div class="field"><label class="label" for="simM">His team's lead · <span class="num" id="simMv"></span></label><input type="range" id="simM" min="-20" max="20" value="0"></div>
+          <div class="field"><label class="label" for="simM">Lead · <span class="num" id="simMv"></span></label><input type="range" id="simM" min="-20" max="20" value="0"></div>
         </div>
         <div style="display:grid;gap:12px;align-content:start">
           <div class="chips-sm" id="simInd"></div>
           <div class="bars" id="simBars"></div>
-          <p class="caption">Orange bar = predicted share in this matchup. <span class="lg-mark" aria-hidden="true"></span> against an average defender and coach.</p>
+          <p class="keys"><span><i class="kb"></i>this matchup</span><span><span class="lg-mark" aria-hidden="true"></span>average defender and coach</span></p>
         </div>
       </div>
     </div>
 
     <div class="panel" style="display:grid;gap:8px" id="facedPanel">
-      <h3>Defenders he saw most</h3>
-      <div class="table-wrap"><table><thead><tr><th>Primary defender</th><th class="r">Shots</th><th class="r">FG%</th><th class="r">vs his overall</th></tr></thead><tbody id="faced"></tbody></table></div>
-      <p class="caption">Actual results when this defender was the likely primary defender (at least 12 shots). Click a row to load him in the simulator.</p>
+      <h3>Defenders he saw most<span class="tip" tabindex="0" role="note" aria-label="Actual results when this defender was the likely primary defender (at least 12 shots). Click a row to load him in the simulator." data-tip="Actual results when this defender was the likely primary defender (at least 12 shots). Click a row to load him in the simulator.">i</span></h3>
+      <div class="table-wrap"><table><thead><tr><th>Defender</th><th class="r">Shots</th><th class="r">FG%</th><th class="r">vs his avg</th></tr></thead><tbody id="faced"></tbody></table></div>
     </div>
   </section>
 
   <section aria-labelledby="h-defenders" id="defenders" data-tab="players" hidden>
     <div class="sec-head">
       <h2 id="h-defenders">Defender indicators</h2>
-      <p class="caption">How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Negative points per shot is good defense.</p>
+      <p class="caption">Negative pts / shot = good defense<span class="tip" tabindex="0" role="note" aria-label="How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Rim, mid-range and 3PT columns are the change in shot share (percentage points) versus an average defender." data-tip="How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Rim, mid-range and 3PT columns are the change in shot share (percentage points) versus an average defender.">i</span></p>
     </div>
     <div class="panel" style="display:grid;gap:10px">
       <div class="filter">
         <div class="field grow"><label class="label" for="dFilter">Find a defender</label><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="dFilter" placeholder="Name or team" autocomplete="off" spellcheck="false"></div></div>
-        <div class="field"><label class="label" for="dMin">Min. shots defended</label><select id="dMin"><option value="0">Any</option><option value="100">100</option><option value="300" selected>300</option><option value="600">600</option></select></div>
+        <div class="field"><label class="label" for="dMin">Min. shots</label><select id="dMin"><option value="0">Any</option><option value="100">100</option><option value="300" selected>300</option><option value="600">600</option></select></div>
       </div>
       <div class="table-wrap"><table>
-        <thead><tr><th>Defender</th><th class="r sort" data-k="n">Shots defended</th><th class="r sort" data-k="fg">Opp. FG%</th>
-          <th class="r sort" data-k="rim">Rim shots</th><th class="r sort" data-k="mid">Mid-range</th><th class="r sort" data-k="three">3-pointers</th><th class="r sort on" data-k="pps">Pts / shot</th></tr></thead>
+        <thead><tr><th>Defender</th><th class="r sort" data-k="n" title="Shots defended">Shots</th><th class="r sort" data-k="fg">Opp. FG%</th>
+          <th class="r sort" data-k="rim" title="Change in rim share vs an average defender (pct. points)">Rim</th><th class="r sort" data-k="mid" title="Change in mid-range share vs an average defender (pct. points)">Mid</th><th class="r sort" data-k="three" title="Change in 3-point share vs an average defender (pct. points)">3PT</th><th class="r sort on" data-k="pps">Pts / shot</th></tr></thead>
         <tbody id="dTable"></tbody></table></div>
-      <p class="caption">Rim, mid-range and 3-pointer columns are the change in shot share (percentage points) versus an average defender. Click a column to sort; click a row to load him in the simulator.</p>
     </div>
   </section>
 
-  <section aria-labelledby="h-coaches" id="coaches" data-tab="players" hidden>
-    <div class="sec-head">
-      <h2 id="h-coaches">Coaches &amp; schemes</h2>
-      <p class="caption">Play-type mix from Synergy tracking, shot diets from play-by-play, and the model's read on each coach's offense and defense.</p>
-    </div>
-    <div class="panel controls"><div class="field grow"><label class="label" for="cSel">Head coach</label><select id="cSel"></select></div></div>
-    <div class="panel" style="display:grid;gap:14px">
-      <div class="pl-head"><span class="pname" id="cName"></span><div class="chips" id="cChips"></div></div>
-      <div class="chips-sm" id="cInd"></div>
-      <div class="two">
-        <div style="display:grid;gap:8px;align-content:start" id="cPtWrap"><h3>Offensive play types</h3><div class="bars" id="cPt"></div>
-          <p class="caption">Bar = share of possessions. <span class="lg-mark" aria-hidden="true"></span> league average. PPP = points per possession.</p></div>
-        <div style="display:grid;gap:16px;align-content:start">
-          <div style="display:grid;gap:8px"><h3>His offense's shot diet</h3><div class="bars" id="cOff"></div></div>
-          <div style="display:grid;gap:8px"><h3>What his defense allows</h3><div class="bars" id="cDef"></div></div>
+  <section aria-labelledby="h-coaches" id="coaches" data-tab="coaches" hidden>
+    <div class="co-list" id="coList">
+    <div class="hero co-hero">
+      <div class="co-hero-row">
+        <div class="hero-in">
+          <p class="kicker" id="coKicker">Head coaches</p>
+          <h2 id="h-coaches" class="cast">The <em>sideline</em></h2>
+          <p class="lede" id="coLede">Every head coach in the data: record, rings and awards, and how his teams play on both ends.</p>
         </div>
+        <div class="co-wall" id="coWall" aria-hidden="true"></div>
+      </div>
+      <div class="jumbo" id="coJumbo"></div>
+    </div>
+
+    <div class="sec-head co-bar">
+      <h2 class="cast">Head coaches</h2>
+      <div class="seg" role="group" aria-label="Which coaches"><button type="button" id="coNow" aria-pressed="true">Now</button><button type="button" id="coAll" aria-pressed="false">Since <span id="coSince"></span></button></div>
+    </div>
+    <div class="co-grid" id="coGrid"></div>
+    </div>
+
+    <div class="co-page" id="coPage" hidden>
+    <button type="button" class="co-back" id="coBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>All coaches</button>
+    <div class="panel co-card" id="coCard">
+      <header class="co-top" id="coTop"></header>
+      <div class="co-body">
+        <div class="co-ctl"><div class="seg co-stints" id="coStints" role="group" aria-label="Team season"></div></div>
+        <div class="co-tiles" id="coTiles"></div>
+        <div class="co-plan" id="coPlan">
+          <div class="co-tabs" role="tablist" aria-label="Game plan">
+            <button type="button" role="tab" id="coTabOff" data-side="off" aria-controls="coOffPlan" aria-selected="true">Offensive<span class="co-gp">&nbsp;game plan</span></button>
+            <button type="button" role="tab" id="coTabDef" data-side="def" class="def" aria-controls="coDefPlan" aria-selected="false" tabindex="-1">Defensive<span class="co-gp">&nbsp;game plan</span></button>
+          </div>
+          <div class="co-pane" id="coOffPlan" role="tabpanel" aria-labelledby="coTabOff">
+            <div class="plays">
+              <div class="plays-col"><div class="bars" id="coOffPT"></div></div>
+              <div class="plays-col"><div class="bars" id="coOffAct"></div><div class="bars" id="coOffZ"></div></div>
+            </div>
+            <div class="co-model" id="coOffModelWrap"><h3>The model's read</h3><div class="chips-sm" id="coOffModel"></div></div>
+            <p class="caption" id="coOffNote"></p>
+          </div>
+          <div class="co-pane" id="coDefPlan" role="tabpanel" aria-labelledby="coTabDef" hidden>
+            <div class="co-tiles" id="coDefTiles"></div>
+            <div class="plays" id="coDefShots">
+              <div class="plays-col">
+                <div class="brow head co-court-head"><span>Court zone</span><span>Opponents' FG% · colour against the league</span></div>
+                <svg class="hexcourt" id="coDefCourt" viewBox="-252 -372 504 427" role="img" aria-label="Opponents' FG% by court zone"></svg>
+                <div class="sc-legend" id="coDefLegend"></div>
+              </div>
+              <div class="plays-col"><div class="bars" id="coDefType"></div><div class="bars" id="coDefStyle"></div></div>
+            </div>
+            <div class="plays">
+              <div class="plays-col"><div class="bars" id="coDefPT"></div></div>
+              <div class="plays-col"><div class="bars" id="coDefAct"></div><div class="bars" id="coDefZ"></div></div>
+            </div>
+            <div class="co-model" id="coDefModelWrap"><h3>The model's read</h3><div class="chips-sm" id="coDefModel"></div></div>
+            <p class="caption" id="coDefNote"></p>
+          </div>
+        </div>
+        <p class="caption" id="coEmpty" hidden></p>
+        <div class="pf-sub" id="coHistWrap"><h3>Season by season</h3><div class="table-wrap"><table class="pf-mini co-hist" id="coHist"></table></div></div>
       </div>
     </div>
+    </div>
   </section>
 
-  <section id="profiles" aria-labelledby="h-profiles" data-tab="players" hidden>
+  <section id="profiles" aria-labelledby="h-profiles" data-tab="fantasy" hidden>
     <div class="sec-head">
-      <h2 id="h-profiles">Fantasy leaderboard</h2>
-      <p class="caption">Fantasy points per game with NBA.com scoring: points ×1, rebounds ×1.2, assists ×1.5, steals and blocks ×3, turnovers −1. Click any player for his profile.</p>
+      <h2 id="h-profiles" class="cast">Fantasy leaderboard</h2>
+      <p class="caption">NBA.com scoring: PTS ×1 · REB ×1.2 · AST ×1.5 · STL, BLK ×3 · TOV −1. ★ All-Star that season.</p>
     </div>
     <div class="pf-podium" id="pfPodium"></div>
     <div class="panel" style="display:grid;gap:12px">
@@ -1361,28 +1510,25 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 
   <section aria-labelledby="h-quality" data-tab="model">
     <div class="sec-head">
-      <h2 id="h-quality">Model quality</h2>
-      <p class="caption">Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25.</p>
+      <h2 id="h-quality">Model quality<span class="tip" tabindex="0" role="note" aria-label="Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25." data-tip="Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25.">i</span></h2>
     </div>
     <div class="grid3">
       <div class="panel">
-        <h3>Error by quarter</h3>
+        <h3>Error by quarter<span class="tip" tabindex="0" role="note" aria-label="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer." data-tip="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer.">i</span></h3>
         <div class="legend">
           <span class="key"><i style="border-color:var(--model);border-top-width:8px;width:10px"></i>NBAGPT</span>
           <span class="key"><i style="border-color:var(--base);border-top-width:8px;width:10px"></i>Baseline</span>
         </div>
         <div class="chart-sm"><canvas id="qChart" aria-label="Brier score by quarter"></canvas></div>
-        <p class="caption">Errors shrink as the game goes on and the outcome gets clearer.</p>
       </div>
       <div class="panel">
-        <h3>Calibration</h3>
+        <h3>Calibration<span class="tip" tabindex="0" role="note" aria-label="When the model says 70%, the home team should win about 70% of the time." data-tip="When the model says 70%, the home team should win about 70% of the time.">i</span></h3>
         <div class="legend">
           <span class="key"><i style="border-color:var(--model)"></i>NBAGPT</span>
           <span class="key"><i class="dash" style="border-color:var(--base)"></i>Baseline</span>
           <span class="key"><i class="dash" style="border-color:var(--muted)"></i>Perfect</span>
         </div>
         <div class="chart-sm"><canvas id="calChart" aria-label="Calibration plot"></canvas></div>
-        <p class="caption">When the model says 70%, the home team should win about 70% of the time.</p>
       </div>
       <div class="panel" id="histPanel">
         <h3>Training history</h3>
@@ -1398,19 +1544,18 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 
   <section aria-labelledby="h-whatif" data-tab="model">
     <div class="sec-head">
-      <h2 id="h-whatif">What-if</h2>
-      <p class="caption">Set a game situation to see the baseline's win probability. NBAGPT needs the full play sequence, so its predictions live in the replay above.</p>
+      <h2 id="h-whatif">What-if<span class="tip" tabindex="0" role="note" aria-label="The baseline's win probability for any quarter, clock and lead. NBAGPT needs the full play sequence, so its predictions live in Game replay." data-tip="The baseline's win probability for any quarter, clock and lead. NBAGPT needs the full play sequence, so its predictions live in Game replay.">i</span></h2>
     </div>
     <div class="whatif">
       <div class="panel form">
         <div class="field"><label class="label" for="wQ">Quarter</label>
           <select id="wQ"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4" selected>Q4</option></select></div>
-        <div class="field"><label class="label" for="wT">Time left in quarter · <span class="num" id="wTv"></span></label>
+        <div class="field"><label class="label" for="wT">Time left · <span class="num" id="wTv"></span></label>
           <input type="range" id="wT" min="0" max="720" step="5" value="120"></div>
         <div class="field"><label class="label" for="wM">Home lead · <span class="num" id="wMv"></span></label>
           <input type="range" id="wM" min="-30" max="30" step="1" value="3"></div>
         <div>
-          <div class="label">Home win probability</div>
+          <div class="label">Home win chance</div>
           <div class="bigp" id="wP"></div>
         </div>
       </div>
@@ -1421,7 +1566,6 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
           <span class="key"><i style="border-color:var(--seq-1)"></i>Halftime</span>
         </div>
         <div class="chart-sm" style="height:300px"><canvas id="wChart" aria-label="Win probability by lead"></canvas></div>
-        <p class="caption">The same lead is worth much more late in the game.</p>
       </div>
     </div>
   </section>
@@ -1431,7 +1575,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     <div class="hero-in">
       <p class="kicker">Sources &amp; methods</p>
       <h2 id="h-sources" class="cast">The making<br>of <em>HOMERs</em></h2>
-      <p class="lede" id="srcCaption">Every number on this site traces back to one of these sources. Here's where it came from, how much of it there is, and how the models learned from it.</p>
+      <p class="lede" id="srcCaption">Where every number comes from, and how the models learned.</p>
     </div>
     <div class="jumbo" id="srcJumbo"></div>
   </div>
@@ -1441,20 +1585,20 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
     <div class="txt">
       <p class="kicker" style="color:var(--model)">The name</p>
       <h2 class="cast">Why “HOMERs”?</h2>
-      <p>Homer's epics were performed out loud, one line after another, and the audience never knew exactly what came next. That's the job this model has: it reads a game one play at a time (tip-off, miss, rebound, three) and at every moment guesses what happens next and who's going to win.</p>
-      <p>And in sports talk, a <i>homer</i> is the fan who always roots for the home team. This model's main output is the home team's chance to win. Unlike most homers, it's graded on how honest its odds are: see the Model tab.</p>    </div>
+      <p>Homer's epics were told one line at a time, and no one knew what came next. This model reads a game the same way: one play at a time.</p>
+      <p>And a <i>homer</i> always roots for the home team. This one predicts the home team's chance to win, and gets graded on it.</p>
+    </div>
   </div>
 
-  <div class="sec-head"><h2 class="cast">From tip-off to prediction</h2><p class="caption">How a play on the court becomes a number on this page.</p></div>
+  <div class="sec-head"><h2 class="cast">From tip-off to prediction</h2></div>
   <ol class="pipe" id="srcPipe"></ol>
   <div class="pipe-also" id="srcAlso"></div>
 
-  <div class="sec-head"><h2 class="cast">The data</h2><p class="caption" id="srcDataCap">Where every number comes from, how much of it we have, and when it was last pulled.</p></div>
+  <div class="sec-head"><h2 class="cast">The data<span id="srcDataCap"></span></h2></div>
   <div class="src-feat" id="srcList"></div>
 
   <div class="sec-head">
-    <h2 id="h-methods" class="cast">The models</h2>
-    <p class="caption">What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs.</p>
+    <h2 id="h-methods" class="cast">The models<span class="tip" tabindex="0" role="note" aria-label="What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs." data-tip="What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs.">i</span></h2>
   </div>
   <div class="methods" id="methods"></div>
 
@@ -1464,8 +1608,8 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
       <div class="soft" id="software"></div>
     </div>
     <div class="panel" style="display:grid;gap:10px;align-content:start" id="creditsPanel" hidden>
-      <h3>Photo credits</h3>
-      <ul class="credits" id="credits"></ul>
+      <details><summary><h3 style="display:inline">Photo credits</h3></summary>
+      <ul class="credits" id="credits" style="margin-top:10px"></ul></details>
     </div>
   </div>
   <p class="caption" id="srcBuilt"></p>
@@ -1762,18 +1906,10 @@ function gpInit() {
   new ResizeObserver(() => { gpCenter(false); gpEdges(); }).observe(rail);  // also fires when the Games tab is first shown
 }
 
-/* ----- story of the game: headline, recap and key moments, written from the plays and NBAGPT's odds ----- */
+/* ----- story of the game: headline, big-number recap and key moments, from the plays and NBAGPT's odds ----- */
 const ORDW = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh"];
 const otName = n => n === 1 ? "overtime" : `${["", "", "double", "triple", "quadruple"][n] || ORDW[n]} overtime`;
-const periodName = p => p <= 4 ? `${ORDW[p]} quarter` : p === 5 ? "overtime" : `${ORDW[p - 4]} overtime`;
-const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
-const possessive = n => n.endsWith("s") ? n + "'" : n + "'s";
 const capFirst = s => s[0].toUpperCase() + s.slice(1);
-function whenAt(g, i) {
-  if (i === 0) return "at tip-off";
-  const c = clock(g.sec[i], g.per[i]);
-  return c === "0:00" ? `at the end of the ${periodName(g.per[i])}` : `with ${c} left in the ${periodName(g.per[i])}`;
-}
 const EV_DID = { "2PT_MAKE": "scored", "3PT_MAKE": "hit a three", FT_MAKE: "made a free throw", "2PT_MISS": "missed a shot", "3PT_MISS": "missed a three",
   FT_MISS: "missed a free throw", OREB: "grabbed an offensive rebound", DREB: "grabbed the rebound", TOV: "turned it over", FOUL: "committed a foul",
   VIOLATION: "committed a violation", TIMEOUT: "called timeout", JUMPBALL: "won a jump ball" };
@@ -1815,7 +1951,7 @@ function gameStory(g) {
 
   // the recap as big-number facts, plus one line on the biggest swing
   const short = i => { const c = clock(g.sec[i], g.per[i]); return c === "0:00" ? `End ${pname(g.per[i])}` : `${pname(g.per[i])} ${c}`; };
-  const F = [[lMax ? lMax : "0", lMax ? `${W.tri} max deficit` : `${W.tri} never trailed`]];
+  const F = [lMax ? [lMax, `${W.tri} max deficit`] : ["Never", `${W.tri} trailed`]];
   if (changes) F.push([changes, "lead changes"]);
   if (ties) F.push([ties, ties === 1 ? "tie" : "ties"]);
   if (low < .25 && lowI) F.push([pct(low, low < .1 ? 1 : 0), `${W.tri} low point`]);
@@ -2018,16 +2154,16 @@ function setStep(s) {
   $("scrub").value = step;
   const g = cur;
   $("mPlay").textContent = pretty(g.tok[step]);
-  $("mMargin").textContent = `Margin ${signed(g.diff[step])} (home − away)`;
+  $("mMargin").textContent = `Margin ${signed(g.diff[step])}`;
   $("mPm").textContent = pct(g.pm[step]);
   $("mPb").textContent = pct(g.pb[step]);
   const d = step ? g.pm[step] - g.pm[step - 1] : 0;
   $("mDelta").className = "delta " + (d > 0.0005 ? "up" : d < -0.0005 ? "down" : "");
-  $("mDelta").textContent = step ? `${d >= 0 ? "▲" : "▼"} ${pct(Math.abs(d))} on this play` : "";
+  $("mDelta").textContent = step ? `${d >= 0 ? "▲" : "▼"} ${pct(Math.abs(d))}` : "";
   const actual = step + 1 < g.tok.length ? g.tok[step + 1] : null;
   const ids = g.top_i[step], ps = g.top_p[step], maxP = ps[0] || 1;
   $("mNext").innerHTML = actual === null ? "" : ids.map((t, k) => `<div class="nx${t === actual ? " hit" : ""}"><span class="nm">${pretty(t)}${t === actual ? " ✓" : ""}</span><span class="pc">${pct(ps[k], 0)}</span><span class="bar"><b style="width:${(ps[k] / maxP * 100).toFixed(1)}%"></b></span></div>`).join("");
-  $("mActual").innerHTML = actual === null ? "Game over." : `What actually happened: <b>${pretty(actual)}</b>${ids.includes(actual) ? "" : " (not in the top 5)"}.`;
+  $("mActual").innerHTML = actual === null ? "Final" : ids.includes(actual) ? "" : `Actual: <b>${pretty(actual)}</b>`;  // a hit is ticked in the list
   document.querySelectorAll("#swings tr").forEach(tr => tr.classList.toggle("cur", +tr.dataset.i === step));
   document.querySelectorAll("#story .moments [data-i]").forEach(b => b.classList.toggle("on", +b.dataset.i === step));
   updateBug();
@@ -2061,8 +2197,7 @@ function renderSwings() {
   const top = dp.map((v, i) => i).sort((a, b) => Math.abs(dp[b]) - Math.abs(dp[a])).slice(0, 5);
   $("swings").innerHTML = top.map(i => `<tr class="jump" data-i="${i}" tabindex="0">
     <td>${pname(g.per[i])} ${clock(g.sec[i], g.per[i])}</td><td>${pfPlay(i)}</td>
-    <td class="r">${signed(g.diff[i])}</td><td class="r" style="color:${dp[i] >= 0 ? "var(--good)" : "var(--warn)"};font-weight:600">${dp[i] >= 0 ? "+" : "−"}${pct(Math.abs(dp[i]))}</td>
-    <td class="r">${pct(g.pm[i])}</td></tr>`).join("");
+    <td class="r">${signed(g.diff[i])}</td><td class="r" style="color:${dp[i] >= 0 ? "var(--good)" : "var(--warn)"};font-weight:600" title="Home win chance after: ${pct(g.pm[i])}">${dp[i] >= 0 ? "+" : "−"}${pct(Math.abs(dp[i]))}</td></tr>`).join("");
 }
 function renderPbp() {
   const g = cur;
@@ -2105,7 +2240,7 @@ function buildQualityCharts() {
   const H = DATA.history;
   if (!H.length) { $("histPanel").hidden = true; return; }
   const best = H.reduce((a, b) => (b.val_ce + b.val_wp_bce < a.val_ce + a.val_wp_bce ? b : a));
-  $("histCap").textContent = `Best checkpoint at epoch ${best.epoch} of ${H.length}, validation next-play accuracy ${pct(best.val_acc)}.`;
+  $("histCap").textContent = `● best: epoch ${best.epoch} of ${H.length} · ${pct(best.val_acc)} accuracy`;
   charts.hist = new Chart($("histChart"), {
     type: "line",
     data: { labels: H.map(h => h.epoch), datasets: [
@@ -2217,13 +2352,7 @@ function renderPlayer(p) {
   const ss = leagueShares(p.styles), ls = leagueShares(SH.league.styles), sfg = fgOf(p.styles);
   const smax = Math.max(...ss, ...ls) * 1.1;
   $("styleBars").innerHTML = head("Shot style", "Share", "Share", "FG%") + SH.styles.map((s, i) => barRow(STN[s], ss[i], ls[i], pct(ss[i], 0), p.styles[i][0] ? pct(sfg[i], 0) : "–", { max: smax, alt: true })).join("");
-  const pt = p.playtypes, lpt = SH.league.playtypes;
-  $("ptWrap").hidden = !pt;
-  if (pt) {
-    const order = SH.play_types.map((t, i) => i).sort((a, b) => pt.freq[b] - pt.freq[a]);
-    const m = Math.max(...pt.freq) * 1.1;
-    $("ptBars").innerHTML = head("Play type", "Share of possessions", "Share", "PPP") + order.map(i => barRow(PTN[SH.play_types[i]], pt.freq[i], lpt ? lpt.freq[i] : null, pct(pt.freq[i], 0), pt.freq[i] ? pt.ppp[i].toFixed(2) : "–", { max: m })).join("");
-  }
+  renderPlayerPlays(p);
   const overall = fgm / fga;
   $("faced").innerHTML = p.faced.length ? p.faced.map(f => `<tr class="jump" data-id="${f.id}" tabindex="0"><td>${f.name}</td><td class="r">${f.n}</td><td class="r">${pct(f.fg)}</td><td class="r ${f.fg < overall ? "up" : "down"}">${pp(f.fg - overall)} pts</td></tr>`).join("")
     : `<tr><td colspan="4" class="caption">No defender data for this player yet.</td></tr>`;
@@ -2295,40 +2424,344 @@ function renderDefTable() {
   document.querySelectorAll("#defenders th.sort").forEach(th => th.classList.toggle("on", th.dataset.k === dSort));
 }
 
-/* coaches */
-function renderCoach(c) {
-  $("cName").textContent = c.name;
-  $("cChips").innerHTML = c.stints.map(s => `<span class="chip">${s}</span>`).join("");
-  const eo = c.effect_off, ed = c.effect_def;
-  const chip = (k, v) => `<div class="ind"><span class="label">${k}</span><b>${pp(v)}</b><span class="caption" style="font-size:12px">pts of shot share vs avg</span></div>`;
-  $("cInd").innerHTML = [chip("Offense: rim", eo.rim), chip("Offense: mid-range", eo.mid), chip("Offense: 3-pointers", eo.three),
-    chip("Defense allows: rim", ed.rim), chip("Defense allows: 3s", ed.three),
-    `<div class="ind"><span class="label">Defense: pts / shot</span><b class="${ed.pps < -0.0005 ? "up" : ed.pps > 0.0005 ? "down" : ""}">${ed.pps >= 0 ? "+" : "−"}${Math.abs(ed.pps).toFixed(3)}</b><span class="caption" style="font-size:12px">vs average scheme</span></div>`].join("");
-  const pt = c.playtypes, lpt = SH.league.playtypes;
-  $("cPtWrap").hidden = !pt;
-  if (pt) {
-    const order = SH.play_types.map((t, i) => i).sort((a, b) => pt.freq[b] - pt.freq[a]);
-    const m = Math.max(...pt.freq, ...(lpt ? lpt.freq : [])) * 1.1;
-    $("cPt").innerHTML = head("Play type", `${c.team} ${c.season}`, "Share", "PPP") + order.map(i => barRow(PTN[SH.play_types[i]], pt.freq[i], lpt ? lpt.freq[i] : null, pct(pt.freq[i], 0), pt.ppp[i].toFixed(2), { max: m })).join("");
+/* ---------- offense and defense play blocks: a team season (coaches) or a player's career (tendencies) ----------
+   A unit holds regular-season totals (export_tracking.py): Synergy play types as [possessions, points], tracking actions as
+   [count, points, makes, attempts], hustle counts, and [makes, attempts, expected makes] for opponents at the rim and from three.
+   Rates are per game for teams and per 36 minutes for players; the tick is always the league average. */
+const ACTN = { Drives: "Drives", CatchShoot: "Catch & shoot", PullUp: "Pull-ups", PaintTouch: "Paint touches", PostTouch: "Post touches",
+  ElbowTouch: "Elbow touches", ScreenAssist: "Screen assists" };
+const HUSN = { Deflections: "Deflections", Contests: "Contested shots", Charges: "Charges drawn", LooseBalls: "Loose balls won", BoxOuts: "Box outs" };
+const RIMN = { Rim: "Opp. FG% at rim", Three: "Opp. 3P%" };
+const TROPHY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
+function unitRate(u, v, hustle, per36) {  // v per game (teams) or per 36 minutes (players)
+  if (per36) { const m = hustle ? u.hmin : u.min; return m ? v / m * 36 : 0; }
+  const g = hustle ? u.hgp : u.gp; return g ? v / g : 0;
+}
+const nth = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+const colorBy = (d, band, invert) => Math.abs(d) < band ? "" : (d > 0) !== !!invert ? "up" : "down";
+function ptBlock(title, types, rows, lrows, pctRow, invert) {  // Synergy: share of possessions, points per possession
+  const tot = rows.reduce((s, r) => s + r[0], 0), ltot = lrows.reduce((s, r) => s + r[0], 0);
+  if (!tot) return "";
+  const sh = rows.map(r => r[0] / tot), lsh = lrows.map(r => ltot ? r[0] / ltot : 0);
+  const ppp = rows.map(r => r[0] ? r[1] / r[0] : null), lppp = lrows.map(r => r[0] ? r[1] / r[0] : null);
+  const order = types.map((_, i) => i).filter(i => rows[i][0] > 0).sort((a, b) => sh[b] - sh[a]);
+  const max = Math.max(...sh, ...lsh) * 1.1;
+  return head(title, "Share of possessions", "Share", invert ? "PPP allowed" : "PPP") + order.map(i => {
+    const tip = `League ${lppp[i] == null ? "–" : lppp[i].toFixed(2)} PPP${pctRow && pctRow[i] != null ? ` · ${nth(Math.max(1, Math.round(pctRow[i] * 100)))} percentile` : ""}`;
+    const v = ppp[i] == null ? "–" : `<span class="${colorBy(ppp[i] - (lppp[i] ?? ppp[i]), .03, invert)}" title="${tip}">${ppp[i].toFixed(2)}</span>`;
+    return barRow(PTN[types[i]] || types[i], sh[i], lsh[i], pct(sh[i], 0), v, { max, alt: invert });
+  }).join("");
+}
+function actBlock(u, L, keys, per36) {  // tracking actions: volume against the league (tick in the middle = average) and points on each
+  const rows = keys.map((k, i) => {
+    const hus = k === "ScreenAssist", a = u.act[i], la = L.act[i];
+    const v = unitRate(u, a[0], hus, per36), lv = unitRate(L, la[0], hus, per36);
+    if (!lv) return "";
+    const ppa = a[0] ? a[1] / a[0] : null, lppa = la[0] ? la[1] / la[0] : null;
+    const pts = ppa == null ? "–" : `<span class="${colorBy(ppa - lppa, .02)}" title="League ${lppa.toFixed(2)} points each${a[3] ? ` · FG ${pct(a[2] / a[3])}` : ""}">${ppa.toFixed(2)}</span>`;
+    return barRow(ACTN[k], Math.min(1, v / lv / 2), .5, v.toFixed(1), pts, { max: 1 });
+  }).join("");
+  return rows ? head("Action", "Against league average", per36 ? "Per 36" : "Per game", "Pts each") + rows : "";
+}
+function husBlock(u, L, keys, per36, rimKeys) {  // hustle stats, then opponents' shooting against what those shooters usually make
+  const rows = keys.map((k, i) => {
+    const v = unitRate(u, u.hus[i], true, per36), lv = unitRate(L, L.hus[i], true, per36);
+    if (!lv || !u.hus[i]) return "";
+    const d = v / lv - 1;
+    return barRow(HUSN[k], Math.min(1, v / lv / 2), .5, v.toFixed(1), `<span class="${colorBy(d, .05)}">${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(0)}%</span>`, { max: 1, alt: true });
+  }).join("");
+  const rim = rimKeys.map((k, i) => {
+    const [m, a, x] = u.rim[i];
+    if (a < (per36 ? 50 : 200)) return "";
+    const fg = m / a, exp = x / a, d = fg - exp;
+    return barRow(RIMN[k], fg, exp, pct(fg), `<span class="${colorBy(d, .005, true)}" title="These shooters usually make ${pct(exp)}">${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(1)}</span>`, { max: .8, alt: true });
+  }).join("");
+  return (rows ? head("Hustle", "Against league average", per36 ? "Per 36" : "Per game", "vs lg") + rows : "")
+    + (rim ? head("Shots defended", "Opponents' FG%", "FG%", "vs usual") + rim : "");
+}
+function zoneBlock(title, zones, invert) {  // the shot model's shot diet, against the league
+  const lz = leagueShares(SH.league.zones), mx = Math.max(...zones, ...lz) * 1.1;
+  return head(title, "Share of shots", "Share", "vs lg") + SH.zones.map((z, i) => barRow(ZN[z], zones[i], lz[i], pct(zones[i], 0), pp(zones[i] - lz[i]), { max: mx, alt: invert })).join("");
+}
+
+/* player tendencies: the same blocks over his regular seasons in the data */
+function renderPlayerPlays(p) {
+  const T = SH.track, u = p.track;
+  $("ptWrap").hidden = !T || !u;
+  if (!T || !u) return;
+  const L = T.league;
+  $("ptBars").innerHTML = ptBlock("Play type", T.play_types, u.off, L.off);
+  $("ptAct").innerHTML = actBlock(u, L, T.actions, true);
+  $("ptDef").innerHTML = ptBlock("Guarding", T.def_play_types_player, u.def, L.def, null, true);
+  $("ptHus").innerHTML = husBlock(u, L, T.hustle, true, T.rim);
+  $("ptDefCol").hidden = !$("ptDef").innerHTML && !$("ptHus").innerHTML;
+  const s = T.seasons;
+  $("ptNote").textContent = `Regular seasons ${s[0]}${s.length > 1 ? ` to ${s[s.length - 1]}` : ""}. Synergy play types and tracking from NBA.com. Tick = league average; green = better than average.`;
+}
+
+/* ---------- coaches tab ---------- */
+const CO = DATA.coaches || null;
+const co = { all: false, sel: null, stint: null, side: "off", pushed: false };  // pushed: this coach page added a history entry over the list
+const coById = id => CO.coaches.find(c => c.id === id);
+const coTeamId = tri => (PF && PF.teams[tri]) || 0;
+const coSmall = u => u.replace("/1040x760/", "/260x190/");
+function coImg(c, cls = "", small = false) {  // NBA.com headshot first, then Basketball-Reference, then Wikipedia; initials if none load
+  const [first, ...rest] = c.photos.map(u => small ? coSmall(u) : u);
+  if (!first) return "";
+  const framed = !first.includes("cdn.nba.com");
+  return `<img class="${cls}${framed ? " framed" : ""}" src="${first}" data-alt="${rest.join(" ")}" alt="" loading="lazy" onerror="coImgNext(this)">`;
+}
+window.coImgNext = img => {
+  const alt = (img.dataset.alt || "").split(" ").filter(Boolean);
+  if (!alt.length) { img.remove(); return; }
+  img.dataset.alt = alt.slice(1).join(" ");
+  img.classList.toggle("framed", !alt[0].includes("cdn.nba.com"));
+  img.src = alt[0];
+};
+const coRec = r => r && r.g ? `${r.w}-${r.l}` : "–";
+const coPct = r => r && r.g ? (r.w / r.g).toFixed(3).replace(/^0/, "") : "";
+const coRings = n => n ? `<span class="rings" title="${n} NBA title${n > 1 ? "s" : ""}">${TROPHY}${n > 1 ? "×" + n : ""}</span>` : "";
+function coList() {
+  return CO.coaches.filter(c => co.all || c.now).sort((a, b) => (b.career.w || 0) - (a.career.w || 0) || a.name.localeCompare(b.name));
+}
+function coGrid() {
+  $("coGrid").innerHTML = coList().map(c => {
+    const tri = c.now || c.last, [tname, c1, c2] = pfTeam(tri);
+    return `<button type="button" class="co-pod" data-co="${c.id}" style="--tc:${c1};--ta:${c2}" aria-pressed="${c.id === co.sel}" aria-label="${esc(c.name)}, ${esc(tname)}">
+      <span class="ini" aria-hidden="true">${esc(pfInitials(c.name))}</span>${coImg(c, "", true)}
+      <span class="tm">${pfLogo(coTeamId(tri))}${esc(tri)}${c.now ? "" : " · former"}</span>
+      <span class="who"><b>${esc(c.name)}</b><span>${coRec(c.career)}${c.career.g ? ` · ${coPct(c.career)}` : ""} ${coRings(c.titles)}</span></span></button>`;
+  }).join("");
+}
+function coPick(id, side, push) {  // a coach's own page; `side` ("off" / "def") picks the game plan, otherwise the last one shown stays
+  co.sel = id; co.stint = null;
+  if (side) co.side = side;
+  document.querySelectorAll("#coGrid .co-pod").forEach(b => b.setAttribute("aria-pressed", b.dataset.co === id));
+  $("coList").hidden = true; $("coPage").hidden = false;
+  coRender(); coSide(co.side);
+  if (push) co.pushed = true;
+  coHash(push);
+  window.scrollTo({ top: 0 });
+}
+function coShowList(restore) {  // restore: scroll back to the coach just left (back button, browser history)
+  co.pushed = false;
+  if ($("coPage").hidden) return;
+  $("coPage").hidden = true; $("coList").hidden = false;
+  const pod = document.querySelector(`#coGrid .co-pod[data-co="${co.sel}"]`);
+  if (pod && restore) requestAnimationFrame(() => { pod.scrollIntoView({ block: "center" }); pod.focus({ preventScroll: true }); });
+}
+function coHash(push) {
+  const h = "#/coaches/" + co.sel + (co.side === "def" ? "/defense" : "");
+  try { history[push ? "pushState" : "replaceState"](null, "", h); } catch (e) {}
+}
+function coRoute(hash) {  // "#/coaches", "#/coaches/<id>" or "#/coaches/<id>/defense"; false if the hash is not a coaches one
+  const m = hash.match(/^#\/?coaches(?:\/([^/]+)(?:\/(offense|defense))?)?$/);
+  if (!m || !CO) return false;
+  if (m[1] && coById(m[1])) coPick(m[1], m[2] === "defense" ? "def" : "off", false); else coShowList(true);
+  return true;
+}
+function coSide(side, focus) {  // show one game plan: offense or defense
+  co.side = side;
+  [["coTabOff", "coOffPlan", "off"], ["coTabDef", "coDefPlan", "def"]].forEach(([t, p, s]) => {
+    $(t).setAttribute("aria-selected", s === side); $(t).tabIndex = s === side ? 0 : -1; $(p).hidden = s !== side;
+  });
+  if (focus) $(side === "def" ? "coTabDef" : "coTabOff").focus();
+}
+const accGold = s => /MVP|Champ|All Star|Hall of Fame|COY|DPOY|ROY|Greatest|Anniv/.test(s);
+const accBadges = list => list.map(s => `<span class="${accGold(s) ? "gold" : ""}">${esc(s.replace(/(\d+)x /, "$1× "))}</span>`).join("");
+
+/* the defensive game plan's shooting: opponents' FG% on every kind of shot, against the league that season (export_coach_defense.py).
+   Counts are flat [attempts, makes, ...] lists by shot type (t), style (s) and court zone (z). */
+const CD = DATA.coachDefense || null;
+const CO_STEPS = [-.05, -.03, -.015, .015, .03, .05];  // team defenses spread less than one shooter does, so finer colour steps than the shot charts
+const coStep = d => { let b = 0; while (b < CO_STEPS.length && d >= CO_STEPS[b]) b++; return b; };
+const amPairs = arr => Array.from({ length: arr.length / 2 }, (_, i) => [arr[2 * i], arr[2 * i + 1]]);
+function coOppSum(u) {  // opponents' FG%, eFG%, 3P% and FG% in the restricted area
+  const t = amPairs(u.t), [a, m] = t.reduce((s, r) => [s[0] + r[0], s[1] + r[1]], [0, 0]);
+  const [a3, m3] = ["CORNER_3", "ABOVE_BREAK_3"].map(k => t[CD.types.indexOf(k)]).reduce((s, r) => [s[0] + r[0], s[1] + r[1]], [0, 0]);
+  return { fg: m / a, efg: (m + m3 / 2) / a, fg3: m3 / a3, rim: u.z[1] / u.z[0] };
+}
+function coDefTiles(u, L, season) {
+  const me = coOppSum(u), lg = coOppSum(L);
+  const same = Object.keys(CD.units).filter(k => k.startsWith(season + "|")).map(k => coOppSum(CD.units[k]));
+  return [["Opp. FG%", "fg"], ["Opp. eFG%", "efg"], ["Opp. 3P%", "fg3"], ["Opp. at the rim", "rim"]].map(([l, k]) => {
+    const d = me[k] - lg[k], rank = 1 + same.filter(x => x[k] < me[k]).length;
+    return `<div><span class="label">${l}</span><b>${pct(me[k])}</b><small><span class="${colorBy(d, .005, true)}">${pp(d)}</span> vs league · ${nth(rank)} of ${same.length}</small></div>`;
+  }).join("");
+}
+function coFgBlock(title, keys, names, arr, larr, byVolume) {  // bar = opponents' FG%, tick = league FG% on the same shot
+  const rows = amPairs(arr), lrows = amPairs(larr);
+  const tot = rows.reduce((s, r) => s + r[0], 0), ltot = lrows.reduce((s, r) => s + r[0], 0);
+  const order = keys.map((_, i) => i).filter(i => rows[i][0] >= 20 && lrows[i][0]);
+  if (byVolume) order.sort((a, b) => rows[b][0] - rows[a][0]);
+  return head(title, "Opponents' FG%", "FG%", "vs lg") + order.map(i => {
+    const [a, m] = rows[i], [la, lm] = lrows[i], fg = m / a, lfg = lm / la, d = fg - lfg;
+    const tip = `${m.toLocaleString()} of ${a.toLocaleString()} · ${pct(a / tot)} of shots allowed (league ${pct(la / ltot)})`;
+    return barRow(`<span title="${tip}">${names[keys[i]] || keys[i]}</span>`, fg, lfg, `<span title="${tip}">${pct(fg)}</span>`,
+      `<span class="${colorBy(d, .01, true)}">${pp(d)}</span>`, { max: 1, alt: true });
+  }).join("");
+}
+function coCourt(u, L) {  // opponents' FG% in each court zone, coloured against the league; heaves are left off the map
+  const z = amPairs(u.z), lz = amPairs(L.z);
+  $("coDefCourt").innerHTML = ZONE_PATHS.map((d, i) => {
+    const [a, m] = z[i], [la, lm] = lz[i];
+    if (!a) return `<path class="zn empty" d="${d}" fill-rule="evenodd"/>`;
+    return `<path class="zn" d="${d}" fill-rule="evenodd" fill="${DV(coStep(m / a - lm / la))}"><title>${CD.zones[i]}: opponents ${m.toLocaleString()} of ${a.toLocaleString()} (${pct(m / a)}), league ${pct(lm / la)}</title></path>`;
+  }).join("") + COURT_LINES + ZONE_LABEL.map(([x, y], i) => {
+    const [a, m] = z[i], [la, lm] = lz[i], narrow = i === 5 || i === 6;
+    if (!a) return "";
+    return `<text class="big" x="${x}" y="${-y - (narrow ? 0 : 4)}"${narrow ? ` style="font-size:14px"` : ""}>${fmtP(m / a, 0)}</text>` +
+      `<text class="small" x="${x}" y="${-y + (narrow ? 16 : 15)}">${pp(m / a - lm / la)}</text>`;
+  }).join("");
+  $("coDefLegend").innerHTML = `<span class="sc-ramp">Opponents colder <span class="sw">${Array.from({ length: CO_STEPS.length + 1 }, (_, b) => `<i style="background:${DV(b)}"></i>`).join("")}</span> hotter than league</span>` +
+    `<span>Big: opponents' FG%. Small: points vs league.</span>`;
+}
+
+function coRender() {
+  const c = coById(co.sel);
+  if (!c) return;
+  const tri = c.now || c.last, [tname, c1, c2] = pfTeam(tri), [first, last] = pfSplitName(c.name), k = c.career;
+  const stints = c.stints.filter(s => s.data);
+  if (!co.stint || !stints.some(s => s.season + s.team === co.stint)) co.stint = stints.length ? stints[stints.length - 1].season + stints[stints.length - 1].team : null;
+  const bio = [k.g ? `Career ${k.w}-${k.l} (${coPct(k)})` : "", k.pg ? `Playoffs ${k.pw}-${k.pl}` : k.g ? "No playoff games yet" : "",
+    c.history.length ? `${new Set(c.history.map(h => h[0])).size} seasons` : ""].filter(Boolean);
+  $("coTop").className = "co-top pf-hero";
+  $("coTop").style.cssText = `--tc:${c1};--ta:${c2}`;
+  $("coTop").innerHTML = `
+      <div class="pf-id">
+        <div class="pf-team">${pfLogo(coTeamId(tri))}<span>${esc(tname)} · ${c.now ? `Head coach, ${CO.current}` : "Former head coach"}</span></div>
+        <h2><span class="pf-first">${esc(first)}</span><span class="pf-last">${esc(last)}</span></h2>
+        <div class="pf-bio">${bio.map(x => `<span>${esc(x)}</span>`).join("")}</div>
+        ${c.acc.length ? `<div class="acc">${accBadges(c.acc)}</div>` : ""}
+      </div>
+      <div class="pf-shot"><span class="pf-ini" aria-hidden="true">${esc(pfInitials(c.name))}</span>${coImg(c)}</div>`;
+  const img = $("coTop").querySelector(".pf-shot img");
+  if (img) img.addEventListener("load", () => { const ini = $("coTop").querySelector(".pf-ini"); if (ini) ini.remove(); }, { once: true });
+
+  $("coStints").innerHTML = stints.map(s => `<button type="button" data-stint="${s.season + s.team}" aria-pressed="${s.season + s.team === co.stint}">${esc(s.team)} ${s.season.slice(2)}</button>`).join("");
+  $("coStints").closest(".co-ctl").hidden = stints.length < 2;
+  const s = stints.find(x => x.season + x.team === co.stint), key = s && `${s.season}|${s.team}`, u = key && CO.units[key], L = s && CO.league[s.season];
+  const du = key && CD && CD.units[key], dL = du && CD.league[s.season];
+  const sc = c.shot >= 0 && SH ? SH.coaches[c.shot] : null;
+  $("coPlan").hidden = !u && !du && !sc;
+  $("coEmpty").hidden = !$("coPlan").hidden;
+  $("coEmpty").textContent = c.stints.length ? "" : `No games in ${CO.seasons[0]} to ${CO.seasons[CO.seasons.length - 1]} yet.`;
+  if (u) {
+    // offense and defense points per play for this team season, ranked against the league that season
+    const ppp = (x, side) => { const t = x[side].reduce((a, r) => [a[0] + r[0], a[1] + r[1]], [0, 0]); return t[0] ? t[1] / t[0] : 0; };
+    const same = Object.keys(CO.units).filter(k2 => k2.startsWith(s.season + "|")).map(k2 => CO.units[k2]);
+    const rank = (side, v, low) => 1 + same.filter(x => low ? ppp(x, side) < v : ppp(x, side) > v).length;
+    const o = ppp(u, "off"), d = ppp(u, "def");
+    $("coTiles").innerHTML = [
+      ["Record", `${s.w}-${s.l}`, `${s.team} ${s.season}${s.g < u.gp ? ` · ${s.g} of ${u.gp} games` : ""}`],
+      ["Playoffs", s.pw + s.pl ? `${s.pw}-${s.pl}` : "—", s.pw + s.pl ? (c.history.find(h => h[0] === s.season && h[1] === s.team) || [])[9] || "" : "Missed"],
+      ["Offense", o.toFixed(3), `pts per play · ${nth(rank("off", o))} of ${same.length}`],
+      ["Defense", d.toFixed(3), `allowed per play · ${nth(rank("def", d, true))} of ${same.length}`],
+    ].map(([l, v, sub]) => `<div><span class="label">${l}</span><b>${v}</b><small>${esc(sub)}</small></div>`).join("");
+    $("coOffPT").innerHTML = ptBlock("Play type", CO.play_types, u.off, L.off, u.pct && u.pct.off);
+    $("coOffAct").innerHTML = actBlock(u, L, CO.actions, false);
+    $("coDefPT").innerHTML = ptBlock("Play type allowed", CO.play_types, u.def, L.def, u.pct && u.pct.def, true);
+    $("coDefAct").innerHTML = husBlock(u, L, CO.hustle, false, CO.rim);
+  } else {
+    $("coTiles").innerHTML = "";
+    ["coOffPT", "coOffAct", "coDefPT", "coDefAct"].forEach(id => $(id).innerHTML = "");
   }
-  const lz = leagueShares(SH.league.zones), mx = Math.max(...c.off_zones, ...c.def_zones, ...lz) * 1.1;
-  $("cOff").innerHTML = head("Shot type", "Share", "Share", "vs lg") + SH.zones.map((z, i) => barRow(ZN[z], c.off_zones[i], lz[i], pct(c.off_zones[i], 0), pp(c.off_zones[i] - lz[i]), { max: mx })).join("");
-  $("cDef").innerHTML = head("Shot type", "Share", "Share", "vs lg") + SH.zones.map((z, i) => barRow(ZN[z], c.def_zones[i], lz[i], pct(c.def_zones[i], 0), pp(c.def_zones[i] - lz[i]), { max: mx, alt: true })).join("");
+  $("coTiles").hidden = !u;
+  $("coOffZ").innerHTML = sc ? zoneBlock("Shot diet · all his games", sc.off_zones) : "";
+  $("coDefZ").innerHTML = sc ? zoneBlock("Shots allowed · all his games", sc.def_zones, true) : "";
+
+  // defensive game plan: what opponents shoot on every kind of shot
+  $("coDefTiles").hidden = $("coDefShots").hidden = !du;
+  if (du) {
+    $("coDefTiles").innerHTML = coDefTiles(du, dL, s.season);
+    coCourt(du, dL);
+    $("coDefType").innerHTML = coFgBlock("Shot type", CD.types, ZN, du.t, dL.t);
+    $("coDefStyle").innerHTML = coFgBlock("Style · road games", CD.styles, STN, du.s, dL.s, true);
+  }
+  const whole = s && u ? `Team numbers are the whole ${s.season} regular season${s.g < u.gp ? `; he coached ${s.g} of its ${u.gp} games` : ""}.` : "";
+  $("coOffNote").textContent = u ? `${whole} Play types and tracking from NBA.com. Tick = league average; green = better than average.` : "";
+  $("coDefNote").textContent = du || u ? `${whole} Opponents' shooting from play-by-play${u ? "; play types and hustle from NBA.com" : ""}. Shot styles count road games only, since each arena's scorer labels pull-ups, step-backs and the rest differently. Tick = league average; green = better defense than average.` : "";
+
+  $("coOffModelWrap").hidden = $("coDefModelWrap").hidden = !sc;
+  if (sc) {
+    const eo = sc.effect_off, ed = sc.effect_def;
+    const chip = (lbl, v, sub, cls = "") => `<div class="ind"><span class="label">${lbl}</span><b class="${cls}">${v}</b><span class="caption" style="font-size:12px">${sub}</span></div>`;
+    $("coOffModel").innerHTML = [chip("Rim shots", pp(eo.rim), "pts of shot share"), chip("Mid-range", pp(eo.mid), "pts of shot share"),
+      chip("3-pointers", pp(eo.three), "pts of shot share")].join("");
+    $("coDefModel").innerHTML = [chip("Allows at the rim", pp(ed.rim), "pts of shot share"), chip("Allows 3s", pp(ed.three), "pts of shot share"),
+      chip("Pts / shot", `${ed.pps >= 0 ? "+" : "−"}${Math.abs(ed.pps).toFixed(3)}`, "vs average scheme", ed.pps < -0.0005 ? "up" : ed.pps > 0.0005 ? "down" : ""),
+      `<div class="ind" style="justify-content:center"><button type="button" id="coSim">Simulate against his defense ›</button></div>`].join("");
+  }
+  $("coHistWrap").hidden = !c.history.length;
+  $("coHist").innerHTML = `<thead><tr><th>Season</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">W%</th><th class="r">Playoffs</th><th>Result</th></tr></thead><tbody>` +
+    [...c.history].reverse().map(([se, t, g, w, l, pg, pw, pl, fin, note]) => `<tr class="${note === "NBA Champions" ? "champ" : ""}${s && se === s.season && t === s.team ? " sel" : ""}">
+      <td>${se}</td><td>${esc(t)}</td><td class="r">${w}</td><td class="r">${l}</td><td class="r">${g ? (w / g).toFixed(3).replace(/^0/, "") : ""}</td>
+      <td class="r">${pg ? `${pw}-${pl}` : ""}</td><td>${note === "NBA Champions" ? `${coRings(1)} Champions` : esc(note)}</td></tr>`).join("") + "</tbody>";
+}
+function initCoaches() {
+  if (!CO || !CO.coaches.length) return;
+  $("coaches").hidden = false;
+  const now = CO.coaches.filter(c => c.now), n = v => Number(v).toLocaleString();
+  $("coSince").textContent = CO.seasons[0] || "";
+  $("coKicker").textContent = `Head coaches · ${CO.current || ""}`;
+  $("coWall").innerHTML = [...now].sort((a, b) => a.now.localeCompare(b.now)).filter(c => c.photos.some(u => u.includes("cdn.nba.com"))).slice(0, 30).map(c => {
+    const [, c1, c2] = pfTeam(c.now);
+    return `<span style="--tc:${c1};--ta:${c2}" title="${esc(c.name)}"><img src="${coSmall(c.photos[0])}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  }).join("");
+  $("coJumbo").innerHTML = [[now.length, "On the bench now"], [CO.coaches.length, `Head coaches since ${CO.seasons[0] || ""}`],
+    [now.reduce((a, c) => a + c.titles, 0), "Titles among them"], [now.reduce((a, c) => a + c.coy, 0), "Coach of the Year awards"]]
+    .map(([v, l]) => `<div><b>${n(v)}</b><span>${esc(l)}</span></div>`).join("");
+  const setAll = all => { co.all = all; $("coNow").setAttribute("aria-pressed", !all); $("coAll").setAttribute("aria-pressed", all); coGrid(); };
+  $("coNow").addEventListener("click", () => setAll(false));
+  $("coAll").addEventListener("click", () => setAll(true));
+  $("coGrid").addEventListener("click", e => { const b = e.target.closest("[data-co]"); if (b) coPick(b.dataset.co, null, true); });
+  $("coStints").addEventListener("click", e => { const b = e.target.closest("[data-stint]"); if (b) { co.stint = b.dataset.stint; coRender(); } });
+  // back to the list: the browser's own back when we came from it, so its history stays in step
+  $("coBack").addEventListener("click", () => {
+    if (co.pushed) { history.back(); return; }
+    coShowList(true);
+    try { history.replaceState(null, "", "#/coaches"); } catch (e) {}
+  });
+  window.addEventListener("popstate", () => { if (coRoute(location.hash)) showTab("coaches"); });
+  document.querySelectorAll('#nav [data-nav="coaches"]').forEach(a => a.addEventListener("click", () => coShowList()));  // the menu's Coaches link always lands on the list
+  const tabs = document.querySelector("#coPlan .co-tabs");
+  tabs.addEventListener("click", e => { const b = e.target.closest("[data-side]"); if (b) { coSide(b.dataset.side); coHash(false); } });
+  tabs.addEventListener("keydown", e => {  // arrows, Home and End move between the two tabs
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    coSide(e.key === "Home" ? "off" : e.key === "End" ? "def" : co.side === "off" ? "def" : "off", true); coHash(false);
+  });
+  $("coDefModel").addEventListener("click", e => {
+    if (e.target.id !== "coSim") return;
+    const c = coById(co.sel), sc = SH.coaches[c.shot];
+    $("simCoach").value = String(sc.id); runSim();
+    showTab("players", true);
+    requestAnimationFrame(() => $("simPanel").scrollIntoView({ behavior: "smooth", block: "center" }));
+  });
+  co.sel = coList()[0].id;
+  coGrid(); coRender();
 }
 
 function initPlayers() {
   if (!SH) return;
-  ["players", "defenders", "coaches"].forEach(id => $(id).hidden = false);
+  ["players", "defenders"].forEach(id => $(id).hidden = false);
   document.querySelectorAll(".nav .needs-shots").forEach(a => a.hidden = false);
   const M2 = SH.metrics, better = M2.zone_nll < M2.zone_nll_player;
-  $("plCaption").textContent = `${SH.n_shots.toLocaleString()} shots, ${SH.seasons.length > 2 ? `${SH.seasons[0]} to ${SH.seasons.at(-1)}` : SH.seasons.join(", ")}. Defender estimated on ${pct(SH.defender_coverage, 0)} of shots. ` +
-    `On held-out shots the model predicts shot type ${better ? "better" : "no better"} than each player's own history (log loss ${M2.zone_nll.toFixed(3)} vs ${M2.zone_nll_player.toFixed(3)}).`;
+  $("plCaption").innerHTML = `${SH.n_shots.toLocaleString()} shots · ${SH.seasons.length > 2 ? `${SH.seasons[0]} to ${SH.seasons.at(-1)}` : SH.seasons.join(", ")}` +
+    tip(`Defender estimated on ${pct(SH.defender_coverage, 0)} of shots. On held-out shots the model predicts shot type ${better ? "better" : "no better"} than each player's own history (log loss ${M2.zone_nll.toFixed(3)} vs ${M2.zone_nll_player.toFixed(3)}).`);
   const plItems = [...SH.players].sort((a, b) => b.n - a.n)
     .map(p => ({ key: p.id, id: p.id, name: p.name, team: p.team, meta: `${p.n.toLocaleString()} shots in the model` }));
   playerSearch($("plFind"), { items: () => plItems, pick: it => renderPlayer(SH.players.find(p => p.id === it.id)), top: "Most shots", browse: {} });
   const byName = [...SH.defenders].sort((a, b) => a.name.localeCompare(b.name));
   $("simDef").innerHTML = `<option value="">League-average defender</option>` + byName.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
-  $("simCoach").innerHTML = `<option value="">League-average scheme</option>` + SH.coaches.map(c => `<option value="${c.id}">${c.name} (${c.team})</option>`).join("");
+  $("simCoach").innerHTML = `<option value="">League-average scheme</option>` + SH.coaches.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  selSearch($("simDef"), { reset: true, top: "Most shots defended", browse: {},
+    items: [...SH.defenders].sort((a, b) => b.n - a.n).map(d => ({ key: d.id, id: d.id, name: d.name, team: playerTeam(d.id), meta: `${d.n.toLocaleString()} shots defended` })) });
+  const stints = c => c.stints.reduce((r, s) => { const [t, y] = s.split(" "), l = r.at(-1); if (l && l.t === t) l.b = y; else r.push({ t, a: y, b: y }); return r; }, [])
+    .map(({ t, a, b }) => `${t} ${a === b ? a : a.slice(0, 4) + "–" + b.slice(-2)}`).join(" · ");  // "BKN 2016–19 · CLE 2024–26"
+  selSearch($("simCoach"), { reset: true, top: null, browse: { rest: "No team" }, noun: "coaches",
+    items: SH.coaches.map(c => ({ key: c.id, id: c.id, name: c.name, team: c.team, meta: stints(c) })) });
+  selSeg($("simQ"));
   ["simDef", "simCoach", "simQ", "simM"].forEach(id => $(id).addEventListener("input", runSim));
   $("zoneBars").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; const z = +b.dataset.z; zoneFocus = zoneFocus === z ? null : z; renderDots(); renderZoneBars(); });
   const loadDef = id => { if (!SH.defenders.some(d => d.id === id)) return; $("simDef").value = String(id); runSim(); $("simPanel").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); };
@@ -2342,10 +2775,9 @@ function initPlayers() {
   }));
   $("dFilter").addEventListener("input", renderDefTable); $("dMin").addEventListener("change", renderDefTable);
   if (!SH.defenders.some(d => d.n >= 300)) $("dMin").value = "0";
-  $("cSel").innerHTML = SH.coaches.map(c => `<option value="${c.id}">${c.name} · ${c.team}</option>`).join("");
-  $("cSel").addEventListener("change", e => renderCoach(SH.coaches.find(c => String(c.id) === e.target.value)));
+  selSeg($("dMin"));
   if (SH.players.length) renderPlayer(SH.players[0]);
-  renderDefTable(); if (SH.coaches.length) renderCoach(SH.coaches[0]);
+  renderDefTable();
 }
 
 /* ---------- player profiles ---------- */
@@ -2528,10 +2960,29 @@ function pfRenderFloor() {
     return `<div class="pf-trow">
       <div class="pf-tlabel"><span class="tri">${pfLogo(PF.teams[tri] || tid)}${esc(tri)}</span><span class="sc">${pts}</span></div>
       <div><div class="pf-five">${five.map(p => pfChip(p, box[p] || pfZero(), s, p === last)).join("")}</div>
-        ${bench.length ? `<div class="pf-bench">Played, now on the bench: ${bench.map(pfLink).join(", ")}</div>` : ""}</div></div>`;
+        ${bench.length ? `<div class="pf-bench">Bench: ${bench.map(pfLink).join(", ")}</div>` : ""}</div></div>`;
   };
   $("pfFloorRows").innerHTML = row(G.a, G.aid, a5, as, "A") + row(G.h, G.hid, h5, hs, "H");
 }
+
+/* ----- Basketball-Reference season awards: "MVP-1,AS,NBA1" = MVP, All-Star, All-NBA first team ----- */
+const AW_NAME = { MVP: "MVP", DPOY: "Defensive POY", ROY: "Rookie of the Year", "6MOY": "Sixth Man", MIP: "Most Improved", CPOY: "Clutch POY" };
+const AW_SHORT = { MVP: "MVP", DPOY: "DPOY", ROY: "ROY", "6MOY": "6MOY", MIP: "MIP", CPOY: "Clutch" };
+const TEAM_NTH = ["", "1st", "2nd", "3rd"];
+function awardList(P, season) {  // [[label, won?, short]] for a regular season; playoffs share their season's awards
+  const codes = P && P.aw ? P.aw[String(season).replace(PO_SFX, "")] : null;
+  if (!codes) return [];
+  return codes.split(",").map(c => {
+    let m;
+    if (c === "AS") return ["All-Star", true, "★"];
+    if ((m = c.match(/^NBA(\d)$/))) return [`All-NBA ${TEAM_NTH[+m[1]]} team`, true, `All-NBA ${m[1]}`];
+    if ((m = c.match(/^DEF(\d)$/))) return [`All-Defense ${TEAM_NTH[+m[1]]} team`, true, `All-Def ${m[1]}`];
+    if ((m = c.match(/^([A-Z0-9]+)-(\d+)$/)) && AW_NAME[m[1]]) return +m[2] === 1 ? [AW_NAME[m[1]], true, AW_SHORT[m[1]]] : [`${AW_NAME[m[1]]} voting: ${nth(+m[2])}`, false, ""];
+    return [c, false, ""];
+  }).sort((a, b) => b[1] - a[1]);
+}
+const awardRow = (P, season) => { const a = awardList(P, season); return a.length ? `<div class="aw-row">${a.map(([l, won]) => `<span class="aw${won ? "" : " lo"}">${esc(l)}</span>`).join("")}</div>` : ""; };
+const awardMarks = (P, season) => awardList(P, season).filter(a => a[1]).map(([l, , s]) => s === "★" ? `<span class="aw star" title="All-Star">★</span>` : s && !s.startsWith("All-") ? `<span class="aw" title="${esc(l)}">${esc(s)}</span>` : "").join("");
 
 /* ----- player card ----- */
 function openProfile(pid) {
@@ -2562,6 +3013,7 @@ function pfRenderCard() {
         <div class="pf-team">${pfLogo(PF.teams[tri])}<span>${esc(tname)}${b.num ? " · #" + esc(b.num) : ""}</span></div>
         <h2 id="pfName"><span class="pf-first">${esc(first)}</span><span class="pf-last">${esc(last)}</span></h2>
         <div class="pf-bio">${bio.map(x => `<span>${esc(x)}</span>`).join("")}</div>
+        ${P.acc || P.bref ? `<div class="acc">${accBadges(P.acc || [])}${P.bref ? `<a href="https://www.basketball-reference.com/players/${P.bref[0]}/${P.bref}.html" target="_blank" rel="noopener">Basketball-Reference ↗</a>` : ""}</div>` : ""}
       </div>
       <div class="pf-shot"><span class="pf-ini" aria-hidden="true">${esc(pfInitials(P.name))}</span><img src="${pfHead(pid)}" alt="${esc(P.name)}" onload="this.previousElementSibling.remove()" onerror="this.remove()"></div>
       <button type="button" class="pf-close" aria-label="Close profile">✕</button>
@@ -2651,8 +3103,8 @@ function pfRenderSeason() {
   const recent = log.slice(-10).reverse();
   const C = PF_LC;
   el.innerHTML = `
-    <div class="pf-head"><h3>${po ? "Playoff" : "Season"} averages</h3>
-      <label class="label" style="display:flex;gap:8px;align-items:center">Season <select id="pfSeasonSel">${seasons.map(x => `<option${x === season ? " selected" : ""}>${x}</option>`).join("")}</select></label></div>
+    <div class="pf-head"><h3>${po ? "Playoff" : "Season"} averages</h3>${awardRow(P, season)}
+      <div style="display:flex;gap:8px;align-items:center"><label class="label" for="pfSeasonSel">Season</label><select id="pfSeasonSel">${seasons.map(x => `<option${x === season ? " selected" : ""}>${x}</option>`).join("")}</select></div></div>
     <div class="pf-tiles">
       <div class="pf-tile hl"><span class="label">Fantasy</span><b>${per(pfFP(s))}</b><small>${rk >= 0 ? `#${rk + 1} of ${ranks.length} qualified` : `${s.gp} games, not ranked`}</small></div>
       <div class="pf-tile"><span class="label">PTS</span><b>${per(s.pts)}</b></div>
@@ -2684,6 +3136,7 @@ function pfRenderSeason() {
           <td class="r">${p("fgm", "fga")}</td><td class="r">${p("tpm", "tpa")}</td><td class="r fp">${f1(pfFP(t) / n)}</td></tr>`; }).join("")}</tbody></table></div></div>
     ${scIndexOf(pid) >= 0 ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="pfShotChart">Open his shot chart ›</button>${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<button type="button" id="pfShots">Matchup simulator ›</button>` : ""}</div>`
       : DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<div><button type="button" id="pfShots">Open his shot chart and matchup simulator ›</button></div>` : ""}`;
+  selSeason($("pfSeasonSel"));
 }
 function pfJumpToGame(gid) {
   if (!openGame(gid)) return;
@@ -2716,7 +3169,7 @@ function pfRenderBoard() {
   rows.sort((a, b) => pfSort.dir * ((a[pfSort.k] > b[pfSort.k]) - (a[pfSort.k] < b[pfSort.k])) || b.fpg - a.fpg);
   const pctf = v => (v * 100).toFixed(1);
   $("pfRows").innerHTML = rows.slice(0, pfShowN).map((r, i) => `<tr class="pf-open" data-pid="${r.id}" tabindex="0">
-    <td class="r">${i + 1}</td><td><span class="who">${pfAvatar(r.id, r.name)}<b>${esc(r.name)}</b></span></td><td>${esc(r.team)}</td>
+    <td class="r">${i + 1}</td><td><span class="who">${pfAvatar(r.id, r.name)}<b>${esc(r.name)}</b>${awardMarks(PF.players[r.id], $("pfBoardSeason").value)}</span></td><td>${esc(r.team)}</td>
     <td class="r">${r.gp}</td><td class="r">${f1(r.min)}</td><td class="r">${f1(r.pts)}</td><td class="r">${f1(r.reb)}</td><td class="r">${f1(r.ast)}</td>
     <td class="r">${f1(r.stl)}</td><td class="r">${f1(r.blk)}</td><td class="r">${f1(r.tov)}</td><td class="r">${pctf(r.fg)}</td><td class="r">${pctf(r.tp)}</td>
     <td class="r fp">${f1(r.fpg)}</td></tr>`).join("");
@@ -2737,6 +3190,7 @@ function initProfiles() {
   $("pfBoardSeason").innerHTML = seasons.map(s => `<option${s === (PF.seasons.includes(replaySeason) ? replaySeason : seasons[0]) ? " selected" : ""}>${s}</option>`).join("");
   $("pfTeam").innerHTML = `<option value="">All teams</option>` + Object.keys(PF.teams).sort().map(t => `<option value="${t}">${esc(pfTeam(t)[0])}</option>`).join("");
   $("pfHeadRow").innerHTML = `<th class="r">#</th><th>Player</th><th>Team</th>` + PF_COLS.map(([k, l]) => `<th class="r sort" data-k="${k}" tabindex="0">${l}</th>`).join("");
+  selSeason($("pfBoardSeason")); selTeam($("pfTeam"));
   ["pfBoardSeason", "pfTeam", "pfQual"].forEach(id => $(id).addEventListener("change", () => { pfShowN = 25; pfRenderBoard(); }));
   $("pfSearch").addEventListener("input", () => { pfShowN = 25; pfRenderBoard(); });
   $("pfMore").addEventListener("click", () => { pfShowN += 50; pfRenderBoard(); });
@@ -2847,7 +3301,7 @@ function psName(it, hl) {  // the name in its own spelling, matched letters mark
   return html + (open ? "</mark>" : "");
 }
 let psSeq = 0;
-function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse = null }) {
+function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse = null, noun = "players" }) {
   const pop = document.createElement("div"), id = `ps${++psSeq}`;
   pop.className = "ps-pop"; pop.id = id; pop.hidden = true; pop.setAttribute("role", "listbox");
   input.closest(".ps").append(pop);
@@ -2873,7 +3327,7 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
     const q = fold(input.value), toks = q.split(" ").filter(Boolean), list = items(), all = !q && !!browse;
     let groups;  // [header, results, tricode]
     if (!q) {
-      groups = [[top, list.slice(0, max)]];
+      groups = browse && !top ? [] : [[top, list.slice(0, max)]];  // no top list: straight to the teams
       if (browse) {  // then everyone, team by team (A–Z by team name), busiest first on each team
         const by = new Map();
         for (const it of list) { const t = it.team || ""; if (by.has(t)) by.get(t).push(it); else by.set(t, [it]); }
@@ -2882,8 +3336,9 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
       }
       groups = groups.map(([h, its, t]) => [h, its.map(it => ({ it: psPrep(it), hl: [] })), t]);
     } else {
-      const found = list.map((it, k) => { const m = psMatch(psPrep(it), q, toks); return m && { it, k, ...m }; }).filter(Boolean)
+      let found = list.map((it, k) => { const m = psMatch(psPrep(it), q, toks); return m && { it, k, ...m }; }).filter(Boolean)
         .sort((a, b) => a.rank - b.rank || a.k - b.k);
+      if (teamsExact(q).size) found = found.filter(r => r.rank <= 2.5);  // "nyk" / "ny" mean the Knicks, not Olynyk or "Anthony"
       const named = [...teamsNamed(q)], team = found.length > 0 && found[0].team && named.length === 1 ? named[0] : "";
       groups = [[team && pfTeam(team)[0], found.slice(0, found.length && found[0].team ? Math.max(max, 20) : max), team]];
     }
@@ -2892,12 +3347,12 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
     let i = 0;
     for (const [h, rs, t] of groups) {
       if (h && rs.length) rows.push(`<div class="ps-head${all ? " grp" : ""}">${t && PF && PF.teams[t] ? pfLogo(PF.teams[t], "ps-logo") : ""}<span>${esc(h)}</span>` +
-        `${all && i ? `<span class="ps-n">${rs.length}</span>` : ""}</div>`);
+        `${all && h !== top ? `<span class="ps-n">${rs.length}</span>` : ""}</div>`);
       for (const r of rs) rows.push(opt(r, i++, all && t));  // under a team's header its tag would only repeat it
     }
     act = 0; drawn = 0;
     pop.classList.toggle("browse", all);
-    pop.innerHTML = res.length ? "" : `<div class="ps-empty">No players match “${esc(input.value.trim())}”.</div>`;
+    pop.innerHTML = res.length ? "" : `<div class="ps-empty">No ${noun} match “${esc(input.value.trim())}”.</div>`;
     pop.scrollTop = 0;
     more();
     pop.hidden = false; input.setAttribute("aria-expanded", "true"); mark();
@@ -2921,6 +3376,149 @@ function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse
   pop.addEventListener("pointermove", e => { const o = e.target.closest(".ps-opt"); if (o && +o.dataset.i !== act) { act = +o.dataset.i; mark(); } });
 }
 
+/* ---------- dropdowns ----------
+   The page's other <select>s are drawn as the newer controls: a few short options as a segmented control, a team list as
+   the game picker's logo grid, a season list as the season picker's grid, and a long list of people as a search box.
+   The <select> stays, hidden, holding the value (as #scSeason does under the season picker), so code that reads or sets
+   its .value, or listens for its "input" or "change", works unchanged. */
+const SEL_VALUE = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
+const DD_CHEV = `<svg class="ss-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+const DD_CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+let ddSeq = 0, ddOpen = null;  // the open panel: { wrap, close }
+document.addEventListener("pointerdown", e => { if (ddOpen && !ddOpen.wrap.contains(e.target)) ddOpen.close(); });
+function selKeep(sel, draw) {  // hides the <select> and redraws whenever its value is set; returns its label and a setter that fires its events
+  sel.hidden = true; sel.tabIndex = -1; sel.setAttribute("aria-hidden", "true");
+  Object.defineProperty(sel, "value", { configurable: true, get() { return SEL_VALUE.get.call(this); }, set(v) { SEL_VALUE.set.call(this, v); draw(); } });
+  const lab = document.querySelector(`label[for="${sel.id}"]`);
+  if (lab) { lab.removeAttribute("for"); lab.id ||= sel.id + "Lbl"; }
+  return [lab, v => {
+    if (v === sel.value) return;
+    sel.value = v;
+    for (const t of ["input", "change"]) sel.dispatchEvent(new Event(t, { bubbles: true }));
+  }];
+}
+function selSeg(sel) {  // a few short options: a segmented control
+  const seg = document.createElement("div");
+  const draw = () => seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === sel.value));
+  const [lab, set] = selKeep(sel, draw);
+  seg.className = "seg sel-seg"; seg.setAttribute("role", "group");
+  if (lab) seg.setAttribute("aria-labelledby", lab.id);
+  seg.innerHTML = [...sel.options].map(o => `<button type="button" data-v="${esc(o.value)}">${esc(o.textContent)}</button>`).join("");
+  seg.addEventListener("click", e => { const b = e.target.closest("button"); if (b) set(b.dataset.v); });
+  sel.before(seg); draw();
+}
+function gridStep(pop, from, key) {  // the arrow keys move to the nearest button that way, like a calendar
+  const mid = r => [r.left + r.width / 2, r.top + r.height / 2], [x0, y0] = mid(from.getBoundingClientRect());
+  const dx = { ArrowLeft: -1, ArrowRight: 1 }[key] || 0, dy = { ArrowUp: -1, ArrowDown: 1 }[key] || 0;
+  const next = [...pop.querySelectorAll("button:not(:disabled)")].map(b => [b, ...mid(b.getBoundingClientRect())])
+    .filter(([b, x, y]) => b !== from && (dx ? Math.abs(y - y0) < 8 && Math.sign(x - x0) === dx : Math.abs(y - y0) >= 8 && Math.sign(y - y0) === dy))
+    .sort((a, b) => dx ? Math.abs(a[1] - x0) - Math.abs(b[1] - x0) : Math.abs(a[2] - y0) - Math.abs(b[2] - y0) || Math.abs(a[1] - x0) - Math.abs(b[1] - x0))[0];
+  if (next) next[0].focus();
+}
+// a button like the season picker's showing the value (face() gives [icon, value, note]) that opens a panel (body());
+// a click on a [data-v] in the panel picks that value, any other button goes to act(), which returns what to focus after the redraw
+function selPanel(sel, { cls = "", face, body, act, opened }) {
+  const wrap = document.createElement("div"), id = `dd${++ddSeq}`;
+  wrap.className = "dd";
+  wrap.innerHTML = `<button type="button" class="ss-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="${id}"></button><div class="ss-pop ${cls}" id="${id}" role="dialog" hidden></div>`;
+  const btn = wrap.firstElementChild, pop = wrap.lastElementChild;
+  const draw = () => {
+    const [icon, val, note] = face();
+    btn.innerHTML = `${icon}<span class="ss-val" id="${id}v"><b>${esc(val)}</b>${note ? `<small>${esc(note)}</small>` : ""}</span>${DD_CHEV}`;
+    if (!pop.hidden) pop.innerHTML = body();
+  };
+  const [lab, set] = selKeep(sel, draw);
+  if (lab) { btn.setAttribute("aria-labelledby", `${lab.id} ${id}v`); pop.setAttribute("aria-label", lab.textContent.trim()); }
+  const close = refocus => {
+    if (pop.hidden) return;
+    pop.hidden = true; btn.setAttribute("aria-expanded", "false"); ddOpen = null;
+    if (refocus) btn.focus();
+  };
+  const open = () => {
+    if (ddOpen) ddOpen.close();
+    if (opened) opened();
+    pop.innerHTML = body(); pop.hidden = false; btn.setAttribute("aria-expanded", "true"); ddOpen = { wrap, close };
+    pop.style.left = "0px";  // then slide left as far as it takes to stay on screen, or in the dialog it's in
+    const b = (wrap.closest("dialog") || document.documentElement).getBoundingClientRect(), r = pop.getBoundingClientRect();
+    pop.style.left = Math.max(b.left + 16 - r.left, Math.min(0, b.right - 16 - r.right)) + "px";
+    (pop.querySelector("[data-v].on") || pop.querySelector("[data-v]:not(:disabled)"))?.focus();
+  };
+  btn.addEventListener("click", () => pop.hidden ? open() : close());
+  pop.addEventListener("focusout", e => { if (e.relatedTarget && !wrap.contains(e.relatedTarget)) close(); });
+  pop.addEventListener("click", e => {
+    const t = e.target.closest("button");
+    if (!t || t.disabled) return;
+    if (t.dataset.v == null) { const f = act(t); pop.innerHTML = body(); pop.querySelector(f)?.focus(); return; }
+    close(true); set(t.dataset.v);
+    if (!btn.isConnected) $(sel.id)?.previousElementSibling?.querySelector(".ss-btn")?.focus();  // the change redrew this control (the player card does)
+  });
+  pop.addEventListener("keydown", e => {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(true); }
+    else if (/^Arrow/.test(e.key) && e.target.matches("button")) { e.preventDefault(); e.stopPropagation(); gridStep(pop, e.target, e.key); }
+  });
+  sel.before(wrap); draw();
+}
+function selTeam(sel) {  // a list of teams: the game picker's logo grid, East and West, any other options ("All teams") above it
+  const isTeam = v => !!PF_TEAMS[v], logo = t => PF && PF.teams[t] ? gpLogo(PF.teams[t]) : "";
+  selPanel(sel, {
+    cls: "tm",
+    face: () => { const v = sel.value, o = sel.selectedOptions[0]; return isTeam(v) ? [logo(v), pfTeam(v)[0]] : [v ? "" : GP_ALL, o ? o.textContent : ""]; },
+    body: () => {
+      const opts = [...sel.options], teams = new Set(opts.map(o => o.value).filter(isTeam)), placed = new Set();
+      const tile = t => (placed.add(t), `<button type="button" class="gp-tt${sel.value === t ? " on" : ""}" data-v="${t}" title="${esc(pfTeam(t)[0])}" aria-pressed="${sel.value === t}">${logo(t)}<b>${t}</b></button>`);
+      const confs = Object.entries(GP_CONF).map(([name, list]) => {
+        const ts = list.split(" ").filter(t => teams.has(t));
+        return ts.length ? `<div class="gp-conf"><span class="label">${name}</span><div class="gp-tgrid">${ts.map(tile).join("")}</div></div>` : "";
+      }).join("");
+      const rest = [...teams].filter(t => !placed.has(t)).sort(), other = opts.filter(o => !isTeam(o.value));
+      return (other.length ? `<div class="gp-pop-top">${other.map(o => `<button type="button" class="gp-all${o.value ? " txt" : ""}${sel.value === o.value ? " on" : ""}" data-v="${esc(o.value)}"
+          aria-pressed="${sel.value === o.value}">${o.value ? "" : GP_ALL}${esc(o.textContent)}</button>`).join("")}</div>` : "") +
+        `<div class="gp-confs">${confs}</div>${rest.length ? `<div class="gp-tgrid">${rest.map(tile).join("")}</div>` : ""}`;
+    },
+  });
+}
+function selSeason(sel) {  // a list of seasons ("2024-25", "2024-25 Playoffs"): the season picker's grid, a row per decade
+  let k = null;  // the panel's regular season / playoffs switch, until a season is picked
+  const hasPO = () => [...sel.options].some(o => isPO(o.value));
+  selPanel(sel, {
+    face: () => [DD_CAL, sel.value.replace(PO_SFX, ""), hasPO() ? (isPO(sel.value) ? "Playoffs" : "Regular season") : ""],
+    body: () => {
+      const vals = [...sel.options].map(o => o.value), kind = k || (isPO(sel.value) ? "po" : "rs"), key = s => s + (kind === "po" ? PO_SFX : "");
+      const bases = [...new Set(vals.map(v => v.replace(PO_SFX, "")))].sort(), yr = s => +s.slice(0, 4), dec = s => Math.floor(yr(s) / 10) * 10;
+      return (hasPO() ? `<div class="seg ss-kind" role="group" aria-label="Games">${[["rs", "Regular season"], ["po", "Playoffs"]]
+          .map(([v, l]) => `<button type="button" data-k="${v}" aria-pressed="${kind === v}">${l}</button>`).join("")}</div>` : "") +
+        `<div class="ss-dec">${[...new Set(bases.map(dec))].sort((x, y) => y - x).map(d => `<span class="ss-dl">${d}s</span><div class="ss-row">${bases.filter(s => dec(s) === d).map(s => {
+          const c = yr(s) % 10, v = key(s), on = v === sel.value;
+          return `<button type="button" class="ss-chip${on ? " on end" : ""}" data-v="${esc(v)}" style="--c:${c + 1};--c5:${c % 5 + 1};--r5:${c < 5 ? 1 : 2}"${vals.includes(v) ? "" : " disabled"}
+            aria-pressed="${on}" aria-label="${esc(v)}">${s.slice(2)}</button>`;
+        }).join("")}</div>`).join("")}</div>`;
+    },
+    act: t => { k = t.dataset.k; return `[data-k="${k}"]`; },
+    opened: () => { k = null; },
+  });
+}
+function selSearch(sel, { items, reset, ...opts }) {  // a long list of people: a search box with the one picked as its placeholder
+  const box = document.createElement("div");
+  box.className = "ps";
+  box.innerHTML = `<div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="${sel.id}Find" autocomplete="off" spellcheck="false"></div>`;
+  sel.before(box);
+  const input = box.querySelector("input"), undo = document.createElement("button");
+  const draw = () => { const o = sel.selectedOptions[0]; input.placeholder = o ? o.textContent : ""; undo.hidden = !sel.value || !!input.value; };
+  const [lab, set] = selKeep(sel, draw);
+  if (lab) lab.htmlFor = input.id;
+  playerSearch(input, { ...opts, items: () => items, pick: it => set(String(it.key)) });
+  if (reset) {  // an × to go back to the first option (the league average), shown when nothing is typed
+    undo.type = "button"; undo.className = "ps-clear";
+    undo.title = `Back to ${sel.options[0].textContent.toLowerCase()}`; undo.setAttribute("aria-label", undo.title);
+    undo.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+    input.parentElement.append(undo);
+    undo.addEventListener("pointerdown", e => e.preventDefault());  // a click leaves the focus where it was
+    undo.addEventListener("click", () => { const kb = document.activeElement === undo; set(sel.options[0].value); if (kb) input.focus(); });
+    input.addEventListener("input", draw);
+  }
+  draw();
+}
+
 /* ---------- team search ----------
    Every player search also finds teams by any name a fan would type: "New York Knicks", "New York", "Knicks", "NYK" or "NY".
    A query names a team when it equals one of the team's names, or, from 3 letters on, starts a word of one ("knic", "new york").
@@ -2932,14 +3530,19 @@ const TEAM_ALIASES = {
   SAS: ["SA"], TOR: ["Raps"], WAS: ["WSH", "Wiz"],
 };
 const TEAM_KEYS = Object.entries(PF_TEAMS).map(([t, [full]]) => [t, [t, full, ...(TEAM_ALIASES[t] || [])].map(fold)]);
-const teamCache = new Map();
+// both are asked once per player on every keystroke, so each query is folded and looked up only once
+const teamCache = new Map(), exactCache = new Map();
 function teamsNamed(query) {  // the tricodes a query names, as a Set
-  const q = fold(query);
-  if (!teamCache.has(q)) teamCache.set(q, new Set(q ? TEAM_KEYS.filter(([, keys]) =>
-    keys.some(k => k === q || (q.length >= 3 && (" " + k).includes(" " + q)))).map(([t]) => t) : []));
-  return teamCache.get(q);
+  if (!teamCache.has(query)) {
+    const q = fold(query);
+    teamCache.set(query, new Set(q ? TEAM_KEYS.filter(([, keys]) => keys.some(k => k === q || (q.length >= 3 && (" " + k).includes(" " + q)))).map(([t]) => t) : []));
+  }
+  return teamCache.get(query);
 }
-const teamsExact = query => { const q = fold(query); return new Set(TEAM_KEYS.filter(([, keys]) => keys.includes(q)).map(([t]) => t)); };
+function teamsExact(query) {  // only the teams it names exactly: a full name, city, nickname, tricode or short form
+  if (!exactCache.has(query)) { const q = fold(query); exactCache.set(query, new Set(TEAM_KEYS.filter(([, keys]) => keys.includes(q)).map(([t]) => t))); }
+  return exactCache.get(query);
+}
 // filter for tables: the name contains the query, the query names one of the player's teams,
 // or, with several words, each word does one or the other ("knicks brunson", "jalen nyk")
 function nameOrTeam(query) {
@@ -3334,7 +3937,7 @@ function scBoard() {
     return dir * ((x ?? -1) - (y ?? -1));
   });
   $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r, what]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0"${what ? ` title="${what}"` : ""} aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
-  const pc = v => fmtP(v), f1 = v => v == null ? "—" : v.toFixed(1);
+  const pc = v => fmtP(v);
   $("lbBody").innerHTML = rows.map(r => `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0">
     <td><b>${esc(r.name)}</b></td><td>${r.now ? esc(r.now) : `<span style="color:var(--muted)">—</span>`}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td>
     <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
@@ -3359,7 +3962,7 @@ function scInit() {
     (scHasPO() ? `<option value="rs">All regular seasons</option><option value="po">All playoffs</option><option value="all">Everything</option>`
       : SC.seasons.length > 1 ? `<option value="all">All seasons</option>` : "");
   sc.season = String((byKey.find(([s]) => !isPO(s)) || byKey[0])[1]);  // latest regular season
-  $("lbTeam").innerHTML = `<option value="">All</option>` + Object.keys(SC.teams).sort().map(t => `<option value="${t}">${t} · ${esc(SC.teams[t])}</option>`).join("") +
+  $("lbTeam").innerHTML = `<option value="">All teams</option>` + Object.keys(SC.teams).sort().map(t => `<option value="${t}">${t} · ${esc(SC.teams[t])}</option>`).join("") +
     (SC.roster && SC.roster.season ? `<option value="-">Not on a ${esc(SC.roster.season)} roster</option>` : "");
   const nL = SC.league.reduce((s, r) => s + r.lz.filter((_, i) => i % 2 === 0).reduce((a, b) => a + b, 0), 0);
   $("scCaption").textContent = [`${SC.players.filter(p => p.p.length).length.toLocaleString()} players`, `${nL.toLocaleString()} shots`,
@@ -3390,6 +3993,7 @@ function scInit() {
   $("scZones").addEventListener("click", () => setView("zones"));
   $("scCourt").addEventListener("mousemove", scHover);
   $("scCourt").addEventListener("mouseleave", () => { $("scTip").hidden = true; });
+  selSeg($("lbMin")); selTeam($("lbTeam"));
   $("lbMin").addEventListener("change", scBoard);
   $("lbTeam").addEventListener("change", scBoard);
   $("lbFind").addEventListener("input", scBoard);
@@ -3426,16 +4030,16 @@ function srcInit() {
   };
   const testSeason = DATA.games.length ? DATA.games[0].season : "";
   const steps = [
-    ["fetch", "1 · Fetch", n(nGames) + " games", `Play-by-play for ${seasons.length ? seasons[0] + " to " + seasons[seasons.length - 1] : "every season fetched"}${DATA.games.some(g => isPlayoffId(g.id)) ? ", regular season and playoffs" : ""}, pulled from NBA.com Stats with nba_api.`],
-    ["tok", "2 · Tokenize", `${(META.config && META.config.vocab_size) || V.length} tokens`, "Each game becomes a sentence of events like <code>H_3PT_MAKE</code>, <code>A_DREB</code> and <code>H_TOV</code>, with the score and clock alongside."],
-    ["train", "3 · Train", n(META.n_params) + " params", `A ${META.config.n_layer}-layer transformer learns to predict the next event and the winner from ${n(META.splits.train)} training games.`],
-    ["pred", "4 · Predict", "Every play", `Next play and home-win chance at each moment. Brier ${M.brier_model.toFixed(4)} vs ${M.brier_baseline.toFixed(4)} for the score-and-clock baseline (lower is better).`],
-    ["pub", "5 · Publish", n(DATA.games.length) + " games", `Held-out ${testSeason} games${DATA.games.some(g => isPlayoffId(g.id)) ? ` (${n(DATA.games.filter(g => isPlayoffId(g.id)).length)} of them playoffs)` : ""} the model never trained on, baked into this page with every prediction.`],
+    ["fetch", "1 · Fetch", n(nGames) + " games", `NBA.com play-by-play, ${seasons.length ? seasons[0] + " to " + seasons[seasons.length - 1] : "every season"}`],
+    ["tok", "2 · Tokenize", `${(META.config && META.config.vocab_size) || V.length} tokens`, "Plays become words: <code>H_3PT_MAKE</code>, <code>A_DREB</code>"],
+    ["train", "3 · Train", n(META.n_params) + " params", `${META.config.n_layer}-layer transformer, ${n(META.splits.train)} games`],
+    ["pred", "4 · Predict", "Every play", `Next play + win chance · Brier ${M.brier_model.toFixed(3)}`],
+    ["pub", "5 · Publish", n(DATA.games.length) + " games", `Unseen ${testSeason} games, on this page`],
   ];
   $("srcPipe").innerHTML = steps.map(([ic, st, big, p]) => `<li><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg></span><span class="st">${st}</span><b>${big}</b><p>${p}</p></li>`).join("");
   const also = [S.n_shots && `${n(S.n_shots)} shots → shot charts and the shot model`, DATA.matchups && "Matchup tracking → the man-to-man model",
     DATA.profiles && "Box scores and rosters → player cards"].filter(Boolean);
-  $("srcAlso").innerHTML = also.length ? "Also built from the same data: " + also.map(t => `<span>${t}</span>`).join("") : "";
+  $("srcAlso").innerHTML = also.length ? "Also: " + also.map(t => `<span>${t}</span>`).join("") : "";
 
   // one card per source: badge, what it feeds, a coverage strip on the shared season axis, where it lives on disk
   const tabName = t => tabHasContent(t) ? TAB_NAMES[t] : null;
@@ -3443,7 +4047,7 @@ function srcInit() {
     : `<span class="src-badge ${e(s.kind)}">${{ ref: "B-R", oss: "&lt;/&gt;", sim: "SIM" }[s.kind] || "•"}</span>`;
   const axis = [...new Set(S.sources.flatMap(s => [...Object.keys(s.season_counts || {}), ...(s.seasons || [])]))].sort();
   const full = Math.max(1230, ...S.sources.flatMap(s => Object.values(s.season_counts || {})));
-  if (axis.length) $("srcDataCap").textContent = `Where every number comes from, how much of it we have, and when it was last pulled. Each strip runs ${axis[0]} to ${axis[axis.length - 1]}, one bar per season; hover a bar for its count.`;
+  if (axis.length) $("srcDataCap").innerHTML = tip(`Where every number comes from, how much of it we have, and when it was last pulled. Each strip runs ${axis[0]} to ${axis[axis.length - 1]}, one bar per season; hover a bar for its count.`);
   const coverage = s => {
     const counts = s.season_counts || {}, have = (Object.keys(counts).length ? Object.keys(counts) : s.seasons || []).slice().sort();
     if (!have.length || !axis.length) return `<div class="src-cov"><div class="src-strip all"></div><div class="src-sum"><span>${e(s.coverage)}</span></div></div>`;
@@ -3467,18 +4071,17 @@ function srcInit() {
     return `<article class="src-f">
       <div class="src-top">${badge(s)}<div class="src-name"><h4>${s.url ? `<a href="${e(s.url)}" target="_blank" rel="noopener">${e(title)}</a>` : e(title)}</h4>
         <div class="org">${e(s.org)}</div></div></div>
-      <p class="use">${e(s.used)}</p>
+      <p class="use" title="${e(s.used)}">${e(s.used)}</p>
       ${coverage(s)}
-      <div class="src-feeds">${feeds.length ? "Feeds " + feeds.map(([t, l]) => `<button type="button" data-go="${t}">${e(l)}</button>`).join("") : ""}</div>
-      <div class="src-meta"><div>${[s.updated && "Updated " + e(s.updated), !lib && s.script.split(", ").map(x => `<code>${e(x)}</code>`).join(" ")].filter(Boolean).join(" · ") || "Bundled library data"}</div>
-        ${lib ? "" : `<div class="path" title="${e(file || s.file)}">→ ${e(file || s.file.replace(/[()]/g, ""))}</div>`}</div>
+      <div class="src-feeds">${feeds.length ? "→ " + feeds.map(([t, l]) => `<button type="button" data-go="${t}">${e(l)}</button>`).join("") : ""}</div>
+      <div class="src-meta" title="${lib ? "Bundled library data" : e(`${s.script} → ${file || s.file.replace(/[()]/g, "")}`)}">${s.updated ? "Updated " + e(s.updated) : "Bundled library data"}</div>
     </article>`;
   }).join("");
-  $("software").innerHTML = S.software.map(s => `<div><a href="${e(s.url)}" target="_blank" rel="noopener">${e(s.name)}</a> <span>${e(s.use)}</span></div>`).join("");
+  $("software").innerHTML = S.software.map(s => `<a href="${e(s.url)}" target="_blank" rel="noopener" title="${e(s.use)}">${e(s.name)}</a>`).join("");
   const CR = (DATA.assets && DATA.assets.credits) || [];
   $("creditsPanel").hidden = !CR.length;
   $("credits").innerHTML = CR.map(c => `<li><a href="${e(c.source)}" target="_blank" rel="noopener">${e(c.title)}</a>, ${e(c.author)}. ${c.license_url ? `<a href="${e(c.license_url)}" target="_blank" rel="noopener">${e(c.license)}</a>` : e(c.license)}. Resized and cropped.</li>`).join("");
-  $("srcBuilt").textContent = `Page built ${S.built}. Re-run the fetch scripts, then export_dashboard.py, to refresh everything.`;
+  $("srcBuilt").innerHTML = `Built ${e(S.built)}` + tip("Re-run the fetch scripts, then export_dashboard.py, to refresh everything.", "up");
 
   const R = S.runs, G = R.nbagpt, A = G ? G.args : {}, C = (DATA.meta && DATA.meta.config) || (G && G.config) || {};
   const SH = R.shots, SA = SH ? SH.args : {};
@@ -3493,8 +4096,9 @@ function srcInit() {
     "Shot charts": [SC ? n(SC.players.filter(p => p.p.length).length) : "–", "players charted"],
     "How the models are scored": [M.brier_model.toFixed(4), `NBAGPT's Brier score on held-out games (baseline ${M.brier_baseline.toFixed(4)})`],
   };
-  const card = (title, tags, rows) => `<div class="panel method"><h3>${title}</h3>${HERO[title] ? `<div class="m-hero"><b>${HERO[title][0]}</b><span>${HERO[title][1]}</span></div>` : ""}<div class="tags">${tags.join("")}</div>
-    <dl>${rows.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>`;
+  const card = (title, tags, rows) => { rows = rows.filter(Boolean); const [lead, ...rest] = rows;
+    return `<div class="panel method"><h3>${title}</h3>${HERO[title] ? `<div class="m-hero"><b>${HERO[title][0]}</b><span>${HERO[title][1]}</span></div>` : ""}<div class="tags">${tags.join("")}</div>
+    <p class="m-lead">${lead[1]}</p><details><summary>Specs</summary><dl>${rest.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></details></div>`; };
   const tag = t => `<span class="tag">${t}</span>`;
 
   $("methods").innerHTML = [
@@ -3601,33 +4205,37 @@ const teamTag = t => t ? `<span class="team-tag">${esc(t)}</span>` : "";
 function muRender(initial) {
   const p = mu.off, q = mu.def, pr = muPred(p, q), av = muAvgOff(p);
   $("muOff").value = ""; $("muOff").placeholder = p.n; $("muDef").value = ""; $("muDef").placeholder = q.n;
-  $("muHead").innerHTML = `${teamTag(p.now)}${esc(p.n)} <span class="x">guarded by</span> ${teamTag(q.now)}${esc(q.n)}`;
+  $("muHead").innerHTML = `${teamTag(p.now)}${esc(p.n)} <span class="x">vs</span> ${teamTag(q.now)}${esc(q.n)}` +
+    tip("Predictions are per 100 possessions in which this defender was the one guarding him, for the scorer only: his points, shot attempts and turnovers, and his FG% on those shots. Badges compare with his average against a typical defender.");
   const tile = (label, v, sub) => `<div class="tile"><span class="label">${label}</span><span class="v">${v}</span><span class="s">${sub}</span></div>`;
   $("muTiles").innerHTML = [
-    tile("Points / 100 poss", pr.pts.toFixed(1), `${hotCold(pr.pts, av.pts)} his avg ${av.pts.toFixed(1)}`),
-    tile("FG%", fmtP(pr.fg), `${hotCold(pr.fg * 100, av.fg * 100, "")} his avg ${fmtP(av.fg)}`),
-    tile("Shots / 100 poss", pr.fga.toFixed(1), `${hotCold(pr.fga, av.fga)} his avg ${av.fga.toFixed(1)}`),
-    tile("Turnovers / 100", pr.tov.toFixed(1), `${hotCold(pr.tov, av.tov, "", 1, true)} his avg ${av.tov.toFixed(1)}`),
+    tile("Pts / 100", pr.pts.toFixed(1), `${hotCold(pr.pts, av.pts)} avg ${av.pts.toFixed(1)}`),
+    tile("FG%", fmtP(pr.fg), `${hotCold(pr.fg * 100, av.fg * 100, "")} avg ${fmtP(av.fg)}`),
+    tile("Shots / 100", pr.fga.toFixed(1), `${hotCold(pr.fga, av.fga)} avg ${av.fga.toFixed(1)}`),
+    tile("TOV / 100", pr.tov.toFixed(1), `${hotCold(pr.tov, av.tov, "", 1, true)} avg ${av.tov.toFixed(1)}`),
   ].join("");
   const h = MU_H2H.get(p.id + "-" + q.id);
   $("muH2H").innerHTML = h
     ? `<span class="label">Actual head-to-head · ${h.seasons} season${h.seasons > 1 ? "s" : ""}</span>
-       <div><b>${h.poss.toFixed(0)}</b> possessions · <b>${h.pts}</b> pts (<b>${(h.pts / h.poss * 100).toFixed(1)}</b> per 100) · <b>${h.fgm}–${h.fga}</b> FG${h.fga ? ` (${fmtP(h.fgm / h.fga)})` : ""} · <b>${h.fg3m}–${h.fg3a}</b> 3P · <b>${h.tov}</b> TOV</div>`
-    : `<span class="label">Actual head-to-head</span><div style="color:var(--ink-2)">Fewer than ${MU.min_pair_poss} tracked possessions together, so this is purely the model's prediction from how each of them plays everyone else.</div>`;
+       <div><b>${(h.pts / h.poss * 100).toFixed(1)}</b> pts / 100 · <b>${h.fgm}–${h.fga}</b> FG${h.fga ? ` (${fmtP(h.fgm / h.fga)})` : ""} · <b>${h.tov}</b> TOV · ${h.poss.toFixed(0)} poss</div>`
+    : `<span class="label">Actual head-to-head${tip(`Fewer than ${MU.min_pair_poss} tracked possessions together, so the numbers above come only from how each of them plays everyone else.`)}</span><div style="color:var(--ink-2)">Too few meetings</div>`;
 
-  const row = (x, v, ref, attr, invert) => `<button type="button" class="mu-row" ${attr}="${x.id}" title="${esc(x.n)}"><span class="nm">${teamTag(x.now)}${esc(x.n)}</span><span class="num">${v.toFixed(1)}</span>${hotCold(v, ref, "", 1, invert)}</button>`;
+  // a bar instead of a badge: length is how far from the scorer's average (full at ±50%), blue colder, red hotter
+  const row = (x, v, ref, attr) => { const d = v / ref - 1;
+    return `<button type="button" class="mu-row" ${attr}="${x.id}" title="${esc(x.n)}: ${v.toFixed(1)} pts / 100 (scorer's avg ${ref.toFixed(1)})"><span class="nm">${teamTag(x.now)}${esc(x.n)}</span><span class="num">${v.toFixed(1)}</span>` +
+      `<span class="mu-d ${d < 0 ? "cold" : "hot"}" style="--w:${(Math.min(1, Math.abs(d) / .5) * 100).toFixed(0)}%"></span></button>`; };
   const defs = MU_DEFS.filter(x => x.now && x.dp >= 400 && x.id !== p.id && !muSwitch(p, x)).map(x => [x, muPred(p, x).pts]);
   defs.sort((a, b) => a[1] - b[1]);
-  $("muToughT").textContent = `Toughest defenders for ${p.n}`;
-  $("muEasyT").textContent = `Easiest defenders for ${p.n}`;
-  $("muTough").innerHTML = defs.slice(0, 7).map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
-  $("muEasy").innerHTML = defs.slice(-7).reverse().map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
+  $("muToughT").textContent = "Toughest defenders";
+  $("muEasyT").textContent = "Easiest defenders";
+  $("muTough").innerHTML = defs.slice(0, 5).map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
+  $("muEasy").innerHTML = defs.slice(-5).reverse().map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
   const offs = MU_OFFS.filter(x => x.now && x.op >= 400 && x.id !== q.id && !muSwitch(x, q)).map(x => [x, muPred(x, q).pts, muAvgOff(x).pts]);
   offs.sort((a, b) => (a[1] / a[2]) - (b[1] / b[2]));
-  $("muStopsT").textContent = `Who ${q.n} slows down most`;
-  $("muBeatsT").textContent = `Who scores on ${q.n}`;
-  $("muStops").innerHTML = offs.slice(0, 7).map(([x, v, a]) => row(x, v, a, "data-off")).join("");
-  $("muBeats").innerHTML = offs.slice(-7).reverse().map(([x, v, a]) => row(x, v, a, "data-off")).join("");
+  $("muStopsT").textContent = "He slows down";
+  $("muBeatsT").textContent = "Scores on him";
+  $("muStops").innerHTML = offs.slice(0, 5).map(([x, v, a]) => row(x, v, a, "data-off")).join("");
+  $("muBeats").innerHTML = offs.slice(-5).reverse().map(([x, v, a]) => row(x, v, a, "data-off")).join("");
   if (!initial) try { history.replaceState(null, "", `#matchups/${p.id}-${q.id}`); } catch (e) {}  // only on a user's pick, so page load keeps its own hash
 }
 
@@ -3654,7 +4262,7 @@ function muTeam() {
         title="${esc(o.n)} vs ${esc(d.n)}: ${P[i][j].toFixed(1)} pts/100 (his avg ${A[i].pts.toFixed(1)})${sw ? " · guard vs center, usually only on a switch" : ""}">${P[i][j].toFixed(1)}</button></td>`;
     }).join("")}</tr>`).join("") + "</tbody>";
   $("muAssign").innerHTML = offs.slice(0, n).map((o, i) => `<span><b>${esc(short(defs[best[i]].n))}</b> on ${esc(short(o.n))} · ${P[i][best[i]].toFixed(1)}</span>`).join("");
-  $("muTeamCap").textContent = `Predicted points per 100 possessions for each ${tO} scorer against each ${tD} defender (${MU.roster_season} rosters, most-used players first). Outlined cells are the pairing that holds ${tO}'s top five to the fewest points.`;
+  $("muTeamCap").innerHTML = tip(`Predicted points per 100 possessions for each ${tO} scorer against each ${tD} defender (${MU.roster_season} rosters, most-used players first). Outlined cells are the pairing that holds ${tO}'s top five to the fewest points.`);
 }
 
 function muInit() {
@@ -3668,7 +4276,7 @@ function muInit() {
     MU_H2H.set(r.off + "-" + r.def, r);
   }
   const H = MU.held_out, full = H["Scorer + defender + interaction"], lg = H["League average"];
-  $("muCaption").textContent = `What happens when one player guards another. A model trained on ${MU.games.toLocaleString()} games of NBA matchup tracking (${MU.seasons[0]} to ${MU.seasons.at(-1)}) predicts any pairing, even ones that never happened; on the unseen ${MU.test_season} season it cut points-prediction error ${((1 - full.pts / lg.pts) * 100).toFixed(0)}% versus league averages. Current teams: ${MU.roster_season} rosters.`;
+  $("muCaption").innerHTML = `Any scorer vs any defender · ${MU.games.toLocaleString()} games of tracking` + tip(`What happens when one player guards another. A model trained on ${MU.games.toLocaleString()} games of NBA matchup tracking (${MU.seasons[0]} to ${MU.seasons.at(-1)}) predicts any pairing, even ones that never happened; on the unseen ${MU.test_season} season it cut points-prediction error ${((1 - full.pts / lg.pts) * 100).toFixed(0)}% versus league averages. Current teams: ${MU.roster_season} rosters.`);
 
   // default: the most-played head-to-head of the last complete season between two players still on rosters
   let pick = null;
@@ -3708,15 +4316,15 @@ function muInit() {
     else { mu.off = MU_BY_ID.get(+r.dataset.o); mu.def = MU_BY_ID.get(+r.dataset.d); $("h-matchups").scrollIntoView({ behavior: "smooth" }); }
     muRender();
   });
-  ["muTeamO", "muTeamD"].forEach(id => $(id).addEventListener("change", muTeam));
+  ["muTeamO", "muTeamD"].forEach(id => { selTeam($(id)); $(id).addEventListener("change", muTeam); });
   const cal = MU.calibration || [];
   if (!cal.length) $("muCalPanel").hidden = true;
   const cmax = Math.max(...cal.map(c => Math.max(c.pred, c.actual)), 1);
   const top = cal.at(-1), gap = top ? top.pred / top.actual - 1 : 0;
-  $("muCalCap").textContent = `Every scorer–defender pair in the ${MU.test_season} season, which the model never saw in training, grouped by what it predicted. ` +
+  $("muCalCap").innerHTML = tip(`Every scorer–defender pair in the ${MU.test_season} season, which the model never saw in training, grouped by what it predicted. ` +
     (Math.abs(gap) < .1 ? "Predictions match what actually happened across the range; the high numbers are mostly mismatches the offense hunts, and they hold up."
-      : `Typical matchups are well calibrated. The very highest predictions (${top.band}) run ${gap > 0 ? "high" : "low"}: ${top.pred.toFixed(0)} predicted vs ${top.actual.toFixed(0)} actual per 100, so read extreme mismatches as "much better than his average" rather than an exact number.`);
-  $("muCal").innerHTML = cal.map(c => `<tr><td>${c.band}</td><td class="r">${c.pairs.toLocaleString()}</td><td class="r">${c.poss.toLocaleString()}</td><td class="r">${c.pred.toFixed(1)}</td><td class="r"><b>${c.actual.toFixed(1)}</b></td>
+      : `Typical matchups are well calibrated. The very highest predictions (${top.band}) run ${gap > 0 ? "high" : "low"}: ${top.pred.toFixed(0)} predicted vs ${top.actual.toFixed(0)} actual per 100, so read extreme mismatches as "much better than his average" rather than an exact number.`));
+  $("muCal").innerHTML = cal.map(c => `<tr title="${c.pairs.toLocaleString()} pairs · ${c.poss.toLocaleString()} possessions"><td>${c.band}</td><td class="r">${c.pred.toFixed(1)}</td><td class="r"><b>${c.actual.toFixed(1)}</b></td>
     <td><span class="track" style="display:block"><span class="fill" style="width:${(c.actual / cmax * 100).toFixed(1)}%;background:var(--base)"></span><span class="tick" style="left:${(c.pred / cmax * 100).toFixed(1)}%" title="Predicted ${c.pred.toFixed(1)}"></span></span></td></tr>`).join("");
   $("muTeamSwap").addEventListener("click", () => { const a = $("muTeamO").value; $("muTeamO").value = $("muTeamD").value; $("muTeamD").value = a; muTeam(); });
   muRender(true); muTeam();
@@ -3753,7 +4361,7 @@ function orbItems(S) {
       : `NBAGPT trained on all ${n(sp.train || s.rs + s.po)} of its games.`;
     return {
       id: i, title: s.season, f, status, date: f ? `Finals ${f.w}–${f.l}` : "", head: champ || s.season,
-      content: `${f ? `The ${esc(champ)} beat the ${esc(pfTeam(f.opp)[0])} ${f.w}–${f.l} in the Finals. ` : ""}${n(s.rs)} regular-season and ${n(s.po)} playoff games, ${n(s.shots)} shots. ${use}`,
+      content: `${f ? `Beat the ${esc(pfTeam(f.opp)[0])} ${f.w}–${f.l}<br>` : ""}${n(s.rs + s.po)} games · ${n(s.shots)} shots`, use,
       energy: Math.round(s.rs / full * 100),
       related: f ? S.map((o, j) => (j !== i && o.finals && [o.finals.champ, o.finals.opp].some(t => t === f.champ || t === f.opp) ? j : -1)).filter(j => j >= 0) : [],
     };
@@ -3807,7 +4415,7 @@ function orbCard(it) {
   const f = it.f, logo = f && f.champ_id ? `<img src="https://cdn.nba.com/logos/nba/${f.champ_id}/global/L/logo.svg" alt="" onerror="this.remove()">` : "";
   const shared = o => [o.f.champ, o.f.opp].find(t => t === f.champ || t === f.opp);
   return `<span class="orb-stem" aria-hidden="true"></span>
-    <div class="orb-ch"><div class="orb-row"><span class="orb-badge ${it.status}">${ORB_STATUS[it.status]}</span><span class="orb-date">${esc(it.date)}</span></div>
+    <div class="orb-ch"><div class="orb-row"><span class="orb-badge ${it.status}" title="${esc(it.use)}">${ORB_STATUS[it.status]}</span><span class="orb-date">${esc(it.date)}</span></div>
       <h3 class="orb-title">${logo}<span>${esc(it.title)} · ${esc(it.head)}</span></h3></div>
     <div class="orb-cc"><p>${it.content}</p>
       <div class="orb-sec"><div class="orb-row"><span class="orb-k">${orbSvg("zap")}Regular season played</span><span class="orb-v">${it.energy}%</span></div>
@@ -3901,13 +4509,21 @@ function homeInit() {
   const TOUR = {
     shots: ["Every shot, hot and cold, against the league.", "card-shots"],
     matchups: ["Who guards whom, and what it does to the scorer.", "card-matchups"],
-    players: ["Tendencies, defenders, coaches and fantasy.", "card-players"],
+    players: ["Tendencies, defenders and the matchup simulator.", "card-players"],
+    coaches: ["Every head coach: rings, awards, and how his teams play.", null, () => CO ? CO.coaches.filter(c => c.now && c.photos[0] && c.photos[0].includes("cdn.nba.com"))
+      .sort((a, b) => b.titles - a.titles || (b.career.w || 0) - (a.career.w || 0)).slice(0, 3).map(c => coSmall(c.photos[0])) : []],
+    fantasy: ["Fantasy points per game, by season and team.", null, () => {
+      if (!PF || !PF.seasons.length) return [];
+      const s = PF.seasons.filter(k => !isPO(k)).pop() || PF.seasons[PF.seasons.length - 1];
+      return pfRanks(s).slice(0, 3).map(id => pfHead(id, "260x190"));
+    }],
     games: ["Scrub any game and watch the odds swing.", "card-games"],
     model: ["How good the predictions are, plus a what-if.", "card-model"],
     sources: ["Where the numbers come from, and the name.", "card-sources"],
   };
-  $("hmTour").innerHTML = Object.entries(TOUR).filter(([t]) => tabHasContent(t)).map(([t, [line, photo]]) => {
-    return `<button type="button" class="hm-card" data-go="${t}" data-photo="${photo}"><b class="cast">${esc(TAB_NAMES[t])}</b><span>${line} <i>→</i></span></button>`;
+  $("hmTour").innerHTML = Object.entries(TOUR).filter(([t]) => tabHasContent(t)).map(([t, [line, photo, faces]]) => {
+    const f = faces ? faces() : [];  // no licensed photo for these: headshots of the people in them instead
+    return `<button type="button" class="hm-card${f.length ? " faces" : ""}" data-go="${t}"${photo ? ` data-photo="${photo}"` : ""}>${f.length ? `<span class="hm-faces" aria-hidden="true">${f.map(u => `<img src="${u}" alt="" loading="lazy" onerror="this.remove()">`).join("")}</span>` : ""}<b class="cast">${esc(TAB_NAMES[t])}</b><span>${line} <i>→</i></span></button>`;
   }).join("");
   setPhotos($("hmTour"));
 
@@ -3924,8 +4540,8 @@ function homeInit() {
 /* ---------- tabs + theme ---------- */
 function scIndexOf(pid) { return SC ? SC.players.findIndex(p => p.id === +pid) : -1; }
 function scNowOf(pid) { const i = scIndexOf(pid); return i >= 0 ? SC.players[i].now : null; }
-const TABS = ["home", "shots", "matchups", "players", "games", "model", "sources"];
-const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", games: "Game replay", model: "Model", sources: "Sources" };
+const TABS = ["home", "shots", "matchups", "players", "coaches", "fantasy", "games", "model", "sources"];
+const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", coaches: "Coaches", fantasy: "Fantasy", games: "Game replay", model: "Model", sources: "Sources" };
 let curTab = "home";
 function tabHasContent(name) {
   return [...document.querySelectorAll(`[data-tab~="${name}"]`)].some(el => !el.hidden && el.id !== "synNotice");
@@ -4037,7 +4653,8 @@ function initTabs() {
     try { localStorage.setItem("theme", document.documentElement.dataset.theme); } catch (e) {}
   });
   const h = START_HASH.replace(/^#\/?/, "");  // "#/model"; plain "#model" from old links still works
-  showTab(h.startsWith("shots/") ? "shots" : h.startsWith("games/") ? "games" : h.startsWith("matchups/") ? "matchups" : h.startsWith("player-") ? "players" : h || "home");
+  showTab(h.startsWith("shots/") ? "shots" : h.startsWith("games/") ? "games" : h.startsWith("matchups/") ? "matchups" : h.startsWith("player-") ? "players" : h.startsWith("coaches/") ? "coaches" : h || "home");
+  if (h.startsWith("coaches/") && curTab === "coaches") coRoute(START_HASH);  // a coach's own page, "#/coaches/<id>[/defense]"
   // inits may write deep-link hashes while they render; a visit with no hash should stay on home after a refresh
   if (!START_HASH) try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
 }
@@ -4057,6 +4674,7 @@ $("stepBack").addEventListener("click", () => setStep(step - 1));
 $("stepFwd").addEventListener("click", () => setStep(step + 1));
 $("swings").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) setStep(+tr.dataset.i); });
 $("swings").addEventListener("keydown", e => { const tr = e.target.closest("tr"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setStep(+tr.dataset.i); } });
+selSeg($("wQ"));
 ["wQ", "wT", "wM"].forEach(id => $(id).addEventListener("input", updateWhatIf));
 $("copyCsv").addEventListener("click", () => {
   const text = csv();
@@ -4078,6 +4696,7 @@ replayInit();
 sortGames();
 initPlayers();
 initProfiles();
+try { initCoaches(); } catch (e) { console.error(e); }  // a bug in one tab shouldn't stop the rest of the page from starting
 scInit();
 muInit();
 srcInit();

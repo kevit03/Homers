@@ -101,6 +101,12 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     bbref = ctx / "bbref_rosters.parquet"
     bb = pd.read_parquet(bbref) if bbref.exists() else None
     n_shots = len(pd.read_parquet(shots, columns=["made"])) if Path(shots).exists() else 0
+    tr_seasons = seasons_of(ctx / "tracking.parquet")
+    acc_seasons = seasons_of(ctx / "bbref_players.parquet")
+    n_acc = len(json.loads((ctx / "bbref_accolades.json").read_text())) if (ctx / "bbref_accolades.json").exists() else 0
+    n_coach = len(json.loads((ctx / "bbref_coaches.json").read_text())) if (ctx / "bbref_coaches.json").exists() else 0
+    acc_cov = (f"{', '.join(acc_seasons)}; {n_acc:,} player pages, {n_coach} coaches" if acc_seasons else "not fetched yet")
+    acc_updated = _mtime(ctx / "bbref_accolades.json") if n_acc else _mtime(ctx / "bbref_coaches.json")
 
     sources = [
         {"name": "NBA.com Stats: PlayByPlayV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
@@ -119,9 +125,21 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
          "updated": _mtime(ctx / "coaches.parquet"), "script": "fetch_context.py" + (", fetch_rosters.py" if roster_seasons else ""),
          "file": f"{context}/coaches.parquet" + (f", {context}/rosters.parquet" if roster_seasons else "")},
         {"name": "NBA.com Stats: SynergyPlayTypes", "org": "NBA.com / Synergy Sports via nba_api", "url": "https://www.nba.com/stats/players/isolation",
-         "used": "How often each team and player uses each play type (isolation, pick-and-roll, spot-up, ...) and points per possession.",
+         "used": "How often each team and player uses each play type (isolation, pick-and-roll, spot-up, ...) and points per possession, "
+                 "on offense and on defense: what each team allows, and what each player allows as the defender.",
          "coverage": ", ".join(pt_seasons) or "not fetched yet", "updated": _mtime(ctx / "playtypes.parquet"), "script": "fetch_context.py",
          "file": f"{context}/playtypes.parquet"},
+        {"name": "NBA.com Stats: tracking and hustle", "org": "NBA.com / Second Spectrum via nba_api", "url": "https://www.nba.com/stats/players/drives",
+         "used": "Player-tracking actions for teams and players: drives, catch-and-shoot and pull-up shots, paint, post and elbow touches, "
+                 "screen assists; hustle stats (deflections, contested shots, charges drawn, loose balls, box outs); and opponents' "
+                 "FG% at the rim and from three against each defender and team (LeagueDashPtStats, LeagueHustleStats, LeagueDashPtDefend).",
+         "coverage": ", ".join(tr_seasons) or "not fetched yet", "updated": _mtime(ctx / "tracking.parquet"), "script": "fetch_context.py",
+         "file": f"{context}/tracking.parquet"},
+        {"name": "Basketball-Reference awards and coaches", "org": "Sports Reference LLC", "url": "https://www.basketball-reference.com/awards/",
+         "used": "Player accolades as Basketball-Reference lists them (All-Star, All-NBA, MVP, titles, ...) and each season's award votes; "
+                 "every head coach's record, titles, Coach of the Year and other awards, season by season, and coach photos.",
+         "coverage": acc_cov, "updated": acc_updated, "script": "fetch_accolades.py",
+         "file": f"{context}/bbref_accolades.json, {context}/bbref_coaches.json"},
         {"name": "NBA.com Stats: CommonAllPlayers", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats/players",
          "used": "Official player IDs and names, used to match Basketball-Reference rosters to NBA.com players (including this year's rookies).",
          "coverage": "All players, all time", "updated": _mtime(ctx / "bbref" / "nba_all_players.parquet"), "script": "fetch_bbref.py",
@@ -148,7 +166,9 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
         "NBA.com Stats: LeagueGameFinder": ({}, list(pbp), ["games", "shots"]),
         "NBA.com Stats: BoxScoreMatchupsV3": (matchups, [], ["matchups", "players"]),
         "NBA.com Stats: CommonTeamRoster": ({}, sorted(set(coach_seasons) | set(roster_seasons)), ["players"]),
-        "NBA.com Stats: SynergyPlayTypes": ({}, pt_seasons, ["players"]),
+        "NBA.com Stats: SynergyPlayTypes": ({}, pt_seasons, ["players", "coaches"]),
+        "NBA.com Stats: tracking and hustle": ({}, tr_seasons, ["players", "coaches"]),
+        "Basketball-Reference awards and coaches": ({}, acc_seasons, ["coaches", "fantasy", "players"]),
         "NBA.com Stats: CommonAllPlayers": ({}, [], ["shots", "players"]),
         "Basketball-Reference team rosters": ({}, sorted(bb["season"].unique()) if bb is not None else [], ["shots", "players"]),
         "nba_api static data": ({}, [], ["games", "players"]),

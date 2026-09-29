@@ -1,6 +1,6 @@
 /* Player search test: every "find a player" box finds players the way people type them.
 
-   For each search box with a dropdown (shot charts, matchup scorer and defender, player tendencies) it types into the
+   For each search box with a dropdown (shot charts, matchup scorer and defender, player tendencies, simulator defender) it types into the
    real input and reads the dropdown. It checks known queries (no accents, initials, last name first, hyphens,
    apostrophes, extra spaces), that every player in the box's list can be found by his name typed without accents,
    and that the keyboard works. It also checks that the matchup boxes never offer the player already on the other
@@ -29,12 +29,14 @@ window.testPlayerSearch = async function testPlayerSearch() {
     ["muOff", "matchups", () => MU_OFFS.filter(p => p.id !== mu.def.id).map(p => p.n)],
     ["muDef", "matchups", () => MU_DEFS.filter(p => p.id !== mu.off.id).map(p => p.n)],
     ["plFind", "players", () => SH.players.map(p => p.name)],
+    ["simDefFind", "players", () => SH.defenders.map(d => d.name)],
   ].filter(([id, tab]) => $(id) && tabHasContent(tab));
   // the teams each box groups its players under when browsing
   const BOX_TEAMS = {
     scFind: () => SC.players.map(p => p.now && p.now.team).filter(Boolean),
     muOff: () => MU_OFFS.map(p => p.now).filter(Boolean), muDef: () => MU_DEFS.map(p => p.now).filter(Boolean),
     plFind: () => SH.players.map(p => p.team).filter(Boolean),
+    simDefFind: () => SH.defenders.map(d => playerTeam(d.id)).filter(Boolean),
   };
   // query -> the player who must come first (skipped for a box whose list doesn't have him)
   const CASES = [["jokic", "Nikola Jokić"], ["JOKIC", "Nikola Jokić"], ["doncic", "Luka Dončić"], ["porzingis", "Kristaps Porziņģis"],
@@ -89,7 +91,8 @@ window.testPlayerSearch = async function testPlayerSearch() {
     if (!p.hidden) fails.push({ box: id, test: "Esc closes the list" }); else passes.keys++;
     type(input, before[0] ? plain(before[0]) : "curry");
     key(input, "Enter");
-    const picked = id === "scFind" ? SC.players[sc.player].n : id === "muOff" ? mu.off.n : id === "muDef" ? mu.def.n : PL && PL.name;
+    const picked = id === "scFind" ? SC.players[sc.player].n : id === "muOff" ? mu.off.n : id === "muDef" ? mu.def.n
+      : id === "simDefFind" ? (SH.defenders.find(d => String(d.id) === $("simDef").value) || {}).name : PL && PL.name;
     if (!p.hidden || input.value || (before[0] && picked !== before[0])) fails.push({ box: id, test: "Enter picks the top result and clears the box", picked });
     else passes.keys++;
     input.blur();
@@ -120,7 +123,7 @@ window.testPlayerSearch = async function testPlayerSearch() {
   }
 
   // table filters keep accented players when typed without accents
-  const FILTERS = [["lbFind", "shots", "#lbBody tr"], ["dFilter", "players", "#dTable tr"], ["pfSearch", "players", "#pfRows tr"]]
+  const FILTERS = [["lbFind", "shots", "#lbBody tr"], ["dFilter", "players", "#dTable tr"], ["pfSearch", "fantasy", "#pfRows tr"]]
     .filter(([id, tab]) => $(id) && tabHasContent(tab));
   for (const [id, tab, rowSel] of FILTERS) {
     showTab(tab);
@@ -129,9 +132,15 @@ window.testPlayerSearch = async function testPlayerSearch() {
       const rows = [...document.querySelectorAll(rowSel)].map(r => r.textContent);
       if (rows.some(t => t.includes(want))) passes.filters++; else fails.push({ box: id, test: `"${q}" keeps ${want}`, rows: rows.length });
     }
+    // every row kept is a Knick by the row's own data (a player can match on a team the table doesn't show, e.g. who he shot for)
+    const knick = {
+      lbFind: tr => { const r = scRows().find(x => x.i === +tr.dataset.i); return !!r && (r.now === "NYK" || r.team.split("/").includes("NYK")); },
+      dFilter: tr => playerTeam(+tr.dataset.id) === "NYK",
+      pfSearch: tr => tr.textContent.includes("NYK"),
+    }[id];
     type($(id), "new york knicks");
-    const rows = [...document.querySelectorAll(rowSel)];
-    if (rows.length && rows.every(r => r.textContent.includes("NYK"))) passes.teams++; else fails.push({ box: id, test: '"new york knicks" keeps only Knicks', rows: rows.length });
+    const rows = [...document.querySelectorAll(rowSel)], notKnicks = rows.filter(r => !knick(r)).map(r => r.cells[0] && r.cells[0].textContent);
+    if (rows.length && !notKnicks.length) passes.teams++; else fails.push({ box: id, test: '"new york knicks" keeps only Knicks', rows: rows.length, notKnicks });
     type($(id), ""); $(id).blur();
   }
   showTab("shots");

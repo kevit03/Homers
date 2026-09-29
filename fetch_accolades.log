@@ -13,3 +13,54 @@ coach pages: 0 parsed, 75 to fetch (~4 min)
   1/75  David Adelman: 57-28, 0 titles, 0 COY
   11/75  Jordi Fernández Torres: 46-118, 0 titles, 0 COY
   21/75  Quin Snyder: 504-399, 0 titles, 0 COY
+  31/75  Chauncey Billups: 117-212, 0 titles, 0 COY
+  41/75  Wes Unseld: 77-130, 0 titles, 0 COY
+  51/75  Stephen Silas: 59-177, 0 titles, 0 COY
+  61/75  Brad Stevens: 354-282, 0 titles, 0 COY
+  71/75  Dave Joerger: 245-247, 0 titles, 0 COY
+  75/75  Earl Watson: 33-85, 0 titles, 0 COY
+players
+  2016-17: 595 player rows
+  2017-18: 664 player rows
+  2018-19: 708 player rows
+  2019-20: 651 player rows
+  2020-21: 705 player rows
+  2021-22: 812 player rows
+  2022-23: 679 player rows
+  2023-24: 735 player rows
+  2024-25: 735 player rows
+  2025-26: 733 player rows
+1477 players, 1471 matched to an NBA.com id; unmatched: Ömer Aşık, Vince Hunter, Tre Scott, Matthew Hurt, Cui Yongxi, Adama-Alpha Bal
+player pages: 0 parsed, 1477 to fetch (~86 min)
+  1/1477  derozde01: 6x All Star, 3x All-NBA
+  26/1477  sabondo01: 3x All Star, 3x TRB Champ, 2x All-NBA
+  51/1477  onealro01: -
+  76/1477  leverca01: -
+  101/1477  holidju01: 2015 NBA Champ
+  126/1477  herroty01: 1x All Star, 2019-20 All-Rookie, 2021-22 Sixth Man
+  151/1477  dunnkr01: -
+  176/1477  johnsca02: -
+  201/1477  griffbl01: 6x All Star, 5x All-NBA, 2010-11 All-Rookie, 2010-11 ROY
+  https://www.basketball-reference.com/players/b/balllo01.html attempt 1 failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+  https://www.basketball-reference.com/players/b/balllo01.html attempt 2 failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+  https://www.basketball-reference.com/players/n/niangge01.html attempt 1 failed: The read operation timed out
+  https://www.basketball-reference.com/players/n/niangge01.html attempt 2 failed: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+  226/1477  morrima02: 2020 NBA Champ
+  251/1477  harteis01: 2025 NBA Champ
+  276/1477  woodch01: -
+  301/1477  carteje01: -
+  326/1477  thompam01: 2023-24 All-Rookie, 2024-25 All-Defensive
+  351/1477  fultzma01: -
+  376/1477  knoxke01: -
+  401/1477  paytoga02: 2022 NBA Champ
+  426/1477  nwabada01: -
+  451/1477  exumda01: -
+  476/1477  willija07: 2025 NBA Champ
+  501/1477  makerth01: -
+  526/1477  nworajo01: 2021 NBA Champ
+  551/1477  sarral01: 2024-25 All-Rookie
+  576/1477  robyis01: -
+  601/1477  jackstr02: -
+  626/1477  flaggco01: 2025-26 ROY, 2025-26 All-Rookie
+  651/1477  garzalu01: -
+  676/1477  gilesha01: -

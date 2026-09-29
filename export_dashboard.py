@@ -135,6 +135,20 @@ def main():
         if payload["profiles"]:
             print(f"added {len(payload['profiles']['players'])} player profiles, "
                   f"play-by-play actors for {len(payload['profiles']['games'])}/{len(out_games)} games")
+        if payload["profiles"]:
+            from export_accolades import add_accolades
+            payload["profiles"]["accolades"] = add_accolades(payload["profiles"], args.context)
+    payload["coaches"] = None
+    if not payload["meta"]["synthetic"]:
+        from export_coaches import build_coaches_payload
+        payload["coaches"] = build_coaches_payload(args.context, (payload["shots"] or {}).get("coaches"))
+        if payload["coaches"]:
+            print(f"added {len(payload['coaches']['coaches'])} coaches, {len(payload['coaches']['units'])} team seasons of play data")
+    payload["coachDefense"] = None
+    if not payload["meta"]["synthetic"] and Path(args.shots).exists():
+        from export_coach_defense import build_coach_defense_payload
+        payload["coachDefense"] = build_coach_defense_payload(args.shots)
+        print(f"added opponents' shooting by shot type, style and zone for {len(payload['coachDefense']['units'])} team seasons")
     payload["shotcharts"] = None
     if Path(args.shots).exists():
         from export_shotcharts import build_shotcharts_payload
@@ -150,6 +164,8 @@ def main():
               f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
     from export_assets import build_assets_payload
     payload["assets"] = build_assets_payload(ROOT / "assets")
+    if payload["assets"] and payload["coaches"]:  # Wikipedia photos of coaches NBA.com and Basketball-Reference have none of
+        payload["assets"]["credits"] += [{**c, "use": "Coaches", "title": f"{c['title']} (coach photo)"} for c in payload["coaches"]["credits"]]
     from export_sources import build_seasons_payload, build_sources_payload
     payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shots, d)
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,

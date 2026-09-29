@@ -56,7 +56,7 @@ Everything lands in a single self-contained HTML dashboard.
 </p>
 
 <<<<<<< HEAD
-The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Game replay**, **Model** and **Sources**. A navigation menu (a plain-JavaScript port of shadcn/ui's NavigationMenu) groups them under **Home**, **Games** and **Players**, and each panel links straight to a section, such as the playoffs in Game replay or the What-if calculator. All text is set in one family: Barlow for reading, Barlow Semi Condensed for labels, and Barlow Condensed for headlines and numbers.
+The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players**, **Coaches**, **Fantasy**, **Game replay**, **Model** and **Sources**. A navigation menu (a plain-JavaScript port of shadcn/ui's NavigationMenu) groups them under **Home**, **Games** and **Players**, with **Coaches**, **Fantasy** and **Sources** as their own links, and each panel links straight to a section, such as the playoffs in Game replay or the What-if calculator. All text is set in one family: Barlow for reading, Barlow Semi Condensed for labels, and Barlow Condensed for headlines and numbers.
 
 - **Home** is the cover: the headline numbers, three featured games from the test season and its playoffs (most dramatic, closest, biggest upset) as score bugs with the model's win-chance line, every season in orbit (a port of a radial orbital timeline: click a season for its Finals, its games and shots, and whether NBAGPT trained on it, validated on it or never saw it), season leaders, and a photo card for every tab.
 - **Shot charts** cover every player who took a shot, not just the ones the shot model knows. Pick one season, one season's playoffs, all regular seasons or all playoffs. Each player gets a hexbin chart (size = how often he shoots from there, colour = FG% there against the league, smoothed so small samples stay grey) or a court-zone map, headline numbers (FG%, eFG%, 3P%, points per shot, shot mix, assisted rate), shot-type and shot-style tables, and a sortable table of the whole league with current teams from Basketball-Reference. Players on a current roster with no shots in the data yet (mostly rookies) can still be looked up.
@@ -68,7 +68,7 @@ The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players*
   <tr>
     <td width="50%" valign="top">
       <img alt="Game replay" src="docs/images/replay.png"><br>
-      <b>Game replay.</b> Pick any game (filter by team, or by regular season and playoffs) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. Playoff games carry their round and game number. A written story of the game marks the key moments, including when NBAGPT "called it". Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
+      <b>Game replay.</b> Pick any game (filter by team, or by regular season and playoffs) and press Watch to play it out like a broadcast: a score bug in team colors with the live score, clock and NBAGPT's win chance. Playoff games carry their round and game number. A recap in big numbers (biggest deficit, lead changes, when NBAGPT "called it") sits above a button for each key moment. Scrub play by play, compare the model with the baseline, see its top five guesses for the next play, and copy a link to any moment (<code>#games/&lt;gameId&gt;/&lt;play&gt;</code>).
     </td>
     <td width="50%" valign="top">
       <img alt="Matchup simulator" src="docs/images/simulator.png"><br>
@@ -79,7 +79,7 @@ The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players*
 
 <p align="center">
   <img alt="Player tendencies: shot chart, shot types, shot styles and Synergy play types" src="docs/images/player.png" width="100%"><br>
-  <sub><b>Player tendencies.</b> A half-court shot chart (click a shot type to isolate it), shot mix and FG% against the league across eight shot types, nine shot styles, and Synergy play types with points per possession.</sub>
+  <sub><b>Player tendencies.</b> A half-court shot chart (click a shot type to isolate it), shot mix and FG% against the league across eight shot types and nine shot styles. Offense: Synergy play types with points per possession, and tracking actions (drives, catch-and-shoot, pull-ups, paint, post and elbow touches, screen assists) per 36 minutes. Defense: the play types he guards and what he allows, hustle stats, and opponents' FG% at the rim and from three against what those shooters usually make.</sub>
 </p>
 
 <table>
@@ -90,7 +90,7 @@ The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players*
     </td>
     <td width="50%" valign="top">
       <img alt="Coaches and schemes" src="docs/images/coaches.png"><br>
-      <b>Coaches and schemes.</b> Each head coach's offensive play-type mix, his team's shot diet, what his defense gives up, and the model's estimate of how his scheme shifts shot selection.
+      <b>Coaches.</b> Its own tab: a photo card for every head coach since 2016-17 (today's 30 by default), with Basketball-Reference's record, titles and awards. Each coach gets his own page (linkable as `#/coaches/<Basketball-Reference id>`) with an offensive and a defensive game plan for every team season he coached. Offense: Synergy play types, tracking actions and shot diet. Defense: opponents' FG% by shot type, shot style (road games only, since home scorekeepers label styles differently) and court zone, play types allowed, hustle, and rim and three-point defense. Both are ranked against the league, and his career is listed season by season.
     </td>
   </tr>
   <tr>
@@ -100,7 +100,7 @@ The page is split into tabs: **Home**, **Shot charts**, **Matchups**, **Players*
     </td>
     <td width="50%" valign="top">
       <img alt="Fantasy leaderboard" src="docs/images/fantasy.png"><br>
-      <b>Fantasy leaderboard.</b> Fantasy points per game with NBA.com scoring, top-five cards, and filters by season (each season's playoffs are listed on their own) and team. Every row opens the player's profile.
+      <b>Fantasy leaderboard.</b> Its own tab. Fantasy points per game with NBA.com scoring, top-five cards, and filters by season (each season's playoffs are listed on their own) and team. All-Stars and award winners are marked; every row opens the player's profile, which lists his career accolades from Basketball-Reference and that season's awards and votes.
     </td>
   </tr>
   <tr>
@@ -155,9 +155,10 @@ On a Mac you can also double-click **`Open Dashboard.command`**. It rebuilds fro
 
 ```bash
 python fetch_data.py                 # play-by-play, 2016-17 to 2025-26, regular season + playoffs, ~13k games (a few hours, resumable)
-python fetch_context.py              # coaches, Synergy play types, defensive matchups from 2017-18 (several hours, resumable)
+python fetch_context.py              # coaches, Synergy play types (offense and defense), tracking and hustle, defensive matchups from 2017-18 (several hours, resumable)
 python fetch_rosters.py              # names, numbers, positions, heights for profiles (~2 min)
 python fetch_bbref.py                # current teams from Basketball-Reference (~2 min; --refresh during the offseason)
+python fetch_accolades.py            # accolades, award votes, coach records and photos (~5 min for coaches, ~1.5 h for every player page; resumable)
 python tokenize_pbp.py               # -> data/processed/games.pkl
 python baseline.py
 python train.py --out runs/base      # 4 layers, 128-dim, ~0.8M parameters
@@ -209,6 +210,7 @@ flowchart LR
 | Fetch context | `fetch_context.py` | `data/context/coaches.parquet`, `playtypes.parquet`, `matchups/` |
 | Fetch rosters | `fetch_rosters.py` | `data/context/rosters.parquet` |
 | Fetch current rosters | `fetch_bbref.py` | `data/context/bbref_rosters.parquet` (Basketball-Reference) |
+| Fetch accolades and coaches | `fetch_accolades.py` | `data/context/bbref_accolades.json`, `bbref_coaches.json`, `nba_coaches.parquet` |
 | Tokenize games | `tokenize_pbp.py` | `data/processed/games.pkl` |
 | Baseline | `baseline.py` | `runs/baseline.joblib` |
 | Train NBAGPT | `train.py` | `runs/<name>/best.pt`, `log.json` |
@@ -281,7 +283,9 @@ Win probability trails the baseline slightly, and the gap is in the second half 
 - **Seasons.** 2016-17 to 2025-26, regular season and playoffs; play-in games aren't included. Playoff games sit in each season's folder and are told apart by game ID. Profiles, the fantasy board and shot charts keep playoff stats separate from the regular season.
 - **Sources.** Play-by-play, defensive matchups, Synergy play types, coaches and rosters come from the NBA Stats API via [`nba_api`](https://github.com/swar/nba_api). Current teams and bios come from [Basketball-Reference](https://www.basketball-reference.com) team roster pages, fetched at most once every 3.5 seconds to respect its rate limit. The dashboard's Sources tab has the full list. HOMERs is not affiliated with or endorsed by the NBA.
 - **Primary defender.** The NBA doesn't publish who guarded each shot. HOMERs uses the on-floor opponent who guarded the shooter most in that game, weighted by shots attempted in the matchup feed. That feed starts in 2017-18, so 2016-17 shots have no defender.
-- **Coaches.** Each team's listed head coach for the season. Mid-season coaching changes aren't tracked.
+- **Coaches.** The shot model uses each team's head coach as NBA.com's roster feed lists him for the season, so mid-season changes aren't tracked, and that feed names the wrong coach for some team seasons (Indiana 2019-20 lists Nate Bjorkgren, who took over in 2020-21). The Coaches tab takes who coached when, and each record, from Basketball-Reference instead, including mid-season changes. Its team numbers cover the whole season, so a coach who took over mid-season shares them with his predecessor.
+- **Coach photos.** NBA.com headshots where it has one (70 of 71 NBA.com coach IDs), else Basketball-Reference's photo, else the lead photo of the coach's Wikipedia article (free-licensed, credited in the Sources tab). One interim coach has no photo anywhere and shows initials.
+- **Play types and tracking.** Synergy play types and Second Spectrum tracking come from NBA.com for regular seasons only. Players' numbers add up every season in the data; coaches' are per team season. Box outs start in 2017-18.
 - **Lineups.** Complete on about 97% of plays.
 - **Minutes.** Checked against official 2021-22 minutes for Jokić, Giannis, Embiid and LeBron, matching to within about 0.1 minutes per game. Other players weren't checked individually.
 - **Next-play odds in profiles.** They use only the model's top five guesses, so they slightly understate how involved a player is.
@@ -299,6 +303,7 @@ Win probability trails the baseline slightly, and the gap is in the second half 
 ├── fetch_context.py       coaches, Synergy play types, defensive matchups
 ├── fetch_rosters.py       roster details for profiles
 ├── fetch_bbref.py         current rosters from Basketball-Reference
+├── fetch_accolades.py     accolades, award votes, coach records and photos (Basketball-Reference, NBA.com, Wikipedia)
 ├── synthetic.py           fake games for testing the pipeline offline
 ├── tokenize_pbp.py        games -> event tokens + game-state features
 ├── model.py               NBAGPT transformer
@@ -312,6 +317,9 @@ Win probability trails the baseline slightly, and the gap is in the second half 
 ├── export_players.py      player, defender and coach data + model weights
 ├── export_profiles.py     player profiles and fantasy data
 ├── export_shotcharts.py   shot charts for every shooter
+├── export_coaches.py      the Coaches tab
+├── export_tracking.py     play types, tracking, hustle and rim defense for players and teams
+├── export_accolades.py    Basketball-Reference accolades for player profiles
 ├── export_sources.py      data sources and methods
 ├── export_assets.py       dashboard photos (assets/img, credits in assets/credits.json)
 ├── dashboard_template.html

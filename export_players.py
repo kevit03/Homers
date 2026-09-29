@@ -179,6 +179,13 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
             "playtypes": pt_player.get(pid),
         })
 
+    # defensive play types, tracking actions, hustle and rim defense (export_tracking.py), career totals
+    from export_tracking import labels, player_units
+    track = player_units(context, ids=[p["id"] for p in players])
+    if track:
+        for p in players:
+            p["track"] = track["units"].get(p["id"])
+
     sd = model.state_dict()
     W = lambda k: r(sd[k].numpy())
     weights = {k: W(k) for k in ("off_emb.weight", "def_emb.weight", "coach_off_emb.weight", "coach_def_emb.weight",
@@ -191,6 +198,7 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
         "metrics": meta["metrics"], "seasons": sorted(shots["season"].unique().tolist()),
         "n_shots": int(len(shots)), "defender_coverage": round(float((shots["defenderId"] > 0).mean()), 3),
         "players": players, "defenders": defenders, "coaches": coach_rows,
+        "track": {"league": track["league"], "seasons": track["seasons"], **labels()} if track else None,
         "avg": {"def": r(def_mean.numpy()), "coach_off": r(coff_mean.numpy()), "coach_def": r(cdef_mean.numpy()),
                 "defs": r(model.masked_mean(model.def_emb, eref["defs"]).mean(0).numpy()),
                 "conf": round(float(shots.loc[shots["defenderId"] > 0, "defenderConf"].mean()), 3) if (shots["defenderId"] > 0).any() else 0.0},

@@ -71,6 +71,7 @@ cmd_fetch() {
   step "Coaches, play types, matchups (resumable)"; py fetch_context.py
   step "Rosters";                               py fetch_rosters.py
   step "Current rosters (Basketball-Reference)"; py fetch_bbref.py --refresh
+  step "Accolades and coaches (Basketball-Reference, resumable)"; py fetch_accolades.py
 }
 
 cmd_tokenize() { step "Tokenizing play-by-play"; py tokenize_pbp.py "$@"; }
@@ -136,7 +137,7 @@ EOF
 
   bold "Running now"
   local any=0
-  for j in fetch_data fetch_context fetch_rosters tokenize_pbp build_shots "train\\.py" evaluate shot_model export_dashboard; do
+  for j in fetch_data fetch_context fetch_rosters fetch_accolades tokenize_pbp build_shots "train\\.py" evaluate shot_model export_dashboard; do
     if running "$j"; then jobs_matching "$j" | sed 's/^/  /'; any=1; fi
   done
   [ $any = 1 ] || echo "  nothing"
