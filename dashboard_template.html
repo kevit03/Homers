@@ -1923,7 +1923,8 @@ function hexA(hex, a) {
 
 function pickGame(i) {
   setPlaying(false);
-  $("gameSel").value = String(i);
+  gi = i;
+  gpMark();
   cur = withTop(order[i]);
   const [hc, ac] = chartColors(cur), { H, A } = sides(cur);
   charts.wp.data.datasets[0].data = cur.pm.map((y, j) => ({ x: cur.x[j], y }));
@@ -1963,13 +1964,7 @@ function setStep(s) {
 }
 
 function replayInit() {
-  if (PF) {
-    $("teamField").hidden = false;
-    $("teamSel").innerHTML = `<option value="">All teams</option>` + Object.keys(PF.teams).sort().map(t => `<option value="${t}">${t} · ${esc(pfTeam(t)[0])}</option>`).join("");
-  }
-  $("teamSel").addEventListener("change", () => sortGames(cur && cur.id));
-  $("kindField").hidden = !games.some(g => isPlayoffId(g.id));
-  $("kindSel").addEventListener("change", () => sortGames(cur && cur.id));
+  gpInit();
   $("bug").addEventListener("click", e => {
     if (e.target.closest("#playBtn")) setPlaying(!playTimer);
     const sp = e.target.closest("#speedBtn");
@@ -2780,34 +2775,62 @@ function psName(it, hl) {  // the name in its own spelling, matched letters mark
   return html + (open ? "</mark>" : "");
 }
 let psSeq = 0;
-function playerSearch(input, { items, pick, top = "Suggestions", max = 8 }) {
+function playerSearch(input, { items, pick, top = "Suggestions", max = 8, browse = null }) {
   const pop = document.createElement("div"), id = `ps${++psSeq}`;
   pop.className = "ps-pop"; pop.id = id; pop.hidden = true; pop.setAttribute("role", "listbox");
   input.closest(".ps").append(pop);
   for (const [k, v] of [["role", "combobox"], ["aria-autocomplete", "list"], ["aria-expanded", "false"], ["aria-controls", id]]) input.setAttribute(k, v);
   const sync = searchBox(input);
-  let res = [], act = 0;
-  const mark = () => {
-    pop.querySelectorAll(".ps-opt").forEach((o, i) => o.setAttribute("aria-selected", i === act));
-    const o = res.length && $(`${id}-${act}`);
-    if (o) { input.setAttribute("aria-activedescendant", o.id); o.scrollIntoView({ block: "nearest" }); } else input.removeAttribute("aria-activedescendant");
+  let res = [], act = 0, rows = [], drawn = 0;  // rows: the list's html (headers and options), drawn in batches as it scrolls
+  const more = () => {
+    if (drawn >= rows.length) return;
+    pop.insertAdjacentHTML("beforeend", rows.slice(drawn, drawn + 80).join(""));
+    drawn = Math.min(rows.length, drawn + 80);
   };
-  const show = () => {
-    const q = fold(input.value), toks = q.split(" ").filter(Boolean), list = items();
-    res = !q ? list.slice(0, max).map(it => ({ it: psPrep(it), hl: [] }))
-      : list.map((it, k) => { const m = psMatch(psPrep(it), q, toks); return m && { it, k, ...m }; }).filter(Boolean)
-          .sort((a, b) => a.rank - b.rank || a.k - b.k);
-    const named = q ? [...teamsNamed(q)] : [], teamQ = res.length > 0 && res[0].team;
-    res = res.slice(0, teamQ ? Math.max(max, 20) : max);
-    act = 0;
-    const head = !q ? top : teamQ && named.length === 1 ? pfTeam(named[0])[0] : "";
-    pop.innerHTML = (head ? `<div class="ps-head">${esc(head)}</div>` : "") + (res.length ? res.map((r, i) =>
-      `<div class="ps-opt" role="option" id="${id}-${i}" data-i="${i}">${pfAvatar(r.it.id, r.it.name)}
+  const mark = () => {
+    pop.querySelectorAll('.ps-opt[aria-selected="true"]').forEach(o => o.setAttribute("aria-selected", "false"));
+    while (res.length && !$(`${id}-${act}`) && drawn < rows.length) more();
+    const o = res.length && $(`${id}-${act}`);
+    if (o) { o.setAttribute("aria-selected", "true"); input.setAttribute("aria-activedescendant", o.id); o.scrollIntoView({ block: "nearest" }); }
+    else input.removeAttribute("aria-activedescendant");
+  };
+  const opt = (r, i) => `<div class="ps-opt" role="option" id="${id}-${i}" data-i="${i}" aria-selected="false">${pfAvatar(r.it.id, r.it.name)}
         <span class="ps-txt"><span class="ps-name">${psName(r.it, r.hl)}</span><span class="ps-meta">${esc(r.it.meta || "")}</span></span>
-        ${r.it.team ? `<span class="ps-team${r.team ? " hit" : ""}">${esc(r.it.team)}</span>` : ""}</div>`).join("")
-      : `<div class="ps-empty">No players match “${esc(input.value.trim())}”.</div>`);
+        ${r.it.team ? `<span class="ps-team${r.team ? " hit" : ""}">${esc(r.it.team)}</span>` : ""}</div>`;
+  const show = () => {
+    const q = fold(input.value), toks = q.split(" ").filter(Boolean), list = items(), all = !q && !!browse;
+    let groups;  // [header, results, tricode]
+    if (!q) {
+      groups = [[top, list.slice(0, max)]];
+      if (browse) {  // then everyone, team by team (A–Z by team name), busiest first on each team
+        const by = new Map();
+        for (const it of list) { const t = it.team || ""; if (by.has(t)) by.get(t).push(it); else by.set(t, [it]); }
+        [...by.keys()].filter(Boolean).sort((a, b) => pfTeam(a)[0].localeCompare(pfTeam(b)[0])).forEach(t => groups.push([pfTeam(t)[0], by.get(t), t]));
+        if (by.has("")) groups.push([browse.rest || "No current team", by.get("")]);
+      }
+      groups = groups.map(([h, its, t]) => [h, its.map(it => ({ it: psPrep(it), hl: [] })), t]);
+    } else {
+      const found = list.map((it, k) => { const m = psMatch(psPrep(it), q, toks); return m && { it, k, ...m }; }).filter(Boolean)
+        .sort((a, b) => a.rank - b.rank || a.k - b.k);
+      const named = [...teamsNamed(q)], team = found.length > 0 && found[0].team && named.length === 1 ? named[0] : "";
+      groups = [[team && pfTeam(team)[0], found.slice(0, found.length && found[0].team ? Math.max(max, 20) : max), team]];
+    }
+    res = groups.flatMap(g => g[1]);
+    rows = [];
+    let i = 0;
+    for (const [h, rs, t] of groups) {
+      if (h && rs.length) rows.push(`<div class="ps-head${all ? " grp" : ""}">${t && PF && PF.teams[t] ? pfLogo(PF.teams[t], "ps-logo") : ""}<span>${esc(h)}</span>` +
+        `${all && i ? `<span class="ps-n">${rs.length}</span>` : ""}</div>`);
+      for (const r of rs) rows.push(opt(r, i++));
+    }
+    act = 0; drawn = 0;
+    pop.classList.toggle("browse", all);
+    pop.innerHTML = res.length ? "" : `<div class="ps-empty">No players match “${esc(input.value.trim())}”.</div>`;
+    pop.scrollTop = 0;
+    more();
     pop.hidden = false; input.setAttribute("aria-expanded", "true"); mark();
   };
+  pop.addEventListener("scroll", () => { if (pop.scrollTop + pop.clientHeight > pop.scrollHeight - 400) more(); });
   const hide = () => { pop.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); };
   const choose = i => { const r = res[i]; if (!r) return; input.value = ""; sync(); hide(); pick(r.it); };
   input.addEventListener("input", show);
@@ -3698,7 +3721,7 @@ function homeInit() {
   $("hmGames").addEventListener("click", e => {
     const b = e.target.closest(".hm-game");
     if (!b) return;
-    $("sortSel").value = b.dataset.sort; $("teamSel").value = $("kindSel").value = ""; sortGames();
+    Object.assign(gf, { sort: b.dataset.sort, team: "", kind: "" }); sortGames();
     openGame(b.dataset.gid);
     showTab("games", true);
   });
@@ -3756,7 +3779,7 @@ function nmClose(refocus) {
 }
 function nmGo(a) {
   nmClose(false);
-  if (a.dataset.kind != null && !$("kindField").hidden) { $("teamSel").value = ""; $("kindSel").value = a.dataset.kind; sortGames(cur && cur.id); }
+  if (a.dataset.kind != null && !$("gpKind").hidden) { gf.team = ""; gf.kind = a.dataset.kind; sortGames(cur && cur.id); }
   showTab(a.dataset.nav, true);
   const to = a.dataset.to && $(a.dataset.to);
   if (to && !to.hidden) requestAnimationFrame(() => to.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -3766,7 +3789,7 @@ function nmInit() {
   // only offer places that have something to show in this build
   nav.querySelectorAll("[data-nav]").forEach(a => {
     const to = a.dataset.to && $(a.dataset.to);
-    a.closest("li").hidden = !tabHasContent(a.dataset.nav) || (to && to.hidden) || (a.dataset.kind === "po" && $("kindField").hidden);
+    a.closest("li").hidden = !tabHasContent(a.dataset.nav) || (to && to.hidden) || (a.dataset.kind === "po" && $("gpKind").hidden);
   });
   nav.querySelectorAll(".nm-item").forEach(li => { if (li.querySelector(".nm-content")) li.hidden = !li.querySelector(".nm-grid > li:not([hidden])"); });
   setPhotos(nav);
@@ -3832,12 +3855,10 @@ function buildAll() {
   Object.values(charts).forEach(c => c.destroy()); charts = {};
   themeDefaults();
   buildReplayCharts(); buildQualityCharts(); buildWhatIfChart();
-  if (cur) { const keep = step; pickGame(+$("gameSel").value); setStep(keep); }
+  if (cur) { const keep = step; gpRender(); pickGame(gi); setStep(keep); }  // cards redrawn for the new theme's team colors
 }
-$("sortSel").addEventListener("change", () => sortGames());
-$("gameSel").addEventListener("change", e => { if (order.length) pickGame(+e.target.value); });
-$("prevG").addEventListener("click", () => { if (order.length) pickGame((+$("gameSel").value - 1 + order.length) % order.length); });
-$("nextG").addEventListener("click", () => { if (order.length) pickGame((+$("gameSel").value + 1) % order.length); });
+$("prevG").addEventListener("click", () => { if (order.length) pickGame((gi - 1 + order.length) % order.length); });
+$("nextG").addEventListener("click", () => { if (order.length) pickGame((gi + 1) % order.length); });
 $("scrub").addEventListener("input", e => setStep(+e.target.value));
 $("stepBack").addEventListener("click", () => setStep(step - 1));
 $("stepFwd").addEventListener("click", () => setStep(step + 1));
@@ -3850,7 +3871,7 @@ $("copyCsv").addEventListener("click", () => {
     .catch(() => { $("copyMsg").textContent = "Your browser blocked copying. Select the table above and copy it instead."; });
 });
 document.addEventListener("keydown", e => {
-  if (e.target.matches("input, select, textarea") || e.target.closest("#nav, #hmOrbit") || $("replay").classList.contains("off-tab")) return;
+  if (e.target.matches("input, select, textarea") || e.target.closest("#nav, #hmOrbit, #gp") || $("replay").classList.contains("off-tab")) return;
   if (e.key === "ArrowLeft") setStep(step - 1);
   if (e.key === "ArrowRight") setStep(step + 1);
   if (e.key === " " && !e.target.closest("button, a, summary, dialog")) { e.preventDefault(); setPlaying(!playTimer); }
