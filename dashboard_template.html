@@ -1525,21 +1525,166 @@ function gameLabel(g) {
   return `${po ? po + " · " : ""}${A.tri} ${as} @ ${H.tri} ${hs}${g.ot > 0 ? ` (${g.ot > 1 ? g.ot : ""}OT)` : ""} · ${W.tri} by ${Math.abs(hs - as)} · swing ${pct(g.swing, 0)}${po ? "" : ` · game ${Number(g.id.slice(-5)) || g.id}`}`;
 }
 function sortGames(keepId) {
-  const k = $("sortSel").value, team = $("teamSel").value, kind = $("kindSel").value;
+  const { sort: k, team, kind } = gf;
   const f = { drama: (a, b) => b.swing - a.swing, close: (a, b) => Math.abs(a.final) - Math.abs(b.final),
               upset: (a, b) => b.loserPeak - a.loserPeak, id: (a, b) => a.id.localeCompare(b.id) }[k];
-  order = games.filter(g => (!team || sides(g).H.tri === team || sides(g).A.tri === team) && (!kind || (kind === "po") === isPlayoffId(g.id))).sort(f);
-  $("gameSel").innerHTML = order.length ? order.map((g, i) => `<option value="${i}">${esc(gameLabel(g))}</option>`).join("")
-    : `<option value="">No ${kind === "po" ? "playoff" : "regular-season"} games for ${esc(pfTeam(team)[0])}</option>`;
+  order = games.filter(g => gpHasTeam(g, team) && gpIsKind(g, kind)).sort(f);
   const i = typeof keepId === "string" ? order.findIndex(g => g.id === keepId) : -1;
-  if (order.length) pickGame(Math.max(0, i));
+  gi = Math.max(0, i);
+  gpBar(); gpRender();
+  if (order.length) pickGame(gi);
 }
 function openGame(gid) {  // select a game by id, clearing the team and game-type filters if they hide it
   let i = order.findIndex(g => g.id === gid);
-  if (i < 0 && ($("teamSel").value || $("kindSel").value)) { $("teamSel").value = $("kindSel").value = ""; sortGames(); i = order.findIndex(g => g.id === gid); }
+  if (i < 0 && (gf.team || gf.kind)) { gf.team = gf.kind = ""; sortGames(); i = order.findIndex(g => g.id === gid); }
   if (i < 0) return false;
   pickGame(i);
   return true;
+}
+
+/* ----- game picker: game type, team and sort over a rail of game cards, rendered a page at a time as the rail scrolls ----- */
+const gf = { sort: "drama", team: "", kind: "" };
+let gi = 0, gpShown = 0;
+const GP_PAGE = 40;
+const GP_SORTS = [["drama", "Drama", "Most dramatic: the win odds swung the most"], ["close", "Closest", "Closest finish"],
+                  ["upset", "Upsets", "Biggest upset: the winner looked beaten"], ["id", "Schedule", "Schedule order"]];
+const GP_FIRST = { drama: "most dramatic first", close: "closest first", upset: "biggest upsets first", id: "in schedule order" };
+const GP_KINDS = [["", "All games"], ["rs", "Regular season"], ["po", "Playoffs"]];
+const GP_CONF = { East: "ATL BOS BKN CHA CHI CLE DET IND MIA MIL NYK ORL PHI TOR WAS", West: "DAL DEN GSW HOU LAC LAL MEM MIN NOP OKC PHX POR SAC SAS UTA" };
+const GP_ALL = `<span class="gp-lg all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>`;
+const GP_CHEV = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+const gpLogo = tid => `<span class="gp-lg">${tid ? `<img src="https://cdn.nba.com/logos/nba/${tid}/global/L/logo.svg" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>`;
+const gpHasTeam = (g, t) => !t || sides(g).H.tri === t || sides(g).A.tri === t;
+const gpIsKind = (g, k) => !k || (k === "po") === isPlayoffId(g.id);
+const gpKindWord = k => ({ rs: "regular-season ", po: "playoff " })[k] || "";
+
+function gpCard(g, i) {
+  const { H, A } = sides(g), last = g.tok.length - 1, [hs, as] = pfScore(g, last), hw = hs !== as ? hs > as : !!g.home_win, on = i === gi;
+  const row = (S, pts, won) => `<span class="gp-t${won ? " w" : ""}">${gpLogo(S.tid)}<b>${esc(S.tri)}</b><strong>${pts}</strong></span>`;
+  // win-chance sparkline: away favored above the line, home below, matching the rows above it
+  const [hc, ac] = chartColors(g), W = 100, SH = 30, X = Math.max(48, g.x[last]), every = Math.max(1, Math.floor(g.pm.length / 70)), pts = [];
+  for (let k = 0; k <= last; k += every) pts.push(`${(g.x[k] / X * W).toFixed(1)},${(g.pm[k] * SH).toFixed(1)}`);
+  if (last % every) pts.push(`${(g.x[last] / X * W).toFixed(1)},${(g.pm[last] * SH).toFixed(1)}`);
+  const line = pts.join(" "), gid = `gpg${g.idx}`;
+  const spark = `<svg class="gp-spark" viewBox="0 0 ${W} ${SH}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="${SH}">
+    <stop offset=".5" stop-color="${ac}" stop-opacity=".6"/><stop offset=".5" stop-color="${hc}" stop-opacity=".6"/></linearGradient></defs>
+    <line class="mid" x1="0" x2="${W}" y1="${SH / 2}" y2="${SH / 2}"/><polygon fill="url(#${gid})" points="0,${SH / 2} ${line} ${W},${SH / 2}"/><polyline class="ln" points="${line}"/></svg>`;
+  const pc = v => pct(v, v < .095 ? 1 : 0), ot = g.ot > 0 ? ` · ${g.ot > 1 ? g.ot : ""}OT` : "";
+  const stat = { close: `Won by <b>${Math.abs(hs - as)}</b>${g.ot > 0 ? " in overtime" : ""}`, upset: `Winner fell to <b>${pc(1 - g.loserPeak)}</b>` }[gf.sort]
+    || `Odds swung <b>${pc(g.swing)}</b>`;
+  return `<button type="button" class="gp-card${on ? " on" : ""}" data-i="${i}" tabindex="${on ? 0 : -1}"${on ? ' aria-current="true"' : ""} aria-label="${esc(gameLabel(g))}">
+    <span class="gp-kick"><b>${gf.sort === "id" ? "" : "#" + (i + 1)}</b><span>${playoffTag(g.id) || "Game " + (Number(g.id.slice(-5)) || g.id)}${ot}</span></span>
+    ${row(A, as, !hw)}${row(H, hs, hw)}${spark}<span class="gp-stat">${stat}</span></button>`;
+}
+function gpRender() {
+  const rail = $("gpRail");
+  gpShown = Math.min(order.length, Math.max(GP_PAGE, gi + GP_PAGE / 2));
+  rail.innerHTML = order.length ? order.slice(0, gpShown).map(gpCard).join("")
+    : `<div class="gp-empty">No ${gpKindWord(gf.kind)}games for the ${esc(NICK(pfTeam(gf.team)[0]))}.<button type="button" data-gp-reset>Show all games</button></div>`;
+  rail.scrollLeft = 0;
+  gpEdges();
+}
+function gpMore(upTo) {
+  const to = Math.min(order.length, upTo);
+  if (to <= gpShown) return;
+  $("gpRail").insertAdjacentHTML("beforeend", order.slice(gpShown, to).map((g, k) => gpCard(g, gpShown + k)).join(""));
+  gpShown = to;
+}
+function gpMark() {  // highlight the open game's card and bring it into view
+  const rail = $("gpRail");
+  if (gi >= gpShown) gpMore(gi + GP_PAGE / 2);
+  rail.querySelectorAll(".gp-card.on").forEach(c => { c.classList.remove("on"); c.removeAttribute("aria-current"); c.tabIndex = -1; });
+  const c = rail.querySelector(`.gp-card[data-i="${gi}"]`);
+  if (!c) return;
+  c.classList.add("on"); c.setAttribute("aria-current", "true"); c.tabIndex = 0;
+  gpCenter(true);
+}
+function gpCenter(smooth) {  // scroll the rail only, never the page
+  const rail = $("gpRail"), c = rail.querySelector(".gp-card.on");
+  if (c && rail.clientWidth) rail.scrollTo({ left: Math.max(0, c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2), behavior: smooth ? "smooth" : "auto" });
+}
+function gpEdges() {
+  const r = $("gpRail");
+  $("gpLeft").hidden = r.scrollLeft < 8;
+  $("gpRight").hidden = r.scrollLeft + r.clientWidth > r.scrollWidth - 8;
+}
+function gpBar() {
+  const inTeam = games.filter(g => gpHasTeam(g, gf.team));
+  $("gpKind").querySelectorAll("button").forEach(b => {
+    b.setAttribute("aria-pressed", gf.kind === b.dataset.kind);
+    b.querySelector("small").textContent = inTeam.filter(g => gpIsKind(g, b.dataset.kind)).length.toLocaleString();
+  });
+  $("gpSort").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", gf.sort === b.dataset.sort));
+  const t = gf.team, full = t ? pfTeam(t)[0] : "";
+  $("gpTeamBtn").innerHTML = `${t ? gpLogo(PF.teams[t]) : GP_ALL}<span>${t ? esc(full) : "All teams"}</span>${GP_CHEV}`;
+  $("gpTeamClear").hidden = !t;
+  const n = order.length, what = `${gpKindWord(gf.kind)}game${n === 1 ? "" : "s"}`;
+  $("gpCount").innerHTML = `<b>${n.toLocaleString()}</b> ${t ? esc(NICK(full)) + " " : ""}${what}${n > 1 ? " · " + GP_FIRST[gf.sort] : ""}`;
+  $("prevG").disabled = $("nextG").disabled = n < 2;
+}
+function gpPop(open) {
+  const pop = $("gpTeamPop"), btn = $("gpTeamBtn");
+  if (open) {
+    const cnt = {}, placed = new Set();
+    games.forEach(g => { if (gpIsKind(g, gf.kind)) { const { H, A } = sides(g); cnt[H.tri] = (cnt[H.tri] || 0) + 1; cnt[A.tri] = (cnt[A.tri] || 0) + 1; } });
+    const tile = t => {
+      const n = cnt[t] || 0;
+      placed.add(t);
+      return `<button type="button" class="gp-tt${gf.team === t ? " on" : ""}" data-team="${t}" title="${esc(pfTeam(t)[0])}: ${n} ${gpKindWord(gf.kind)}game${n === 1 ? "" : "s"}"${n ? "" : " disabled"}>
+        ${gpLogo(PF.teams[t])}<b>${t}</b><small>${n}</small></button>`;
+    };
+    const confs = Object.entries(GP_CONF).map(([name, list]) => {
+      const ts = list.split(" ").filter(t => PF.teams[t]);
+      return ts.length ? `<div class="gp-conf"><span class="label">${name}</span><div class="gp-tgrid">${ts.map(tile).join("")}</div></div>` : "";
+    }).join("");
+    const rest = Object.keys(PF.teams).filter(t => !placed.has(t)).sort();
+    pop.innerHTML = `<div class="gp-pop-top"><button type="button" class="gp-all${gf.team ? "" : " on"}" data-team="">${GP_ALL}All teams</button>
+      <span class="caption">${gf.kind ? capFirst(gpKindWord(gf.kind)) + "games" : "Games"} per team</span></div>
+      <div class="gp-confs">${confs}</div>${rest.length ? `<div class="gp-tgrid">${rest.map(tile).join("")}</div>` : ""}`;
+  }
+  pop.hidden = !open;
+  btn.setAttribute("aria-expanded", open);
+  if (open) (pop.querySelector(".gp-tt.on, .gp-all.on") || pop.querySelector("button")).focus();
+}
+function gpInit() {
+  $("gpKind").innerHTML = GP_KINDS.map(([k, name]) => `<button type="button" data-kind="${k}" aria-pressed="false">${name} <small></small></button>`).join("");
+  $("gpSort").innerHTML = GP_SORTS.map(([k, name, tip]) => `<button type="button" data-sort="${k}" title="${tip}" aria-pressed="false">${name}</button>`).join("");
+  $("gpKind").hidden = !games.some(g => isPlayoffId(g.id));
+  $("gpTeam").hidden = !PF;
+  $("gpKind").addEventListener("click", e => { const b = e.target.closest("button"); if (b && gf.kind !== b.dataset.kind) { gf.kind = b.dataset.kind; sortGames(cur && cur.id); } });
+  $("gpSort").addEventListener("click", e => { const b = e.target.closest("button"); if (b && gf.sort !== b.dataset.sort) { gf.sort = b.dataset.sort; sortGames(); } });
+  $("gpTeamBtn").addEventListener("click", () => gpPop($("gpTeamPop").hidden));
+  $("gpTeamClear").addEventListener("click", () => { gf.team = ""; sortGames(cur && cur.id); $("gpTeamBtn").focus(); });
+  $("gpTeamPop").addEventListener("click", e => {
+    const b = e.target.closest("button[data-team]");
+    if (!b) return;
+    gpPop(false); $("gpTeamBtn").focus();
+    if (gf.team !== b.dataset.team) { gf.team = b.dataset.team; sortGames(cur && cur.id); }
+  });
+  $("gpTeam").addEventListener("keydown", e => { if (e.key === "Escape" && !$("gpTeamPop").hidden) { gpPop(false); $("gpTeamBtn").focus(); } });
+  document.addEventListener("click", e => { if (!$("gpTeamPop").hidden && !e.target.closest("#gpTeam")) gpPop(false); });
+  const rail = $("gpRail");
+  rail.addEventListener("click", e => {
+    const c = e.target.closest(".gp-card");
+    if (c) pickGame(+c.dataset.i);
+    if (e.target.closest("[data-gp-reset]")) { gf.team = gf.kind = ""; sortGames(); }
+  });
+  rail.addEventListener("keydown", e => {  // one tab stop for the rail; the arrow keys move between cards
+    const c = e.target.closest(".gp-card"), d = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (!c || !d) return;
+    e.preventDefault();
+    const j = +c.dataset.i + d;
+    if (j >= gpShown) gpMore(gpShown + GP_PAGE);
+    const nx = rail.querySelector(`.gp-card[data-i="${j}"]`);
+    if (nx) { c.tabIndex = -1; nx.tabIndex = 0; nx.focus({ preventScroll: true }); nx.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); }
+  });
+  rail.addEventListener("scroll", () => {
+    if (rail.scrollLeft + rail.clientWidth > rail.scrollWidth - 600) gpMore(gpShown + GP_PAGE);
+    gpEdges();
+  }, { passive: true });
+  $("gpLeft").addEventListener("click", () => rail.scrollBy({ left: -rail.clientWidth * .8, behavior: "smooth" }));
+  $("gpRight").addEventListener("click", () => rail.scrollBy({ left: rail.clientWidth * .8, behavior: "smooth" }));
+  new ResizeObserver(() => { gpCenter(false); gpEdges(); }).observe(rail);  // also fires when the Games tab is first shown
 }
 
 /* ----- story of the game: headline, recap and key moments, written from the plays and NBAGPT's odds ----- */
@@ -2572,7 +2717,9 @@ function initProfiles() {
    One combobox for every "find a player" box (shot charts, matchups, player tendencies), instead of the browser's datalist.
    Matching ignores accents and punctuation ("jokic" finds Jokić, "gilgeous alexander" finds Gilgeous-Alexander) and is ranked:
    the start of the full name, the start of each word typed ("lebron j", "james lebron"), initials ("sga"), anywhere in the
-   name, then the team ("bos"). Ties keep the list's own order (most shots or possessions first). Arrows move, Enter picks, Esc closes. */
+   name, then part of a team's name ("knic", "new york"); a team's exact name or short form ("knicks", "NYK", "ny") comes right after
+   the name-start matches. Ties keep the list's own order (most shots or possessions first). Arrows move, Enter picks, Esc closes.
+   With `browse`, an empty box lists everyone: the busiest first, then every team A–Z, rendered in batches as the list scrolls. */
 const FOLD_EXTRA = { "đ": "d", "ł": "l", "ø": "o", "æ": "ae", "ß": "ss", "ı": "i", "ð": "d", "þ": "th" };
 const foldChar = ch => ch.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
   .replace(/[đłøæßıðþ]/g, c => FOLD_EXTRA[c]).replace(/[.'’‘`]/g, "").replace(/[-_/,]/g, " ");
@@ -2608,6 +2755,8 @@ function psMatch(it, q, toks) {  // rank (lower is better) and the folded ranges
     hl.push([at, at + t.length]); return true;
   });
   if (words) return { rank: 2, hl };
+  // a team's exact name or short form ("knicks", "nyk", "ny") means the team, ahead of initials or letters inside a name (Olynyk)
+  if (it.team && teamsExact(q).has(it.team)) return { rank: 2.5, hl: [], team: true };
   if (q.length >= 2 && !q.includes(" ") && it._ini.startsWith(q)) return { rank: 3, hl: it._starts.slice(0, q.length).map(i => [i, i + 1]) };
   const at = f.indexOf(q);
   if (at >= 0) return { rank: 4, hl: [[at, at + q.length]] };
@@ -2694,6 +2843,7 @@ function teamsNamed(query) {  // the tricodes a query names, as a Set
     keys.some(k => k === q || (q.length >= 3 && (" " + k).includes(" " + q)))).map(([t]) => t) : []));
   return teamCache.get(q);
 }
+const teamsExact = query => { const q = fold(query); return new Set(TEAM_KEYS.filter(([, keys]) => keys.includes(q)).map(([t]) => t)); };
 // filter for tables: the name contains the query, the query names one of the player's teams,
 // or, with several words, each word does one or the other ("knicks brunson", "jalen nyk")
 function nameOrTeam(query) {
