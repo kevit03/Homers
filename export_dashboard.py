@@ -150,7 +150,8 @@ def main():
               f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
     from export_assets import build_assets_payload
     payload["assets"] = build_assets_payload(ROOT / "assets")
-    from export_sources import build_sources_payload
+    from export_sources import build_seasons_payload, build_sources_payload
+    payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shots, d)
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
                                                synthetic=payload["meta"]["synthetic"])
 

@@ -11,6 +11,7 @@ import torch
 
 from build_shots import STYLES, ZONES
 from fetch_context import PLAY_TYPES
+from player_names import full_name
 from shot_model import ShotNet, encode, player_priors, split_shots, team_profiles
 
 ZONE_VALUE = np.array([3 if z.endswith("_3") else 2 for z in ZONES], dtype=np.float32)
@@ -75,15 +76,9 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
     prof_off, prof_def, _ = team_profiles(context)
     rng = np.random.default_rng(seed)
 
-    # names
+    # names: full names from player_names.py; the play-by-play surname only if no source knows him
     shooter_names = shots.drop_duplicates("shooterId").set_index("shooterId")["shooter"].to_dict()
-    mpath = Path(context) / "matchups"
-    full_names = {}
-    for f in list(mpath.rglob("*.parquet"))[:400]:
-        m = pd.read_parquet(f, columns=["personIdOff", "firstNameOff", "familyNameOff"])
-        for pid, fn, ln in m.drop_duplicates("personIdOff").itertuples(index=False):
-            full_names[int(pid)] = f"{fn} {ln}".strip()
-    name = lambda pid: full_names.get(int(pid)) or shooter_names.get(int(pid)) or str(pid)
+    name = lambda pid: full_name(pid, shooter_names.get(int(pid)), context)
 
     coaches = pd.read_parquet(Path(context) / "coaches.parquet") if (Path(context) / "coaches.parquet").exists() else pd.DataFrame()
     coach_name = dict(zip(coaches.get("coachId", []), coaches.get("coach", [])))

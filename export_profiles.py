@@ -1,6 +1,9 @@
 """Player profiles for the dashboard: season box scores, fantasy points, game logs, and, for every
 replayed game, who made each play and who was on the floor.
 
+Stats are grouped by tokenize_pbp.season_key: "2024-25" is the regular season and "2024-25 Playoffs"
+its playoffs, so the two never mix. A player's game log covers his latest season, playoffs included.
+
 Everything comes from the raw play-by-play (plus data/context/rosters.parquet for bios, if fetched),
 so it works without the shot model. Per-game results are cached in data/processed/profiles_cache.pkl.
 
@@ -16,7 +19,8 @@ import numpy as np
 import pandas as pd
 
 from build_shots import TEAM_ID_MIN, load_matchups, name_map, norm
-from tokenize_pbp import STOI, classify, game_order, parse_clock
+from player_names import full_name
+from tokenize_pbp import STOI, classify, game_order, parse_clock, season_key
 
 STATS = ["min", "pts", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "oreb", "dreb", "ast", "stl", "blk", "tov", "pf"]
 FP_WEIGHTS = {"pts": 1, "reb": 1.2, "ast": 1.5, "stl": 3, "blk": 3, "tov": -1}  # NBA.com / FanDuel scoring
@@ -274,16 +278,16 @@ def build_profiles_payload(raw="data/raw", games=(), context="data/context", cac
         return None
     bio = load_rosters(ctx)
 
-    # season totals, team ids and game logs
-    seasons = sorted({g["season"] for g in per_game.values()})
+    # season totals, team ids and game logs, in time order (game IDs alone sort every playoff game last)
+    seasons = sorted({season_key(g["season"], gid) for gid, g in per_game.items()})
     tot = defaultdict(lambda: defaultdict(lambda: dict.fromkeys(STATS + ["gp"], 0.0)))
     logs = defaultdict(list)
     team_ids, last_team, names = {}, {}, {}
-    for gid in sorted(per_game):
+    for gid in sorted(per_game, key=lambda k: (per_game[k]["season"], k)):
         g = per_game[gid]
         team_ids[g["home"][1]] = g["home"][0]; team_ids[g["away"][1]] = g["away"][0]
         for pid, b in g["box"].items():
-            t = tot[pid][g["season"]]
+            t = tot[pid][season_key(g["season"], gid)]
             for s in STATS:
                 t[s] += b[s]
             t["gp"] += 1
@@ -315,7 +319,7 @@ def build_profiles_payload(raw="data/raw", games=(), context="data/context", cac
         last_season, tri = last_team[pid]
         b = bio.get(pid, {})
         players[str(pid)] = {
-            "name": b.get("name") or names.get(pid) or str(pid),
+            "name": full_name(pid, b.get("name") or names.get(pid), context),
             "team": tri, "teamId": team_ids.get(tri, 0),
             "bio": {k: v for k, v in b.items() if k not in ("name", "season") and v not in (None, "", "nan", "None")},
             "seasons": {s: {**{k: round(v[k], 1) if k == "min" else int(v[k]) for k in STATS + ["gp"]}, "team": v["team"]}
@@ -342,7 +346,7 @@ def build_profiles_payload(raw="data/raw", games=(), context="data/context", cac
             "x": [[s, ix[p], c] for s, p, c in g["extras"] if s < L],
         }
         for p in roster:  # make sure everyone in a replayed game has a profile, even with no stats
-            players.setdefault(str(p), {"name": g["full"].get(p) or g["short"].get(p) or str(p), "team": g["team"].get(p, ""),
+            players.setdefault(str(p), {"name": full_name(p, g["full"].get(p) or g["short"].get(p), context), "team": g["team"].get(p, ""),
                                         "teamId": team_ids.get(g["team"].get(p, ""), 0), "bio": {}, "seasons": {}, "log": []})
 
     return {"stats": STATS, "fp": FP_WEIGHTS, "seasons": seasons, "league": league,
@@ -359,9 +363,9 @@ def main():
     p = build_profiles_payload(args.raw, (), args.context, args.cache)
     if p is None:
         print("no games with player data"); return
-    rows = []
+    rows, latest = [], [k for k in p["seasons"] if " " not in k][-1]  # latest regular season, not "... Playoffs"
     for pid, pl in p["players"].items():
-        s = pl["seasons"].get(p["seasons"][-1])
+        s = pl["seasons"].get(latest)
         if s and s["gp"] >= 20:
             fp = (s["pts"] + 1.2 * (s["oreb"] + s["dreb"]) + 1.5 * s["ast"] + 3 * (s["stl"] + s["blk"]) - s["tov"]) / s["gp"]
             rows.append((fp, pl["name"], pl["team"], s["gp"], s["min"] / s["gp"], s["pts"] / s["gp"]))

@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from player_names import full_name
+
 
 def r(a, nd=4):
     return np.round(np.asarray(a, dtype=np.float64), nd).tolist()
@@ -48,7 +50,7 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
     players = []
     for pid in sorted(set(vo) | set(vd)):
         players.append({
-            "id": pid, "n": names.get(pid, str(pid)), "now": now.get(pid, ""),
+            "id": pid, "n": full_name(pid, names.get(pid)), "now": now.get(pid, ""),
             "o": vo.get(pid, 0), "d": vd.get(pid, 0),  # row in the weight tables (0 = shared "other" row)
             "op": int(round(off_poss.get(pid, 0))), "dp": int(round(def_poss.get(pid, 0))),
             "top": int(round(tot_off.get(pid, 0))), "tdp": int(round(tot_def.get(pid, 0))),

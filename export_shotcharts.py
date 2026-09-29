@@ -2,7 +2,7 @@
 
 No model is needed, so it covers every shooter (not just the ones with a shot-model embedding).
 For each player and season it stores counts only; the dashboard sums seasons and derives every
-percentage in the browser:
+percentage in the browser. A season's playoffs are their own entry ("2024-25 Playoffs"):
 
   - location zones (restricted area, paint, mid-range L/C/R, corner 3 L/R, above-the-break 3 L/C/R, heaves)
   - shot types (layup, dunk, ...) and styles (pull-up, step-back, ...) from build_shots.py
@@ -28,6 +28,8 @@ import pandas as pd
 from nba_api.stats.static import teams as nba_teams
 
 from build_shots import STYLES, ZONES
+from player_names import full_name
+from tokenize_pbp import season_key
 
 # Court units are tenths of a foot with the hoop at (0, 0); the baseline is y = -52.5.
 LOC_ZONES = ["Restricted area", "Paint (non-RA)", "Mid-range left", "Mid-range center", "Mid-range right",
@@ -73,13 +75,9 @@ def pair_counts(codes, made, n):
 
 
 def player_names(ids, shots):
-    try:
-        from nba_api.stats.static import players
-        full = {p["id"]: p["full_name"] for p in players.get_players()}
-    except Exception:  # nba_api missing: fall back to the play-by-play surname
-        full = {}
+    """Full names (player_names.py); the play-by-play surname only for anyone no name source knows."""
     last = shots.drop_duplicates("shooterId").set_index("shooterId")["shooter"].to_dict()
-    return {int(p): full.get(int(p)) or last.get(p) or str(p) for p in ids}
+    return {int(p): full_name(p, last.get(p)) for p in ids}
 
 
 def teams_in_order(df):
@@ -107,8 +105,9 @@ def build_shotcharts_payload(shots_path, rosters_path="data/context/bbref_roster
     shots = pd.read_parquet(shots_path, columns=["gameId", "season", "shooterId", "shooter", "offTeam", "zone", "style",
                                                  "made", "assisted", "is3", "dist", "x", "y"])
     shots = shots[shots["shooterId"] > 0].reset_index(drop=True)
-    seasons = sorted(shots["season"].unique().tolist())
-    shots["s"] = shots["season"].map({s: i for i, s in enumerate(seasons)})
+    shots["key"] = [season_key(s, g) for s, g in zip(shots["season"], shots["gameId"])]
+    seasons = sorted(shots["key"].unique().tolist())
+    shots["s"] = shots["key"].map({s: i for i, s in enumerate(seasons)})
     shots["lz"] = loc_zone(shots["x"], shots["y"], shots["is3"] == 1)
     shots["ty"] = shots["zone"].map({z: i for i, z in enumerate(ZONES)})
     shots["st"] = shots["style"].map({s: i for i, s in enumerate(STYLES)})
