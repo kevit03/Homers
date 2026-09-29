@@ -32,6 +32,8 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
+from tokenize_pbp import chrono_games
+
 TARGETS = ["pts", "fga", "tov"]        # Poisson counts per possession
 COLS = {"matchupFieldGoalsMade": "fgm", "matchupFieldGoalsAttempted": "fga", "playerPoints": "pts",
         "matchupTurnovers": "tov", "matchupThreePointersAttempted": "fg3a", "matchupThreePointersMade": "fg3m",
@@ -188,7 +190,7 @@ def main():
     complete = [s for s in seasons if per_season[s] >= 0.9 * per_season.max()]
     test_season = complete[-1]
     rest = df[df["season"] < test_season]  # nothing from the test season or later leaks into training
-    games = sorted(rest["gameId"].unique())
+    games = chrono_games(rest)
     val_games = set(games[-max(1, len(games) // 10):])
     train, val, test = rest[~rest["gameId"].isin(val_games)], rest[rest["gameId"].isin(val_games)], df[df["season"] == test_season]
 

@@ -1,0 +1,148 @@
+2016-17 Regular Season: 1230 games
+  0/1230
+  100/1230
+  200/1230
+  300/1230
+  400/1230
+  500/1230
+  600/1230
+  0021600645 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0021600673 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0021600673 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0021600673 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0021600674 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0021600674 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+2016-17 Regular Season: 1230 games
+  700/1230
+  800/1230
+  900/1230
+  1000/1230
+  1100/1230
+  0021601108 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  1200/1230
+2016-17 Regular Season: done, 0 failed []
+2016-17 Playoffs: 79 games
+  0/79
+2016-17 Playoffs: done, 0 failed []
+2017-18 Regular Season: 1230 games
+  0/1230
+  100/1230
+  200/1230
+  300/1230
+  400/1230
+  500/1230
+  600/1230
+  700/1230
+  800/1230
+  900/1230
+  1000/1230
+  1100/1230
+  1200/1230
+2017-18 Regular Season: done, 0 failed []
+2017-18 Playoffs: 82 games
+  0/82
+2017-18 Playoffs: done, 0 failed []
+2018-19 Regular Season: 1230 games
+  0/1230
+  100/1230
+  200/1230
+  300/1230
+  400/1230
+  500/1230
+  600/1230
+  700/1230
+  800/1230
+  900/1230
+  1000/1230
+  1100/1230
+  1200/1230
+2018-19 Regular Season: done, 0 failed []
+2018-19 Playoffs: 82 games
+  0/82
+2018-19 Playoffs: done, 0 failed []
+2019-20 Regular Season: 1059 games
+  0/1059
+  100/1059
+  200/1059
+  300/1059
+  400/1059
+  500/1059
+  600/1059
+  700/1059
+  800/1059
+  900/1059
+  1000/1059
+2019-20 Regular Season: done, 0 failed []
+2019-20 Playoffs: 83 games
+  0/83
+2019-20 Playoffs: done, 0 failed []
+2020-21 Regular Season: 1080 games
+  200/1080
+  300/1080
+  400/1080
+  500/1080
+  600/1080
+  700/1080
+  800/1080
+  900/1080
+  1000/1080
+  0022001071 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+2020-21 Regular Season: done, 0 failed []
+2020-21 Playoffs: 85 games
+  0/85
+2020-21 Playoffs: done, 0 failed []
+2021-22 Regular Season: 1230 games
+2021-22 Regular Season: done, 0 failed []
+2021-22 Playoffs: 87 games
+2021-22 Playoffs: done, 0 failed []
+2022-23 Regular Season: 1230 games
+2022-23 Regular Season: done, 0 failed []
+2022-23 Playoffs: 84 games
+2022-23 Playoffs: done, 0 failed []
+2023-24 Regular Season: 1230 games
+2023-24 Regular Season: done, 0 failed []
+2023-24 Playoffs: 82 games
+2023-24 Playoffs: done, 0 failed []
+2024-25 Regular Season: 1230 games
+2024-25 Regular Season: done, 0 failed []
+2024-25 Playoffs: 84 games
+2024-25 Playoffs: done, 0 failed []
+2025-26 Regular Season: 1230 games
+2025-26 Regular Season: done, 0 failed []
+2025-26 Playoffs: 85 games
+2025-26 Playoffs: done, 0 failed []
+# second downloader, newest seasons first
+2025-26 Regular Season: 1230 games
+2025-26 Regular Season: done, 0 failed []
+2025-26 Playoffs: 85 games
+  0/85
+2025-26 Playoffs: done, 0 failed []
+2024-25 Regular Season: 1230 games
+2024-25 Regular Season: done, 0 failed []
+2024-25 Playoffs: 84 games
+  0/84
+2024-25 Playoffs: done, 0 failed []
+2023-24 Regular Season: 1230 games
+2023-24 Regular Season: done, 0 failed []
+2023-24 Playoffs: 82 games
+  0/82
+2023-24 Playoffs: done, 0 failed []
+2022-23 Regular Season: 1230 games
+2022-23 Regular Season: done, 0 failed []
+2022-23 Playoffs: 84 games
+  0/84
+2022-23 Playoffs: done, 0 failed []
+2021-22 Regular Season: 1230 games
+2021-22 Regular Season: done, 0 failed []
+2021-22 Playoffs: 87 games
+  0/87
+2021-22 Playoffs: done, 0 failed []
+2020-21 Regular Season: 1080 games
+  0/1080
+  0022000099 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  100/1080
+  0022000134 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022000134 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022000134 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022000135 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0022000135 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)

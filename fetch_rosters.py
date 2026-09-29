@@ -11,10 +11,12 @@ import pandas as pd
 from nba_api.stats.endpoints import commonteamroster
 from nba_api.stats.static import teams
 
+from fetch_data import SEASONS
+
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seasons", nargs="+", default=["2021-22", "2022-23", "2023-24", "2024-25", "2025-26"])
+    ap.add_argument("--seasons", nargs="+", default=SEASONS)
     ap.add_argument("--out", default="data/context/rosters.parquet")
     ap.add_argument("--sleep", type=float, default=1.2, help="seconds between requests")
     args = ap.parse_args()
