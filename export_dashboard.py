@@ -16,7 +16,7 @@ import torch
 
 from baseline import baseline_features
 from evaluate import brier, calibration
-from model import Config, NBAGPT, load_data, make_features
+from model import Config, Tempo, load_data, make_features
 
 ROOT = Path(__file__).resolve().parent
 TOP_K = 5
@@ -26,7 +26,7 @@ TOP_K = 5
 def run_game(model, g):
     T = min(len(g["tokens"]), model.config.block_size)
     tokens = torch.from_numpy(g["tokens"][:T].astype(np.int64))[None]
-    feats = torch.from_numpy(make_features(g["sec"][:T], g["diff"][:T], g["period"][:T]))[None]
+    feats = torch.from_numpy(make_features(g["sec"][:T], g["diff"][:T], g["period"][:T], g.get("elo", 0.0)))[None]
     logits, wp = model(tokens, feats)
     probs = torch.softmax(logits[0], -1)
     top_p, top_i = probs.topk(TOP_K, -1)
@@ -76,7 +76,7 @@ def main():
     args = ap.parse_args()
 
     ck = torch.load(args.ckpt, map_location="cpu")
-    model = NBAGPT(Config(**ck["config"]))
+    model = Tempo(Config(**ck["config"]))
     model.load_state_dict(ck["model"])
     model.eval()
     d = load_data(args.data)

@@ -1146,7 +1146,7 @@ h3.co-side.def::before { background: var(--base); }
         <button type="button" class="nm-trigger" aria-expanded="false" aria-controls="nm-games">Games<svg class="nm-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="nm-content" id="nm-games" hidden>
           <ul class="nm-grid one">
-            <li><a class="nm-link" href="#/games" data-nav="games" data-kind=""><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Game replay</span><p>Watch any held-out game with NBAGPT's win chance after every play.</p></a></li>
+            <li><a class="nm-link" href="#/games" data-nav="games" data-kind=""><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Game replay</span><p>Watch any held-out game with Tempo's win chance after every play.</p></a></li>
             <li><a class="nm-link" href="#/games" data-nav="games" data-kind="po"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Playoffs</span><p>The postseason, from the first round to the Finals, play by play.</p></a></li>
             <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-quality"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>Model quality</span><p>Calibration, error by quarter, and the training curve.</p></a></li>
             <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-whatif"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>What-if</span><p>Pick a quarter, a clock and a lead, and see the win chance.</p></a></li>
@@ -1346,7 +1346,7 @@ h3.co-side.def::before { background: var(--base); }
         <div class="sec-head">
           <h3 id="gameTitle">Win chance</h3>
           <div class="legend">
-            <span class="key"><i style="border-color:var(--model)"></i>NBAGPT</span>
+            <span class="key"><i style="border-color:var(--model)"></i>Tempo</span>
             <span class="key" title="Logistic regression on score and clock only"><i class="dash" style="border-color:var(--base)"></i>Baseline</span>
             <span id="wpTeams" style="display:contents"></span>
           </div>
@@ -1371,7 +1371,7 @@ h3.co-side.def::before { background: var(--base); }
           <div class="num" style="color:var(--ink-2);font-size:14px" id="mMargin"></div>
         </div>
         <div class="probs">
-          <div><div class="label">NBAGPT · P(home)</div><div class="val" id="mPm" style="color:var(--model)"></div><div class="delta" id="mDelta"></div></div>
+          <div><div class="label">Tempo · P(home)</div><div class="val" id="mPm" style="color:var(--model)"></div><div class="delta" id="mDelta"></div></div>
           <div><div class="label">Baseline</div><div class="val" id="mPb"></div></div>
         </div>
         <div class="next">
@@ -1390,13 +1390,13 @@ h3.co-side.def::before { background: var(--base); }
     <div class="panel" style="display:grid;gap:10px">
       <h3>Biggest momentum swings</h3>
       <div class="table-wrap"><table>
-        <thead><tr><th>When</th><th>Play</th><th class="r">Margin</th><th class="r" title="Change in NBAGPT's home-win chance on this play">Swing</th></tr></thead>
+        <thead><tr><th>When</th><th>Play</th><th class="r">Margin</th><th class="r" title="Change in Tempo's home-win chance on this play">Swing</th></tr></thead>
         <tbody id="swings"></tbody>
       </table></div>
       <details>
         <summary>Full play-by-play</summary>
         <div class="pbp"><table>
-          <thead><tr><th class="r">#</th><th>When</th><th>Play</th><th class="r">Margin</th><th class="r">NBAGPT</th><th class="r">Baseline</th></tr></thead>
+          <thead><tr><th class="r">#</th><th>When</th><th>Play</th><th class="r">Margin</th><th class="r">Tempo</th><th class="r">Baseline</th></tr></thead>
           <tbody id="pbp"></tbody>
         </table></div>
         <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -1589,7 +1589,7 @@ h3.co-side.def::before { background: var(--base); }
       <div class="panel">
         <h3>Error by quarter<span class="tip" tabindex="0" role="note" aria-label="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer." data-tip="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer.">i</span></h3>
         <div class="legend">
-          <span class="key"><i style="border-color:var(--model);border-top-width:8px;width:10px"></i>NBAGPT</span>
+          <span class="key"><i style="border-color:var(--model);border-top-width:8px;width:10px"></i>Tempo</span>
           <span class="key"><i style="border-color:var(--base);border-top-width:8px;width:10px"></i>Baseline</span>
         </div>
         <div class="chart-sm"><canvas id="qChart" aria-label="Brier score by quarter"></canvas></div>
@@ -1597,7 +1597,7 @@ h3.co-side.def::before { background: var(--base); }
       <div class="panel">
         <h3>Calibration<span class="tip" tabindex="0" role="note" aria-label="When the model says 70%, the home team should win about 70% of the time." data-tip="When the model says 70%, the home team should win about 70% of the time.">i</span></h3>
         <div class="legend">
-          <span class="key"><i style="border-color:var(--model)"></i>NBAGPT</span>
+          <span class="key"><i style="border-color:var(--model)"></i>Tempo</span>
           <span class="key"><i class="dash" style="border-color:var(--base)"></i>Baseline</span>
           <span class="key"><i class="dash" style="border-color:var(--muted)"></i>Perfect</span>
         </div>
@@ -1617,7 +1617,7 @@ h3.co-side.def::before { background: var(--base); }
 
   <section aria-labelledby="h-whatif" data-tab="model">
     <div class="sec-head">
-      <h2 id="h-whatif">What-if<span class="tip" tabindex="0" role="note" aria-label="The baseline's win probability for any quarter, clock and lead. NBAGPT needs the full play sequence, so its predictions live in Game replay." data-tip="The baseline's win probability for any quarter, clock and lead. NBAGPT needs the full play sequence, so its predictions live in Game replay.">i</span></h2>
+      <h2 id="h-whatif">What-if<span class="tip" tabindex="0" role="note" aria-label="The baseline's win probability for any quarter, clock and lead. Tempo needs the full play sequence, so its predictions live in Game replay." data-tip="The baseline's win probability for any quarter, clock and lead. Tempo needs the full play sequence, so its predictions live in Game replay.">i</span></h2>
     </div>
     <div class="whatif">
       <div class="panel form">
@@ -1727,7 +1727,7 @@ $("synNotice").hidden = !META.synthetic;
 
 const bm = M.brier_model, bb = M.brier_baseline, beats = bm < bb, rel = Math.abs(bb - bm) / bb;
 $("board").innerHTML = `
-  <div class="stat"><span class="label">NBAGPT error${tip("Brier score: the squared error of the win chance. Lower is better; a coin flip scores 0.25.")}</span><span class="val">${bm.toFixed(4)}</span>
+  <div class="stat"><span class="label">Tempo error${tip("Brier score: the squared error of the win chance. Lower is better; a coin flip scores 0.25.")}</span><span class="val">${bm.toFixed(4)}</span>
     <span class="pill ${beats ? "good" : "warn"}">${beats ? "▲ " + pct(rel) + " better" : "▼ " + pct(rel) + " worse"} than baseline</span></div>
   <div class="stat"><span class="label">Baseline error${tip(`Score and clock only. Always guessing the average scores ${M.brier_constant.toFixed(3)}.`)}</span><span class="val">${bb.toFixed(4)}</span></div>
   <div class="stat"><span class="label">Next-play accuracy${tip("How often the model's top guess for the next play is right.")}</span><span class="val">${pct(M.acc)}</span></div>
@@ -1979,7 +1979,7 @@ function gpInit() {
   new ResizeObserver(() => { gpCenter(false); gpEdges(); }).observe(rail);  // also fires when the Games tab is first shown
 }
 
-/* ----- story of the game: headline, big-number recap and key moments, from the plays and NBAGPT's odds ----- */
+/* ----- story of the game: headline, big-number recap and key moments, from the plays and Tempo's odds ----- */
 const ORDW = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh"];
 const otName = n => n === 1 ? "overtime" : `${["", "", "double", "triple", "quadruple"][n] || ORDW[n]} overtime`;
 const capFirst = s => s[0].toUpperCase() + s.slice(1);
@@ -2007,7 +2007,7 @@ function gameStory(g) {
     if (s) prev = s;
     pd = d;
   });
-  let call = last + 1;  // from here to the buzzer, NBAGPT kept the winner at 90% or better
+  let call = last + 1;  // from here to the buzzer, Tempo kept the winner at 90% or better
   for (let j = last; j >= 0 && w[j] >= 0.9; j--) call = j;
   let low = 1, lowI = 0, sw = 0, swI = 0;
   for (let j = 1; j < last; j++) if (w[j] < low) { low = w[j]; lowI = j; }
@@ -2028,7 +2028,7 @@ function gameStory(g) {
   if (changes) F.push([changes, "lead changes"]);
   if (ties) F.push([ties, ties === 1 ? "tie" : "ties"]);
   if (low < .25 && lowI) F.push([pct(low, low < .1 ? 1 : 0), `${W.tri} low point`]);
-  F.push(call > last ? ["Never", "NBAGPT at 90%"] : g.x[last] - g.x[call] < 0.5 ? ["Buzzer", "NBAGPT called it"] : [short(call), "NBAGPT called it"]);
+  F.push(call > last ? ["Never", "Tempo at 90%"] : g.x[last] - g.x[call] < 0.5 ? ["Buzzer", "Tempo called it"] : [short(call), "Tempo called it"]);
   const rank = 1 + games.filter(o => o.swing > g.swing).length;
   if (rank <= 25) F.push([`#${rank}`, "most dramatic"]);
   const S = [`<span class="facts">${F.map(([v, l]) => `<span><b>${esc(String(v))}</b>${esc(l)}</span>`).join("")}</span>`];
@@ -2042,7 +2042,7 @@ function gameStory(g) {
   if (wMax > 0) M.push({ i: wMaxI, t: `${W.tri} up ${wMax}` });
   if (swI) M.push({ i: swI, t: "Biggest swing" });
   if (low < .25 && lowI) M.push({ i: lowI, t: `${W.tri} at ${pct(low, 0)}` });
-  if (call < last) M.push({ i: call, t: "NBAGPT calls it" });
+  if (call < last) M.push({ i: call, t: "Tempo calls it" });
   M.push({ i: last, t: "Final" });
   const seen = new Set(), moments = M.filter(m => !seen.has(m.i) && seen.add(m.i)).sort((a, b) => a.i - b.i);
   return (g._story = { kicker, head: `${W.nick} ${ws}, ${Lo.nick} ${ls}`, html: S.join(" "), moments, call: call < last ? call : null });
@@ -2071,7 +2071,7 @@ function renderBug() {
     <div class="bug-mid">${isPlayoffId(cur.id) ? `<span class="bug-po">${esc(playoffTag(cur.id))}</span>` : ""}<span class="bug-st" id="bugSt"></span><span class="bug-clk" id="bugClk"></span>
       <div class="bug-btns"><button type="button" class="go" id="playBtn" aria-pressed="false">▶ Watch</button><button type="button" id="speedBtn" aria-label="Playback speed">${playSpeed}×</button></div></div>
     <div class="bug-team home" id="bugH" style="--tc:${H.c1};--ta:${H.c2}"><span class="sc" id="bugHs"></span>${name(H)}${logo(H)}</div>
-    <div class="bug-wp" style="--ac:${ac};--hc:${hc}" title="NBAGPT's win chance after this play"><span><b id="bugAp"></b> ${esc(A.tri)}</span>
+    <div class="bug-wp" style="--ac:${ac};--hc:${hc}" title="Tempo's win chance after this play"><span><b id="bugAp"></b> ${esc(A.tri)}</span>
       <div class="bar"><i id="bugBarA"></i></div><span>${esc(H.tri)} <b id="bugHp"></b></span></div>`;
 }
 function updateBug() {
@@ -2112,7 +2112,7 @@ const scrubLine = {
     ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke(); ctx.restore();
   }
 };
-const callLine = {  // where NBAGPT locked the winner in at 90%+ for good
+const callLine = {  // where Tempo locked the winner in at 90%+ for good
   id: "callLine",
   afterDatasetsDraw(chart) {
     const c = cur ? gameStory(cur).call : null;
@@ -2121,7 +2121,7 @@ const callLine = {  // where NBAGPT locked the winner in at 90%+ for good
     ctx.save(); ctx.strokeStyle = ctx.fillStyle = css("--good"); ctx.lineWidth = 1.5; ctx.setLineDash([2, 3]);
     ctx.beginPath(); ctx.moveTo(px, a.top + 16); ctx.lineTo(px, a.bottom); ctx.stroke();
     ctx.font = `600 11.5px ${getComputedStyle(document.body).fontFamily}`;
-    const label = "NBAGPT calls it", tw = ctx.measureText(label).width, tx = right ? px - 7 - tw : px + 5;
+    const label = "Tempo calls it", tw = ctx.measureText(label).width, tx = right ? px - 7 - tw : px + 5;
     ctx.fillStyle = hexA(css("--surface"), .88); ctx.fillRect(tx - 3, a.top, tw + 6, 16);
     ctx.fillStyle = css("--good"); ctx.fillText(label, tx, a.top + 12); ctx.restore();
   }
@@ -2160,7 +2160,7 @@ function buildReplayCharts() {
   charts.wp = new Chart($("wpChart"), {
     type: "line",
     data: { datasets: [
-      { label: "NBAGPT", data: [], borderColor: css("--model"), borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, fill: false,
+      { label: "Tempo", data: [], borderColor: css("--model"), borderWidth: 2, pointRadius: 0, pointHoverRadius: 5, fill: false,
         pointHoverBorderColor: css("--surface"), pointHoverBorderWidth: 2, pointHoverBackgroundColor: css("--model"), tension: 0 },
       { label: "Baseline", data: [], borderColor: css("--base"), borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0,
         pointHoverRadius: 4, pointHoverBackgroundColor: css("--base"), tension: 0 },
@@ -2277,7 +2277,7 @@ function renderPbp() {
   $("pbp").innerHTML = g.tok.map((t, i) => `<tr><td class="r">${i}</td><td>${pname(g.per[i])} ${clock(g.sec[i], g.per[i])}</td><td>${pfPlay(i)}</td><td class="r">${signed(g.diff[i])}</td><td class="r">${pct(g.pm[i])}</td><td class="r">${pct(g.pb[i])}</td></tr>`).join("");
 }
 function csv() {
-  const g = cur, rows = [["index", "period", "clock", "play", "margin", "p_home_nbagpt", "p_home_baseline"]];
+  const g = cur, rows = [["index", "period", "clock", "play", "margin", "p_home_tempo", "p_home_baseline"]];
   g.tok.forEach((t, i) => rows.push([i, pname(g.per[i]), clock(g.sec[i], g.per[i]), pretty(t), g.diff[i], g.pm[i], g.pb[i]]));
   return rows.map(r => r.map(v => /[,"]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(",")).join("\n");
 }
@@ -2287,7 +2287,7 @@ function buildQualityCharts() {
   charts.q = new Chart($("qChart"), {
     type: "bar",
     data: { labels: M.by_quarter.map(r => "Q" + r.q), datasets: [
-      { label: "NBAGPT", data: M.by_quarter.map(r => r.model), backgroundColor: css("--model"), borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: "bottom", borderColor: css("--surface"), borderWidth: { left: 1, right: 1 } },
+      { label: "Tempo", data: M.by_quarter.map(r => r.model), backgroundColor: css("--model"), borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: "bottom", borderColor: css("--surface"), borderWidth: { left: 1, right: 1 } },
       { label: "Baseline", data: M.by_quarter.map(r => r.baseline), backgroundColor: css("--base"), borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: "bottom", borderColor: css("--surface"), borderWidth: { left: 1, right: 1 } },
     ] },
     options: { responsive: true, maintainAspectRatio: false, categoryPercentage: .7, barPercentage: .9,
@@ -2301,7 +2301,7 @@ function buildQualityCharts() {
     data: { datasets: [
       { label: "Perfect", data: [{ x: 0, y: 0 }, { x: 1, y: 1 }], borderColor: css("--muted"), borderWidth: 1, borderDash: [3, 4], pointRadius: 0, pointHoverRadius: 0 },
       { label: "Baseline", data: cal(M.cal_baseline), borderColor: css("--base"), backgroundColor: css("--base"), borderWidth: 1.5, borderDash: [5, 4], pointRadius: 4, pointBorderColor: css("--surface"), pointBorderWidth: 2, pointHoverRadius: 6 },
-      { label: "NBAGPT", data: cal(M.cal_model), borderColor: css("--model"), backgroundColor: css("--model"), borderWidth: 2, pointRadius: 4, pointBorderColor: css("--surface"), pointBorderWidth: 2, pointHoverRadius: 6 },
+      { label: "Tempo", data: cal(M.cal_model), borderColor: css("--model"), backgroundColor: css("--model"), borderWidth: 2, pointRadius: 4, pointBorderColor: css("--surface"), pointBorderWidth: 2, pointHoverRadius: 6 },
     ] },
     options: { responsive: true, maintainAspectRatio: false, parsing: false,
       interaction: { mode: "nearest", intersect: false },
@@ -3320,7 +3320,7 @@ function pfRenderLive() {
     <p class="caption">Next play: ${pfPlay(s + 1)}</p>`;
   else {
     const max = nx.rows.length ? nx.rows[0].p : 1;
-    right = `<div class="label">His next play, per NBAGPT</div>
+    right = `<div class="label">His next play, per Tempo</div>
       <div class="pf-kpis"><div><b>${pct(nx.inv)}</b><span>chance he makes the next play</span></div>
         <div><b>${nx.xfp >= 0 ? "+" : "−"}${Math.abs(nx.xfp).toFixed(2)}</b><span>expected fantasy points from it</span></div></div>
       <div class="next">${nx.rows.length ? nx.rows.slice(0, 5).map(r => {
@@ -3344,7 +3344,7 @@ function pfRenderLive() {
         <p class="caption">Last play: ${pfPlay(s)}</p></div>
       <div class="pf-sub">${right}</div>
     </div>
-    <p class="caption">NBAGPT predicts ${esc(tri)}'s next play from the game so far. His share of each play is his season rate against the four teammates on the floor with him. Arrow keys step through the game.</p>
+    <p class="caption">Tempo predicts ${esc(tri)}'s next play from the game so far. His share of each play is his season rate against the four teammates on the floor with him. Arrow keys step through the game.</p>
   </div>`;
 }
 
@@ -4367,7 +4367,7 @@ function srcInit() {
   $("credits").innerHTML = CR.map(c => `<li><a href="${e(c.source)}" target="_blank" rel="noopener">${e(c.title)}</a>, ${e(c.author)}. ${c.license_url ? `<a href="${e(c.license_url)}" target="_blank" rel="noopener">${e(c.license)}</a>` : e(c.license)}. Resized and cropped.</li>`).join("");
   $("srcBuilt").innerHTML = `Built ${e(S.built)}` + tip("Re-run the fetch scripts, then export_dashboard.py, to refresh everything.", "up");
 
-  const R = S.runs, G = R.nbagpt, A = G ? G.args : {}, C = (DATA.meta && DATA.meta.config) || (G && G.config) || {};
+  const R = S.runs, G = R.tempo, A = G ? G.args : {}, C = (DATA.meta && DATA.meta.config) || (G && G.config) || {};
   const SH = R.shots, SA = SH ? SH.args : {};
   const syn = DATA.meta && DATA.meta.synthetic;
   const status = (ok, yes, no) => `<span class="tag ${ok ? "status-ok" : "status-no"}">${ok ? "✓ " + yes : "○ " + no}</span>`;
@@ -4375,10 +4375,10 @@ function srcInit() {
   // headline number per model card, keyed by card title
   const HERO = {
     "Win probability: baseline": ["3", "features: margin, clock, and lead for the time left"],
-    NBAGPT: [n((G && G.n_params) || META.n_params), "parameters"],
+    Tempo: [n((G && G.n_params) || META.n_params), "parameters"],
     "Shot model": [nShots, "shots it learned from"],
     "Shot charts": [SC ? n(SC.players.filter(p => p.p.length).length) : "–", "players charted"],
-    "How the models are scored": [M.brier_model.toFixed(4), `NBAGPT's Brier score on held-out games (baseline ${M.brier_baseline.toFixed(4)})`],
+    "How the models are scored": [M.brier_model.toFixed(4), `Tempo's Brier score on held-out games (baseline ${M.brier_baseline.toFixed(4)})`],
   };
   const card = (title, tags, rows) => { rows = rows.filter(Boolean); const [lead, ...rest] = rows;
     return `<div class="panel method"><h3>${title}</h3>${HERO[title] ? `<div class="m-hero"><b>${HERO[title][0]}</b><span>${HERO[title][1]}</span></div>` : ""}<div class="tags">${tags.join("")}</div>
@@ -4391,12 +4391,13 @@ function srcInit() {
       ["Inputs", "Three features: score margin, margin ÷ √(minutes left + 1) (a lead matters more as time runs out), and minutes left."],
       ["Model", "scikit-learn <code>LogisticRegression</code>: L2-regularised (C = 1), fitted with L-BFGS for up to 1,000 iterations. p = σ(b + w·x)."],
       ["Training data", "Every game state in the training seasons, sampled down to at most 2,000,000 rows."],
-      ["Used for", "The dashed line in the game replay, and the what-if calculator. NBAGPT has to beat it to be worth anything."],
+      ["Used for", "The dashed line in the game replay, and the what-if calculator. Tempo has to beat it to be worth anything."],
     ]),
-    card("NBAGPT", [tag("Decoder-only transformer"), tag("Softmax (multinomial logistic) head"), tag("Logistic head"), status(!!G, syn ? "Trained (synthetic demo)" : "Trained", "Not trained")], [
+    card("Tempo", [tag("Decoder-only transformer"), tag("Softmax (multinomial logistic) head"), tag("Logistic head"), status(!!G, syn ? "Trained (synthetic demo)" : "Trained", "Not trained")], [
       ["Predicts", "At every play, (1) the next event out of 31 tokens such as <code>H_3PT_MAKE</code> or <code>A_DREB</code>, and (2) P(home win)."],
-      ["Architecture", `${C.n_layer ?? 4} layers, ${C.n_head ?? 4} attention heads, ${C.n_embd ?? 128}-dim embeddings, context of ${C.block_size ?? 1024} events${G && G.n_params ? `, ${G.n_params.toLocaleString()} parameters` : ""}. Causal self-attention, pre-LayerNorm blocks with GELU MLPs, tied input/output embeddings, GPT-2-style init. Time left, margin, period and lead-for-time are projected into every position.`],
-      ["Loss", "Cross-entropy on the next event (a multinomial logistic regression on the transformer's output) + binary cross-entropy on the win head (a logistic regression), weighted " + (A.wp_weight ?? 1) + " : 1."],
+      ["Architecture", `${C.n_layer ?? 4} layers, ${C.n_head ?? 4} attention heads, ${C.n_embd ?? 128}-dim embeddings, context of ${C.block_size ?? 1024} events${G && G.n_params ? `, ${G.n_params.toLocaleString()} parameters` : ""}. Causal self-attention, pre-LayerNorm blocks with GELU MLPs, tied input/output embeddings, GPT-2-style init. Time left, margin, period and lead-for-time${C.n_feat > 4 ? ", plus the home team's pre-game Elo edge (built only from earlier games) and that edge faded by the time left," : ""} are projected into every position.`],
+      ...(C.wp_residual ? [["Win head", `A correction on top of the baseline's logit, starting at zero, so it begins as the baseline and learns only what the plays add. Its logit is then divided by a temperature of ${(C.wp_temp ?? 1).toFixed(2)}, fitted on the validation season.`]] : []),
+      ["Loss", "Cross-entropy on the next event (a multinomial logistic regression on the transformer's output) + binary cross-entropy on the win head (a logistic regression), weighted " + (A.wp_weight ?? 1) + " : 1." + (A.wp_late ? ` In the win loss every game counts the same, and a play's weight grows from 1 at tip-off to ${1 + A.wp_late} at the final buzzer.` : "")],
       ["Optimizer", `AdamW (β = 0.9, 0.95), learning rate ${A.lr ?? 3e-4} with a 5% linear warm-up then cosine decay, weight decay ${A.weight_decay ?? 0.1} on weight matrices only, gradient clipping at 1.0.`],
       ["Regularisation", `Dropout ${A.dropout ?? C.dropout ?? 0.1}; early stopping after ${A.patience ?? 4} epochs without validation improvement${G ? ` (ran ${G.epochs_run} of ${A.epochs} epochs, kept epoch ${G.best_epoch})` : ""}.`],
       ["Data split", "By time: the latest season is the test set; the last 10% of the remaining games (chronologically) is validation. No future games leak into training."],
@@ -4623,7 +4624,7 @@ function setPhotos(root = document) {
 }
 /* ---------- seasons in orbit: a port of the radial orbital timeline ----------
    One node per season. The stage turns slowly; clicking a node stops it, turns that season to the top and opens its card.
-   Status is how NBAGPT used the season (trained / validated / held out), the bar is how much of a normal 1,230-game regular
+   Status is how Tempo used the season (trained / validated / held out), the bar is how much of a normal 1,230-game regular
    season was played, and "connected" seasons are the ones that shared a Finals team. */
 const ORB_ICON = {  // lucide: trophy, zap, link, arrow-right
   trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
@@ -4640,9 +4641,9 @@ function orbItems(S) {
   return S.map((s, i) => {
     const f = s.finals, sp = s.split || {}, champ = f ? pfTeam(f.champ)[0] : "";
     const status = sp.test ? "pending" : sp.val ? "in-progress" : "completed";
-    const use = sp.test ? `NBAGPT never saw it: these are the ${n(sp.test)} games in Game replay.`
-      : sp.val ? `NBAGPT trained on ${n(sp.train)} of its games and used the other ${n(sp.val)} to decide when to stop training.`
-      : `NBAGPT trained on all ${n(sp.train || s.rs + s.po)} of its games.`;
+    const use = sp.test ? `Tempo never saw it: these are the ${n(sp.test)} games in Game replay.`
+      : sp.val ? `Tempo trained on ${n(sp.train)} of its games and used the other ${n(sp.val)} to decide when to stop training.`
+      : `Tempo trained on all ${n(sp.train || s.rs + s.po)} of its games.`;
     return {
       id: i, title: s.season, f, status, date: f ? `Finals ${f.w}–${f.l}` : "", head: champ || s.season,
       content: `${f ? `Beat the ${esc(pfTeam(f.opp)[0])} ${f.w}–${f.l}<br>` : ""}${n(s.rs + s.po)} games · ${n(s.shots)} shots`, use,
@@ -4656,7 +4657,7 @@ function orbInit() {
   if (!S || S.length < 2) return;
   orb.el = el; orb.items = orbItems(S);
   $("hmOrbTitle").textContent = `${NUM_WORDS[S.length] || S.length} seasons in orbit`;
-  $("hmOrbCap").innerHTML = tip(`${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how NBAGPT used its games; seasons that shared a Finals team light up.`);
+  $("hmOrbCap").innerHTML = tip(`${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how Tempo used its games; seasons that shared a Finals team light up.`);
   $("hmOrbHead").hidden = el.hidden = false;
   el.innerHTML = `<div class="orb-stage"><div class="orb-core" aria-hidden="true"><i></i><i></i><b></b></div><div class="orb-ring" aria-hidden="true"></div>
     ${orb.items.map(it => `<div class="orb-node" data-i="${it.id}"><span class="orb-glow" style="--e:${it.energy}"></span>

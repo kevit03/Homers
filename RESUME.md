@@ -1,6 +1,6 @@
-# Resume Bullet Points & Technical Interview Guide: HOMERs (NBA-GPT)
+# Resume Bullet Points & Technical Interview Guide: HOMERs
 
-This guide provides battle-tested, high-impact resume bullet points, portfolio blurbs, and technical interview talking points tailored for **HOMERs (NBA-GPT)**.
+This guide provides battle-tested, high-impact resume bullet points, portfolio blurbs, and technical interview talking points tailored for **HOMERs**.
 
 ---
 
@@ -10,7 +10,7 @@ Use the section that matches the role you are targeting. Each bullet is written 
 
 ### Option A: Machine Learning Engineer (MLE) / Applied AI Researcher
 
-* **Architected and deployed an end-to-end sports intelligence platform** modeling NBA possession dynamics across 10 seasons (13,000+ games, 2.5M+ plays) using an autoregressive causal transformer (NBAGPT) and a multi-task neural shot engine (ShotNet).
+* **Architected and deployed an end-to-end sports intelligence platform** modeling NBA possession dynamics across 10 seasons (13,000+ games, 2.5M+ plays) using an autoregressive causal transformer (Tempo) and a multi-task neural shot engine (ShotNet).
 * **Trained a 4-layer decoder-only transformer with causal scaled dot-product attention** over a discrete 31-token game grammar, conditioning on non-linear decaying game state $\left(\frac{\Delta\text{score}}{\sqrt{t+1}}\right)$ and achieving **42.1% next-event accuracy (4.44 perplexity)** and monotonic win-probability calibration ($R^2 > 0.99$).
 * **Formulated a hierarchical Bayesian multi-task deep neural network (ShotNet)** to predict 8 shot zones, 9 physical shot styles, and conditional make probability, leveraging permutation-invariant set pooling for 10 on-court players and coaching latent vectors; **reduced shot-type cross-entropy loss by 7.6% (1.694 vs 1.833 league baseline)** on 233,000+ out-of-time held-out attempts.
 * **Engineered a client-side neural inference runtime in pure vectorized JavaScript/Wasm**, compiling trained PyTorch weights into a zero-server static dashboard delivering **<1.8ms forward-pass latency** with strict numerical parity to PyTorch FP32 ($\Delta < 10^{-4}$).
@@ -41,7 +41,7 @@ Use the section that matches the role you are targeting. Each bullet is written 
 ## 2. Project Portfolio & Elevator Pitches
 
 ### 1-Sentence Summary (for Resume Header or LinkedIn Project Description)
-> **HOMERs (NBA-GPT):** An end-to-end deep learning framework and zero-server interactive intelligence engine modeling NBA possession dynamics, shot selection, and counterfactual game simulations across 10 seasons (13k+ games, 2.5M+ plays).
+> **HOMERs:** An end-to-end deep learning framework and zero-server interactive intelligence engine modeling NBA possession dynamics, shot selection, and counterfactual game simulations across 10 seasons (13k+ games, 2.5M+ plays).
 
 ### 3-Sentence Technical Summary (for Portfolio Website or GitHub Bio)
 > Built an end-to-end sports machine learning system featuring an autoregressive causal transformer for next-play generation and continuous win probability, alongside a hierarchical multi-task neural network predicting shot spatial zones, styles, and make probabilities conditioned on 10-player on-court gravity and coaching schemes. Solved large-scale tracking data anomalies by reconstructing 97%+ of 5-on-5 lineups and correcting 17,890+ out-of-order events. Deployed models into an ultra-low-latency, zero-server client runtime delivering sub-2ms in-browser neural inference and 10,000-path Monte Carlo clutch rollouts.
@@ -53,7 +53,7 @@ Use the section that matches the role you are targeting. Each bullet is written 
 ### Q1: "Walk me through the system architecture of your project."
 * **Answer Blueprint:**
   1. **Data Ingestion & State Machine:** Ingested 10 seasons (~13k games) from NBA Stats API (`PlayByPlayV3`, `BoxScoreMatchupsV3`, Synergy, Second Spectrum) into Parquet format. Built a state machine to reconstruct 5-on-5 on-court lineups from substitution logs (97% coverage) and re-ordered 17,890 out-of-sequence events.
-  2. **Model 1 (NBAGPT):** 4-layer causal decoder-only transformer with scaled dot-product attention (FlashAttention/SDPA) over a 31-token play vocabulary. Input embeds tokens, position, and continuous game dynamics including a continuous lead-decay term $\Delta\text{score}/\sqrt{t+1}$. Multi-task loss: Next-play cross-entropy + Home-win binary cross-entropy.
+  2. **Model 1 (Tempo):** 4-layer causal decoder-only transformer with scaled dot-product attention (FlashAttention/SDPA) over a 31-token play vocabulary. Input embeds tokens, position, and continuous game dynamics including a continuous lead-decay term $\Delta\text{score}/\sqrt{t+1}$. Multi-task loss: Next-play cross-entropy + Home-win binary cross-entropy.
   3. **Model 2 (ShotNet):** Multi-task deep neural network predicting shot zone (8 classes), shot style (9 classes), and make probability. Uses hierarchical Bayesian priors where the network learns residual shifts away from empirical player priors, conditioned on 10-player permutation-invariant set embeddings and coaching schemes.
   4. **Model 3 (Matchup Engine):** Bilinear Poisson/Binomial GLM with exposure modeling on partial possessions, isolating latent player interaction factors ($U_X \cdot V_Y$).
   5. **Client-Side Runtime & Simulation:** Compiled model weights into a zero-server single-file dashboard (`dashboard.html`) executing vectorized linear algebra in pure JS with sub-2ms forward-pass latency and a 10,000-path Monte Carlo rollout simulator.

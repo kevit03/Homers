@@ -60,7 +60,7 @@ cmd_demo() {
   step "2/5 Tokenizing";                        py tokenize_pbp.py --raw data/raw_synthetic --out data/processed/synthetic.pkl
   step "3/5 Fitting the baseline";              py baseline.py --data data/processed/synthetic.pkl --out runs/baseline_syn.joblib
   step "4/5 Training a small model";            py train.py --data data/processed/synthetic.pkl --out runs/syn \
-                                                  --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3 "$@"
+                                                  --baseline runs/baseline_syn.joblib --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3 "$@"
   step "5/5 Building the dashboard";            py export_dashboard.py --ckpt runs/syn/best.pt \
                                                   --data data/processed/synthetic.pkl --baseline runs/baseline_syn.joblib
   open dashboard.html 2>/dev/null || bold "Open dashboard.html in your browser."
@@ -79,6 +79,7 @@ cmd_tokenize() { step "Tokenizing play-by-play"; py tokenize_pbp.py "$@"; }
 cmd_train() {
   case " $* " in *" --out "*) ;; *) guard_training ;; esac
   step "Fitting the baseline";                  py baseline.py
+  step "Rating teams (pre-game Elo)";           py team_strength.py
   step "Training the transformer";              py train.py --out runs/base "$@"
 }
 

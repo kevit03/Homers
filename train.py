@@ -1,4 +1,8 @@
-"""Train NBAGPT on next-event prediction + win probability.
+"""Train Tempo on next-event prediction + win probability.
+
+The win-prob head is a residual on the logistic baseline (fit it first: python baseline.py), the input
+carries the pre-game Elo edge (python team_strength.py), and after training a temperature is fitted
+on the validation season and saved in the checkpoint's config.
 
     python train.py --out runs/base
     python train.py --out runs/small --n_layer 2 --n_embd 64 --n_head 2
@@ -10,10 +14,12 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
+import joblib
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from model import Config, GameDataset, NBAGPT, collate, compute_losses, load_data
+from model import Config, GameDataset, Tempo, collate, compute_losses, load_data
 
 
 def get_args(argv=None):
@@ -30,6 +36,11 @@ def get_args(argv=None):
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--weight_decay", type=float, default=0.1)
     ap.add_argument("--wp_weight", type=float, default=1.0, help="weight of win-prob loss")
+    ap.add_argument("--wp_late", type=float, default=1.0,
+                    help="win-prob loss weight grows from 1 at tip-off to 1 + this at the end of regulation")
+    ap.add_argument("--baseline", default="runs/baseline.joblib", help="logistic baseline the win-prob head corrects")
+    ap.add_argument("--no_residual", action="store_true", help="win-prob head from scratch, not on top of the baseline")
+    ap.add_argument("--no_elo", action="store_true", help="leave out the pre-game Elo features")
     ap.add_argument("--patience", type=int, default=4, help="early stopping epochs")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="auto")
@@ -44,6 +55,30 @@ def pick_device(name):
     if torch.backends.mps.is_available():
         return "mps"
     return "cpu"
+
+
+def fit_temperature(model, loader, device):
+    """One scalar T minimizing validation BCE of sigmoid(logit / T); fitted on log T so it stays positive."""
+    model.eval()
+    zs, ys = [], []
+    with torch.no_grad():
+        for batch in loader:
+            tokens, feats, mask, y = (t.to(device) for t in batch)
+            _, wp = model(tokens, feats)
+            zs.append(wp[mask].cpu()); ys.append(y[:, None].expand_as(wp)[mask].cpu())
+    z, y = torch.cat(zs).double(), torch.cat(ys).double()
+    log_t = torch.zeros(1, dtype=torch.double, requires_grad=True)
+    opt = torch.optim.LBFGS([log_t], max_iter=100)
+
+    def closure():
+        opt.zero_grad()
+        loss = F.binary_cross_entropy_with_logits(z / log_t.exp(), y)
+        loss.backward()
+        return loss
+    opt.step(closure)
+    before = F.binary_cross_entropy_with_logits(z, y).item()
+    after = F.binary_cross_entropy_with_logits(z / log_t.exp(), y).item()
+    return float(log_t.exp()), before, after
 
 
 @torch.no_grad()
@@ -73,9 +108,17 @@ def main(argv=None):
         batch_size=args.batch_size, shuffle=shuffle, collate_fn=collate)
     train_dl, val_dl = mk("train", True), mk("val", False)
 
+    base_coef = None
+    if not args.no_residual:
+        clf = joblib.load(args.baseline)
+        base_coef = (float(clf.intercept_[0]), *map(float, clf.coef_[0]))
+    has_elo = any(g.get("elo") for g in games)
+    if not has_elo and not args.no_elo:
+        print("no pre-game Elo in the data (run team_strength.py); training without it")
     cfg = Config(vocab_size=len(d["vocab"]), block_size=args.block_size, n_layer=args.n_layer,
-                 n_head=args.n_head, n_embd=args.n_embd, dropout=args.dropout)
-    model = NBAGPT(cfg).to(device)
+                 n_head=args.n_head, n_embd=args.n_embd, dropout=args.dropout,
+                 n_feat=6 if has_elo and not args.no_elo else 4, wp_residual=not args.no_residual, base_coef=base_coef)
+    model = Tempo(cfg).to(device)
     print(f"device={device} params={model.n_params():,} train_games={len(splits['train'])}")
 
     decay = [p for n, p in model.named_parameters() if p.dim() >= 2]
@@ -93,7 +136,7 @@ def main(argv=None):
         t0, run = time.time(), 0.0
         for batch in train_dl:
             tokens, feats, mask, y = (t.to(device) for t in batch)
-            ce, bce, _, _, _ = compute_losses(model, tokens, feats, mask, y)
+            ce, bce, _, _, _ = compute_losses(model, tokens, feats, mask, y, wp_late=args.wp_late)
             loss = ce + args.wp_weight * bce
             opt.zero_grad(set_to_none=True)
             loss.backward()
@@ -119,6 +162,14 @@ def main(argv=None):
                 print("early stopping")
                 break
         json.dump(log, open(out / "log.json", "w"), indent=1)
+
+    ck = torch.load(out / "best.pt", map_location=device)
+    model.load_state_dict(ck["model"])
+    t, before, after = fit_temperature(model, val_dl, device)
+    ck["config"]["wp_temp"] = log["config"]["wp_temp"] = t
+    torch.save(ck, out / "best.pt")
+    log["temperature"] = {"T": t, "val_bce_before": before, "val_bce_after": after}
+    print(f"temperature {t:.3f}: val win-prob BCE {before:.4f} -> {after:.4f}")
 
     json.dump(log, open(out / "log.json", "w"), indent=1)
     return log

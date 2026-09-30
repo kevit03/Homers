@@ -118,8 +118,13 @@ def process_game(df: pd.DataFrame):
         period.append(p)
     tokens.append(EOS); sec.append(0.0); diff.append(float(final_h - final_a)); period.append(period[-1]); total.append(int(final_h + final_a))
 
+    team = pd.to_numeric(df["teamId"], errors="coerce").fillna(0) if "teamId" in df else pd.Series(0, index=df.index)
+    loc = df["location"].astype(str).str.lower() if "location" in df else pd.Series("", index=df.index)
+    side = {k: int(team[(loc == k) & (team > 0)].mode().iloc[0]) for k in ("h", "v") if ((loc == k) & (team > 0)).any()}
+
     return {
         "gameId": str(df["gameId"].iloc[0]),
+        "home": side.get("h"), "away": side.get("v"),  # team IDs, for team_strength.py
         "season": str(df["season"].iloc[0]),
         "tokens": np.array(tokens, dtype=np.int16),
         "sec": np.array(sec, dtype=np.float32),

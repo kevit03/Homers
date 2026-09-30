@@ -14,9 +14,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from sklearn.linear_model import LogisticRegression
 
 from baseline import baseline_features
-from model import Config, GameDataset, NBAGPT, collate, load_data
+from model import Config, GameDataset, Tempo, collate, load_data
 
 
 def brier(p, y):
@@ -49,12 +50,31 @@ def predict_games(model, games, block_size, device, bs=16):
     return wps, correct / n_tok, nll / n_tok
 
 
+def elo_features(g, L):
+    """Baseline features plus the pre-game Elo logit and its fading version, for the ablation below."""
+    X = baseline_features(g["sec"][:L], g["diff"][:L])
+    frac_left = np.clip(g["sec"][:L] / 2880, 0, 1) * (g["period"][:L] <= 4)
+    elo = g.get("elo", 0.0)
+    return np.column_stack([X, np.full(L, elo), elo * frac_left])
+
+
+def fit_elo_baseline(games, max_rows=2_000_000, seed=0):
+    """Ablation: the same logistic regression given the pre-game Elo too. Tempo has to beat this to show the
+    plays add something the team ratings don't."""
+    X = np.concatenate([elo_features(g, len(g["sec"])) for g in games])
+    y = np.concatenate([np.full(len(g["sec"]), g["home_win"]) for g in games])
+    if len(y) > max_rows:
+        idx = np.random.default_rng(seed).choice(len(y), max_rows, replace=False)
+        X, y = X[idx], y[idx]
+    return LogisticRegression(max_iter=1000).fit(X, y)
+
+
 def plot_game(g, p_model, p_base, path):
     L = len(p_model)
     elapsed = np.array([2880 - s if pr <= 4 else 2880 + 300 * (pr - 4) - s
                         for s, pr in zip(g["sec"][:L], g["period"][:L])]) / 60
     fig, ax = plt.subplots(2, 1, figsize=(10, 6), sharex=True, gridspec_kw={"height_ratios": [2, 1]})
-    ax[0].plot(elapsed, p_model, label="NBAGPT")
+    ax[0].plot(elapsed, p_model, label="Tempo")
     ax[0].plot(elapsed, p_base, label="baseline", alpha=0.7)
     ax[0].axhline(0.5, color="gray", lw=0.5)
     ax[0].set_ylabel("P(home win)"); ax[0].set_ylim(0, 1); ax[0].legend()
@@ -78,27 +98,32 @@ def main():
 
     ck = torch.load(args.ckpt, map_location=device)
     cfg = Config(**ck["config"])
-    model = NBAGPT(cfg).to(device)
+    model = Tempo(cfg).to(device)
     model.load_state_dict(ck["model"])
 
     d = load_data(args.data)
     games = [d["games"][i] for i in d["splits"]["test"]]
     wps, acc, nll = predict_games(model, games, cfg.block_size, device)
     clf = joblib.load(args.baseline)
+    has_elo = any(g.get("elo") for g in d["games"])
+    clf_elo = fit_elo_baseline([d["games"][i] for i in d["splits"]["train"]]) if has_elo else None
 
-    p_m, p_b, y, sec_all = [], [], [], []
+    p_m, p_b, p_e, y, sec_all = [], [], [], [], []
     for g, w in zip(games, wps):
         L = len(w)
         p_m.append(w)
         p_b.append(clf.predict_proba(baseline_features(g["sec"][:L], g["diff"][:L]))[:, 1])
+        p_e.append(clf_elo.predict_proba(elo_features(g, L))[:, 1] if clf_elo else np.full(L, np.nan))
         y.append(np.full(L, g["home_win"]))
         sec_all.append(np.where(g["period"][:L] <= 4, g["sec"][:L], 0))
-    p_m, p_b, y, sec_all = map(np.concatenate, (p_m, p_b, y, sec_all))
+    p_m, p_b, p_e, y, sec_all = map(np.concatenate, (p_m, p_b, p_e, y, sec_all))
 
     # Brier by game phase (regulation quarter; OT counted with Q4)
     phase = np.clip(4 - (sec_all // 720).astype(int), 1, 4)
     by_q = {f"Q{q}": {"model": brier(p_m[phase == q], y[phase == q]),
-                      "baseline": brier(p_b[phase == q], y[phase == q])} for q in range(1, 5)}
+                      "baseline": brier(p_b[phase == q], y[phase == q]),
+                      **({"baseline_elo": brier(p_e[phase == q], y[phase == q])} if clf_elo else {})}
+            for q in range(1, 5)}
 
     metrics = {
         "test_games": len(games),
@@ -106,6 +131,8 @@ def main():
         "next_event_perplexity": float(np.exp(nll)),
         "brier_model": brier(p_m, y),
         "brier_baseline": brier(p_b, y),
+        **({"brier_baseline_elo": brier(p_e, y)} if clf_elo else {}),
+        "temperature": cfg.wp_temp,
         "brier_constant": brier(np.full_like(y, y.mean(), dtype=float), y),
         "brier_by_quarter": by_q,
         "calibration_model": calibration(p_m, y),
@@ -114,7 +141,7 @@ def main():
     print(json.dumps({k: v for k, v in metrics.items() if k != "calibration_model"}, indent=1))
 
     fig, ax = plt.subplots(figsize=(5, 5))
-    for name, p in (("NBAGPT", p_m), ("baseline", p_b)):
+    for name, p in (("Tempo", p_m), ("baseline", p_b)):
         c = calibration(p, y)
         ax.plot([a for a, _, _ in c], [b for _, b, _ in c], "o-", label=name)
     ax.plot([0, 1], [0, 1], "k--", lw=0.8)

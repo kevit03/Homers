@@ -67,7 +67,7 @@ def _finals(season_dir):
 
 
 def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", data=None):
-    """One record per season for the Home tab's orbit: games by type, shots, the Finals, and how NBAGPT used its games."""
+    """One record per season for the Home tab's orbit: games by type, shots, the Finals, and how Tempo used its games."""
     root = Path(raw)
     if not root.exists():
         return None
@@ -111,7 +111,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     sources = [
         {"name": "NBA.com Stats: PlayByPlayV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Every event of every game: shots with court x/y location, distance, shot type, makes/misses, assists, substitutions, "
-                 "score and clock. Feeds the game tokens for NBAGPT, the shot charts and the player profiles.",
+                 "score and clock. Feeds the game tokens for Tempo, the shot charts and the player profiles.",
          "coverage": _cov_by_type(raw), "updated": _mtime(raw), "script": "fetch_data.py", "file": f"{raw}/<season>/<gameId>.parquet"},
         {"name": "NBA.com Stats: LeagueGameFinder", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "The list of regular-season and playoff game IDs to download for each season.",
@@ -155,7 +155,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     ]
     if synthetic:
         sources.append({"name": "Synthetic games", "org": "This project (synthetic.py)", "url": None,
-                        "used": "Simulated games that stand in for real ones in the game replay and model sections until NBAGPT is trained on real seasons.",
+                        "used": "Simulated games that stand in for real ones in the game replay and model sections until Tempo is trained on real seasons.",
                         "coverage": "Simulated seasons 2098-99 and 2099-00", "updated": _mtime("data/raw_synthetic"), "script": "synthetic.py",
                         "file": "data/raw_synthetic/"})
 
@@ -181,7 +181,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
 
     software = [
         {"name": "nba_api", "url": "https://github.com/swar/nba_api", "use": "Client for the NBA.com Stats endpoints"},
-        {"name": "PyTorch", "url": "https://pytorch.org", "use": "NBAGPT transformer and the shot model"},
+        {"name": "PyTorch", "url": "https://pytorch.org", "use": "Tempo transformer and the shot model"},
         {"name": "scikit-learn", "url": "https://scikit-learn.org", "use": "Logistic-regression baseline"},
         {"name": "pandas, NumPy, PyArrow", "url": "https://pandas.pydata.org", "use": "Data wrangling and Parquet storage"},
         {"name": "Chart.js 4.4.1", "url": "https://www.chartjs.org", "use": "Charts in this page (from cdnjs)"},
@@ -196,8 +196,8 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     runs = {}
     if ckpt and (Path(ckpt).parent / "log.json").exists():
         log = json.load(open(Path(ckpt).parent / "log.json"))
-        runs["nbagpt"] = {"args": log.get("args", {}), "config": log.get("config", {}), "n_params": log.get("n_params"),
-                          "epochs_run": len(log.get("history", [])), "best_epoch": (log.get("best") or {}).get("epoch")}
+        runs["tempo"] = {"args": log.get("args", {}), "config": log.get("config", {}), "n_params": log.get("n_params"),
+                         "epochs_run": len(log.get("history", [])), "best_epoch": (log.get("best") or {}).get("epoch")}
     meta_path = Path(shot_run) / "meta.json"
     if meta_path.exists():
         meta = json.load(open(meta_path))
