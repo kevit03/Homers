@@ -149,6 +149,12 @@ def main():
         from export_coach_defense import build_coach_defense_payload
         payload["coachDefense"] = build_coach_defense_payload(args.shots)
         print(f"added opponents' shooting by shot type, style and zone for {len(payload['coachDefense']['units'])} team seasons")
+    payload["coachPlays"] = None
+    if not payload["meta"]["synthetic"]:
+        from export_coach_plays import build_coach_plays_payload
+        payload["coachPlays"] = build_coach_plays_payload(args.context)
+        if payload["coachPlays"]:
+            print(f"added play-type results (scored, FG, turnovers) for {len(payload['coachPlays']['units'])} team seasons")
     payload["shotcharts"] = None
     if Path(args.shots).exists():
         from export_shotcharts import build_shotcharts_payload
