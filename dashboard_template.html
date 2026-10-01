@@ -1271,6 +1271,49 @@ h3.co-side.def::before { background: var(--base); }
 </style>
 
 <style>
+/* link previews: inline name links and the hover card they open */
+a.pv, button.pv { all: unset; cursor: pointer; font-weight: 600; color: inherit; text-decoration: underline dotted var(--muted); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.pv:hover, button.pv:hover, a.pv[aria-describedby], button.pv[aria-describedby] { color: var(--model); text-decoration: underline solid var(--model); }
+a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; border-radius: 3px; }
+.pvs:hover, .pvs[aria-describedby] { text-decoration: underline dotted currentColor; text-underline-offset: 3px; }
+.lp { position: fixed; z-index: 80; width: min(292px, calc(100vw - 16px)); }
+.lp[hidden] { display: none; }
+.lp-in { padding: 4px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-align: left;
+         box-shadow: 0 22px 44px -14px rgb(0 0 0 / .5), 0 2px 8px rgb(0 0 0 / .14); transform-origin: var(--ox, 50%) 100%;
+         animation: lpIn .42s cubic-bezier(.34, 1.56, .64, 1) both; font-size: 14px; line-height: 1.4; font-weight: 400; text-transform: none; letter-spacing: 0; font-style: normal; }
+.lp[data-side="bottom"] .lp-in { transform-origin: var(--ox, 50%) 0; animation-name: lpInB; }
+@keyframes lpIn { from { opacity: 0; transform: translateY(16px) scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes lpInB { from { opacity: 0; transform: translateY(-16px) scale(.6); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-in { animation: none; } }
+.lp-hero { position: relative; height: 104px; border-radius: 10px; overflow: hidden; color: #fff; background: linear-gradient(150deg, var(--tc), color-mix(in srgb, var(--tc) 55%, #000)); }
+.lp-hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--ta); }
+.lp-hero img { position: absolute; right: -8px; bottom: 4px; height: 100px; width: auto; filter: drop-shadow(0 4px 10px rgb(0 0 0 / .35)); }
+.lp-hero img.logo { height: 64px; right: 14px; top: 18px; bottom: auto; }
+.lp-t { position: absolute; left: 12px; bottom: 13px; right: 42%; display: grid; gap: 2px; text-shadow: 0 1px 8px rgb(0 0 0 / .45); }
+.lp-t b { font-family: var(--font-display); font-size: 21px; font-weight: 800; font-style: italic; text-transform: uppercase; line-height: .95; }
+.lp-t span { font-family: var(--font-label); font-size: 12px; font-weight: 600; opacity: .9; line-height: 1.2; }
+.lp-k { padding: 8px 10px 0; font-family: var(--font-label); font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.lp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 6px 6px 2px; }
+.lp-stats div { display: grid; text-align: center; padding: 6px 0; border-radius: 8px; background: var(--accent-soft); }
+.lp-stats b { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.lp-stats small { font-family: var(--font-label); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.lp-note { padding: 6px 10px 0; font-size: 13px; color: var(--ink-2); }
+.lp-note b { color: var(--ink); }
+.lp-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 8px 0; }
+.lp-chips span { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; line-height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); }
+.lp-list { display: grid; padding: 6px 4px 0; }
+.lp-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 4px 6px; border-radius: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600; }
+.lp-row:hover, .lp-row:focus-visible { background: var(--accent); }
+.lp-row .pf-av { width: 28px; height: 28px; font-size: 10px; }
+.lp-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-row small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lp-foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 6px 4px; margin-top: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+.lp-foot .pv { padding: 2px 4px; }
+.lp-go { margin-left: auto; font-size: 12.5px; font-weight: 600; padding: 4px 11px; border-radius: 999px; }
+.lp-foot .lp-go:only-child { margin-left: 0; }
+</style>
+
+<style>
 /* head to head: two players side by side, each in his own team's colors, so neither side is the "home" side */
 .h2h-pick { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(150px, 210px) auto; gap: 10px; align-items: end; }
 .h2h-pick #h2hSwap { height: 42px; padding: 0 12px; }
@@ -1371,10 +1414,10 @@ h3.co-side.def::before { background: var(--base); }
                    padding: 6px 12px; border-radius: 999px; border: 1px solid rgb(255 255 255 / .22); color: var(--dz-mute); }
 .dz-chips button:hover { color: #fff; border-color: rgb(255 255 255 / .55); }
 .dz-chips button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #0c0e12; }
-.dz-chips select { font-family: var(--font-label); font-size: 12.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; cursor: pointer;
-                   padding: 6px 12px; border-radius: 999px; border: 1px solid rgb(255 255 255 / .22); background: transparent; color: var(--dz-mute); }
-.dz-chips select.on { background: #fff; border-color: #fff; color: #0c0e12; }
-.dz-chips select option { color: #0c0e12; }
+.dz .ss-btn { background: rgb(255 255 255 / .06); border-color: rgb(255 255 255 / .22); color: var(--dz-ink); }
+.dz .ss-btn:hover { border-color: rgb(255 255 255 / .55); }
+.dz .ss-btn > svg, .dz .ss-val small { color: var(--dz-mute); }
+.dz .ss-pop { color: var(--ink); }  /* the panel is the page's own surface, not the dark stage */
 .dz-chips button:focus-visible, .dz-brick:focus-visible { outline: 2px solid var(--dz-steel); outline-offset: 2px; }
 .dz-wall { display: grid; gap: 6px; perspective: 1000px; min-height: 200px; }
 .dz-row { display: grid; gap: 6px; grid-template-columns: repeat(var(--c), minmax(0, 1fr)); }
@@ -1825,7 +1868,7 @@ h3.co-side.def::before { background: var(--base); }
         <div class="dz-ctl">
           <div><span class="label" id="dzRankL">Build the wall by</span><div class="dz-chips" id="dzRank" role="group" aria-labelledby="dzRankL"></div></div>
           <div><span class="label" id="dzPosL">Position</span><div class="dz-chips" id="dzPos" role="group" aria-labelledby="dzPosL"></div></div>
-          <div id="dzSpanWrap" hidden><span class="label" id="dzSpanL">Seasons</span><div class="dz-chips" id="dzSpan" role="group" aria-labelledby="dzSpanL"></div></div>
+          <div id="dzSpanWrap" hidden><label class="label" for="dzSeason">Seasons</label><select id="dzSeason"></select></div>
         </div>
       </div>
       <div class="dz-wall" id="dzWall" aria-label="The wall: defenders ranked, best at the top"></div>
@@ -4333,8 +4376,10 @@ function selPanel(sel, { cls = "", face, body, act, opened }) {
     if (ddOpen) ddOpen.close();
     if (opened) opened();
     pop.innerHTML = body(); pop.hidden = false; btn.setAttribute("aria-expanded", "true"); ddOpen = { wrap, close };
-    pop.style.left = "0px";  // then slide left as far as it takes to stay on screen, or in the dialog it's in
-    const b = (wrap.closest("dialog") || document.documentElement).getBoundingClientRect(), r = pop.getBoundingClientRect();
+    pop.style.left = "0px";  // then slide left as far as it takes to stay on screen, or in the dialog or clipped box it's in (the Defense stage hides overflow)
+    let box = wrap.parentElement;
+    while (box && box !== document.body && box.tagName !== "DIALOG" && getComputedStyle(box).overflowX === "visible") box = box.parentElement;
+    const b = (box && box !== document.body ? box : document.documentElement).getBoundingClientRect(), r = pop.getBoundingClientRect();
     pop.style.left = Math.max(b.left + 16 - r.left, Math.min(0, b.right - 16 - r.right)) + "px";
     (pop.querySelector("[data-v].on") || pop.querySelector("[data-v]:not(:disabled)"))?.focus();
   };
@@ -4372,15 +4417,18 @@ function selTeam(sel) {  // a list of teams: the game picker's logo grid, East a
     },
   });
 }
-function selSeason(sel, { any } = {}) {  // a list of seasons ("2024-25", "2024-25 Playoffs"): the season picker's grid, a row per decade
+function selSeason(sel, { any, quick = [] } = {}) {  // a list of seasons ("2024-25", "2024-25 Playoffs"): the season picker's grid, a row per decade
   let k = null;  // the panel's regular season / playoffs switch, until a season is picked
+  const named = new Map(quick), isSeason = v => !!v && !named.has(v);
   const hasPO = () => [...sel.options].some(o => isPO(o.value));
-  selPanel(sel, {  // with `any`, an option of value "" means no season filter and gets its own chip
-    face: () => [DD_CAL, sel.value === "" && any ? any : sel.value.replace(PO_SFX, ""), hasPO() && sel.value ? (isPO(sel.value) ? "Playoffs" : "Regular season") : ""],
+  selPanel(sel, {  // with `any`, an option of value "" means no season filter and gets its own chip; `quick` ([value, label]) are spans like "last3", as pills above the grid
+    face: () => [DD_CAL, named.has(sel.value) ? named.get(sel.value) : sel.value === "" && any ? any : sel.value.replace(PO_SFX, ""),
+      hasPO() && isSeason(sel.value) ? (isPO(sel.value) ? "Playoffs" : "Regular season") : ""],
     body: () => {
-      const vals = [...sel.options].map(o => o.value).filter(Boolean), kind = k || (isPO(sel.value) ? "po" : "rs"), key = s => s + (kind === "po" ? PO_SFX : "");
+      const vals = [...sel.options].map(o => o.value).filter(isSeason), kind = k || (isPO(sel.value) ? "po" : "rs"), key = s => s + (kind === "po" ? PO_SFX : "");
       const bases = [...new Set(vals.map(v => v.replace(PO_SFX, "")))].sort(), yr = s => +s.slice(0, 4), dec = s => Math.floor(yr(s) / 10) * 10;
       return (any ? `<button type="button" class="ss-chip ss-any${sel.value === "" ? " on end" : ""}" data-v="" aria-pressed="${sel.value === ""}">${esc(any)}</button>` : "") +
+        (quick.length ? `<div class="ss-quick">${quick.map(([v, l]) => `<button type="button"${sel.value === v ? ' class="on"' : ""} data-v="${esc(v)}" aria-pressed="${sel.value === v}">${esc(l)}</button>`).join("")}</div>` : "") +
         (hasPO() ? `<div class="seg ss-kind" role="group" aria-label="Games">${[["rs", "Regular season"], ["po", "Playoffs"]]
           .map(([v, l]) => `<button type="button" data-k="${v}" aria-pressed="${kind === v}">${l}</button>`).join("")}</div>` : "") +
         `<div class="ss-dec">${[...new Set(bases.map(dec))].sort((x, y) => y - x).map(d => `<span class="ss-dl">${d}s</span><div class="ss-row">${bases.filter(s => dec(s) === d).map(s => {
@@ -5670,13 +5718,15 @@ function h2hModel() {  // everything both the page and the saved image draw: the
   // their games against each other: the record in this span, plus the all-time ones when the span is one season
   const by = h2hMeet(), rec = h2hRec(by, h2hIsCar(key) ? k => isPO(k) === (key === H2H_CAR_PO) : k => k === key);
   const reg = h2hRec(by, k => !isPO(k)), po = h2hRec(by, isPO), la = h2hLast(h2h.a), lb = h2hLast(h2h.b), since = PF.meet ? PF.meet.keys[0] : "";
-  const span = key === H2H_CAR ? `in the regular season since ${since}` : key === H2H_CAR_PO ? `in the playoffs since ${since}` : `in ${key}`;
+  const span = key === H2H_CAR ? `in the regular season since ${since}` : key === H2H_CAR_PO ? `in the playoffs since ${since}`
+    : isPO(key) ? `in the ${key.slice(0, -PO_SFX.length)} playoffs` : `in ${key}`;
   const g = rec[0] + rec[1], lead = rec[0] > rec[1] ? la : lb;
   let meet = !PF.meet ? "" : !g ? `They never played each other ${span}.`
     : rec[0] === rec[1] ? `They split their ${g} games against each other ${span}, ${rec[0]}–${rec[1]}.`
     : `${lead}'s team won ${Math.max(...rec)} of their ${g} ${g === 1 ? "game" : "games"} against each other ${span}.`;
   if (PF.meet && !h2hIsCar(key) && reg[0] + reg[1] + po[0] + po[1] > g)
-    meet += ` All-time: ${la} ${reg[0]}–${reg[1]} ${lb} in the regular season${po[0] + po[1] ? `, ${po[0]}–${po[1]} in the playoffs` : ""}.`;
+    meet += ` All-time: ${[[reg, "in the regular season"], [po, "in the playoffs"]].filter(([r]) => r[0] + r[1])
+      .map(([r, t]) => (r[0] === r[1] ? `even at ${r[0]}–${r[1]}` : `${Math.max(...r)}–${Math.min(...r)} ${r[0] > r[1] ? la : lb}`) + ` ${t}`).join(", ")}.`;
   return { key, sa, sb, ca, cb, wa, wb, n, rows, when, verdict, per36, rec, meet };
 }
 function h2hRender() {
@@ -6073,17 +6123,17 @@ function dzReport(x) {
   const role = (k, why) => (x.p[k] != null && x.p[k] < .6 && big ? ` ${why}` : "");
   const tiles = [
     v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", dzSeasons() ? `points for the scorers he guarded ${dzSpanText()}, against what the same scorers put up on everyone else.` : "points per possession for the scorers he guards, after accounting for who they are.", "lock",
-      "It only credits the man he's matched up with. Help defense, like rotating over to stop someone else's drive, isn't counted, and bigs are usually matched with centers and roll men who score close to the basket." +
-      role("lock", `That likely undersells ${him}: as a rim protector, most of his value comes as the help defender.`)),
+      "Only credits the man he's guarding; help defense isn't counted." +
+      role("lock", `Likely undersells ${him}, whose value is mostly as the helper.`)),
     v.con != null && tile("Contest", dzSg(v.con * 100), dzSeasons() ? `FG% points for the scorers he guarded ${dzSpanText()}, against what they shot on everyone else.` : "FG% points for the scorers he guards, against an average defender.", "con",
-      "Same matchup tracking as Lockdown, so a shot he challenges as the helper counts against a teammate. Shooting percentages are also noisy: one hot or cold stretch moves this." + role("con", "A paint-bound big is rarely the assigned defender on the shots he changes most.")),
+      "Shots he contests as the helper count for a teammate, and shooting luck moves it." + role("con", "Bigs change most shots as the helper.")),
     v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, "rim",
-      big ? "Only shots where he was the nearest defender at the rim. Bigs see far more of these than anyone, and a feared shot-blocker faces fewer drives, so the attempts that remain come from players confident enough to challenge him."
-        : `Only shots where he was the nearest defender at the rim. ${x.pos === "G" ? "Guards" : "Wings"} defend far fewer of these than bigs, so a few makes or misses swing it more.`),
+      big ? "Only shots where he was nearest. Feared shot-blockers face fewer, bolder attempts."
+        : `Only shots where he was nearest. ${x.pos === "G" ? "Guards" : "Wings"} defend few, so a handful of makes swings it.`),
     tile("Stocks", g.stk.toFixed(1), `steals plus blocks per game: ${g.blk.toFixed(1)} blocks, ${g.stl.toFixed(1)} steals over ${x.gp.toLocaleString()} games${x.defl ? `, plus ${x.defl.toFixed(1)} deflections per 36` : ""}.`, "stk",
-      `Only counts plays that end a possession. ${big ? "A big told to stay home in the paint, or to sit back in drop coverage, gets few chances to jump passing lanes, so his steals stay low no matter how good he is; blocks carry this number." : "Gambling for steals can pile these up while giving up easy baskets, and staying disciplined can keep them low."} Per game, so heavy minutes also push it up.`),
+      `Only plays that end a possession${big ? "; bigs kept in the paint get few steals" : "; gambling inflates it"}. Per game, so heavy minutes push it up.`),
     v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", "det",
-      "Measured only on shots where he was the closest defender. It can't see drives that never start because he's waiting at the rim." + role("det", `A big who lives in the paint is the closest defender on most rim attempts, so even a feared protector like ${him} can read near zero.`)),
+      "Can't see drives that never start because he's there." + role("det", `Bigs are nearest on most rim shots, so even ${him} can read near zero.`)),
   ].filter(Boolean).join("");
   // why the rating lands where it does: his best and worst parts, and what the weak ones can't see
   const parts = DZ_AX.filter(a => x.p[a.k] != null).map(a => ({ ...a, p: x.p[a.k] })).sort((a, c) => c.p - a.p);
@@ -6169,11 +6219,11 @@ function initDefense() {
   chips($("dzPos"), DZ_POS, () => dz.pos, v => dz.pos = v);
   if (DS && DS.mu_seasons.length) {
     $("dzSpanWrap").hidden = false;
-    $("dzSpan").innerHTML = `<button type="button" data-v="career">Career</button>${DS.mu_seasons.length > 3 ? `<button type="button" data-v="last3">Last 3</button>` : ""}`
-      + `<select id="dzSeason" aria-label="One season"><option value="">One season</option>${[...DS.mu_seasons].reverse().map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
-    $("dzSpan").addEventListener("click", e => { const b = e.target.closest("button"); if (b) dzSetPeriod(b.dataset.v); });
-    $("dzSeason").addEventListener("change", e => { if (e.target.value) dzSetPeriod(e.target.value); });
-    dzSpanDraw();
+    const quick = [["career", "Career"], ...(DS.mu_seasons.length > 3 ? [["last3", "Last 3 seasons"]] : [])];
+    $("dzSeason").innerHTML = [...quick, ...DS.mu_seasons.map(s => [s, s])].map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+    $("dzSeason").value = dz.period;
+    selSeason($("dzSeason"), { quick });
+    $("dzSeason").addEventListener("change", e => dzSetPeriod(e.target.value));
   }
   $("dzWall").addEventListener("click", e => { const b = e.target.closest(".dz-brick"); if (b) dzPick(+b.dataset.id, true); });
   new ResizeObserver(() => { const w = $("dzWall").clientWidth, c = Math.max(2, Math.min(7, Math.floor(w / 160))); if (w && c !== dz.cols) dzWall(!dz.cols); }).observe($("dzWall"));
@@ -6195,19 +6245,184 @@ function dzLabels() {
       ? `Top ${DZ_N} of ${dz.pool.length} players with ${min.toLocaleString()}+ regular-season minutes ${dzSpanText()}. The Wall rating averages five percentiles, each ranked against players at his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone): Lockdown (×2) and Contest (×1.5), rim protection, blocks and steals per 36. Here Lockdown and Contest are raw matchup results: what the scorers a player guarded did against him, against what the same scorers did against everyone else that season, shrunk toward average for small samples. That's not the career matchup model, so a season's ranks can differ from Career's. Deterrence is a career-wide shot-model number, so it's left out. All of these only see the man a player is assigned to, so help-side rim protectors would rate lower than their real impact if ranked against everyone; comparing bigs only with bigs offsets most of that. The Lockdown, Contest, Rim, Blocks and Steals buttons rank everyone together on the stat itself. Awards from those seasons, from Basketball-Reference.`
       : `Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles, each ranked against players at his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone): Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Lockdown, Contest and Deterrence only see the man a player is assigned to, so help-side rim protectors would rate lower than their real impact if ranked against everyone; comparing bigs only with bigs offsets most of that. The Lockdown, Contest, Rim, Blocks and Steals buttons rank everyone together on the stat itself. Awards from Basketball-Reference.`);
 }
-function dzSpanDraw() {
-  $("dzSpan").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === dz.period));
-  const sel = $("dzSeason"), one = dz.period !== "career" && dz.period !== "last3";
-  sel.value = one ? dz.period : ""; sel.classList.toggle("on", one);
-}
 function dzSetPeriod(p) {  // rebuild the pool for the new span and redraw everything; keep the same player if he's still in it
   if (p === dz.period) return;
   dz.period = p;
   dzBuild();
-  dzSpanDraw(); dzLabels();
+  $("dzSeason").value = dz.period; dzLabels();
   dz.cols = 0; dzWall(true);
   const keep = dz.byId.get(dz.sel), first = dzItems()[0];
   if (keep || first) dzPick(keep ? keep.id : first.id, false);
+}
+
+/* ---------- link previews ----------
+   Every player, coach and team name can carry a hover card (data-pv="p:<id>", "c:<id>", "t:<TRI>"). Hovering (mouse) or
+   keyboard focus shows it above the name with a spring and a slight sway toward the cursor; moving onto the card keeps it open,
+   and its links chain: a player's card links his team and coach, a team's card its coach, best players and last game.
+   Names inside an existing button or clickable row use a plain <span data-pv> (hover only, the row keeps its click);
+   names in sentences use <a class="pv">, which also navigates: a player opens his profile, a coach his page, a team pins its card. */
+const pvP = (pid, label) => PF && PF.players[pid] ? `<a class="pv" href="#player-${pid}" data-pv="p:${pid}">${esc(label ?? pfName(pid))}</a>` : esc(label ?? "");
+const pvC = (id, label) => { const c = CO && coById(id); return c ? `<a class="pv" href="#/coaches/${id}" data-pv="c:${id}">${esc(label ?? c.name)}</a>` : esc(label ?? ""); };
+const pvT = (tri, label) => tri && PF_TEAMS[tri] ? `<button type="button" class="pv pv-t" data-pv="t:${tri}" aria-expanded="false">${esc(label ?? tri)}</button>` : esc(label ?? tri ?? "");
+const pvS = (ref, html) => `<span class="pvs" data-pv="${ref}">${html}</span>`;  // inside a control: hover only
+const LP_SEL = "[data-pv], .pf-link[data-pid], .pf-chip[data-pid]";
+const lp = { card: null, at: null, ref: "", open: 0, hide: 0, pinned: false, x: 0, goal: 0, raf: 0, teams: null };
+const lpRefOf = el => el.dataset.pv || (el.dataset.pid ? "p:" + el.dataset.pid : "");
+const lpCoachOf = tri => CO ? CO.coaches.find(c => c.now === tri) : null;
+const lpLatest = () => PF.seasons.filter(k => !isPO(k)).pop();
+function lpTeams() {  // this season's record and last game for every team, from the replay games shipped in the page
+  if (lp.teams) return lp.teams;
+  const T = (lp.teams = {});
+  for (const g of DATA.games) {
+    if (isPlayoffId(g.id) || !PF || !PF.games[g.id]) continue;
+    const { H, A } = sides(g), [hs, as] = pfScore(g, g.tok.length - 1), hw = hs !== as ? hs > as : !!g.home_win;
+    [[H.tri, hw, A.tri, hs, as, "vs"], [A.tri, !hw, H.tri, as, hs, "@"]].forEach(([t, won, opp, us, them, where]) => {
+      const r = T[t] || (T[t] = { w: 0, l: 0, last: null });
+      if (won) r.w++; else r.l++;
+      r.last = { gid: g.id, won, opp, us, them, where };  // games are in schedule order, so the last one wins
+    });
+  }
+  return T;
+}
+const lpHero = (c1, c2, img, title, meta, logo) => `<div class="lp-hero" style="--tc:${c1};--ta:${c2}">${img ? `<img${logo ? ' class="logo"' : ""} src="${img}" alt="" onerror="this.remove()">` : ""}
+  <div class="lp-t"><b>${title}</b><span>${meta}</span></div></div>`;
+const lpStats = cells => `<div class="lp-stats">${cells.map(([v, k]) => `<div><b>${v}</b><small>${k}</small></div>`).join("")}</div>`;
+function lpPlayer(pid) {
+  const P = PF && PF.players[pid];
+  if (!P) return "";
+  const k = pfLatest(P), s = P.seasons[k], tri = P.team || s.team, [tname, c1, c2] = pfTeam(tri), b = P.bio || {}, n = Math.max(s.gp, 1);
+  const coach = lpCoachOf(tri), d = typeof dz !== "undefined" && dz.byId ? dz.byId.get(+pid) : null;
+  const meta = [tname || tri, b.pos && (PF_POS[b.pos] || b.pos), b.num && `#${b.num}`, b.ht].filter(Boolean).map(esc).join(" · ");
+  return lpHero(c1, c2, pfHead(pid, "260x190"), esc(P.name), meta) +
+    `<p class="lp-k">${esc(k)} · ${s.gp} games</p>` + lpStats([[f1(s.pts / n), "PTS"], [f1(pfReb(s) / n), "REB"], [f1(s.ast / n), "AST"]]) +
+    ((P.acc || []).length ? `<div class="lp-chips">${P.acc.slice(0, 3).map(a => `<span>${esc(a)}</span>`).join("")}</div>` : "") +
+    (d ? `<p class="lp-note">Wall rating <b>${d.score}</b> on the Defense tab</p>` : "") +
+    `<div class="lp-foot">${pvT(tri, tname ? NICK(tname) : tri)}${coach ? pvC(coach.id, "Coach " + pfSplitName(coach.name)[1]) : ""}<button type="button" class="lp-go" data-go-p="${pid}">Profile ›</button></div>`;
+}
+function lpCoach(id) {
+  const c = CO && coById(id);
+  if (!c) return "";
+  const tri = c.now || c.last, [tname, c1, c2] = pfTeam(tri), r = c.career || {}, g = (r.w || 0) + (r.l || 0);
+  return lpHero(c1, c2, c.photos && c.photos[0] ? coSmall(c.photos[0]) : "", esc(c.name), esc(c.now ? `Head coach · ${tname}` : `Last coached ${tname || tri}`)) +
+    lpStats([[`${r.w || 0}–${r.l || 0}`, "Record"], [g ? (r.w / g).toFixed(3).replace(/^0/, "") : "–", "Win %"], [+c.titles || 0, +c.titles === 1 ? "Title" : "Titles"]]) +
+    (r.pg ? `<p class="lp-note">Playoffs ${r.pw}–${r.pl}${+c.coy ? ` · ${c.coy}× Coach of the Year` : ""}</p>` : +c.coy ? `<p class="lp-note">${c.coy}× Coach of the Year</p>` : "") +
+    ((c.acc || []).length ? `<div class="lp-chips">${c.acc.slice(0, 3).map(a => `<span>${esc(a)}</span>`).join("")}</div>` : "") +
+    `<div class="lp-foot">${tri ? pvT(tri, NICK(tname || tri)) : ""}<button type="button" class="lp-go" data-go-c="${c.id}">Coach page ›</button></div>`;
+}
+function lpTeam(tri) {
+  const [tname, c1, c2] = pfTeam(tri);
+  if (!tname) return "";
+  const season = lpLatest(), r = lpTeams()[tri], coach = lpCoachOf(tri);
+  const top = Object.entries(PF.players).filter(([, P]) => P.team === tri && P.seasons[season])
+    .sort((a, b) => b[1].seasons[season].min - a[1].seasons[season].min).slice(0, 5);
+  const L = r && r.last;
+  return lpHero(c1, c2, PF.teams[tri] ? `https://cdn.nba.com/logos/nba/${PF.teams[tri]}/global/L/logo.svg` : "", esc(tname), esc(r ? `${season} · ${r.w}–${r.l}` : season), true) +
+    (coach ? `<p class="lp-note">Head coach ${pvC(coach.id)}</p>` : "") +
+    (top.length ? `<div class="lp-list">${top.map(([id, P]) => { const s = P.seasons[season], n = Math.max(s.gp, 1);
+      return `<button type="button" class="lp-row" data-go-p="${id}">${pfAvatar(+id, P.name)}<span>${esc(P.name)}</span><small>${f1(s.pts / n)} PPG</small></button>`; }).join("")}</div>` : "") +
+    (L ? `<div class="lp-foot"><button type="button" class="lp-go" data-go-g="${L.gid}">Last game: ${L.won ? "W" : "L"} ${L.us}–${L.them} ${L.where} ${esc(L.opp)} · Replay ›</button></div>` : "");
+}
+const lpHtml = ref => { const [k, id] = [ref[0], ref.slice(2)]; return k === "p" ? lpPlayer(+id) : k === "c" ? lpCoach(id) : k === "t" ? lpTeam(id) : ""; };
+function lpPlace() {
+  const c = lp.card, r = lp.at.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight, gap = 10;
+  const top = r.top - h - gap >= 8 || r.bottom + gap + h > innerHeight - 8;
+  const cx = r.left + r.width / 2, left = Math.max(8, Math.min(innerWidth - w - 8, cx - w / 2));
+  c.style.left = left + "px";
+  c.style.top = Math.max(8, top ? r.top - h - gap : r.bottom + gap) + "px";
+  c.dataset.side = top ? "top" : "bottom";
+  c.style.setProperty("--ox", `${Math.round(cx - left)}px`);  // grow out of the name, wherever the clamp put the card
+}
+function lpShow(el, ref) {
+  const html = lpHtml(ref);
+  if (!html) return;
+  if (lp.at && lp.at !== el) lp.at.removeAttribute("aria-describedby"), lp.at.matches(".pv-t") && lp.at.setAttribute("aria-expanded", "false");
+  lp.at = el; lp.ref = ref; lp.x = lp.goal = 0;
+  lp.card.style.translate = "";
+  lp.card.innerHTML = `<div class="lp-in">${html}</div>`;
+  lp.card.hidden = false;
+  lpPlace();
+  el.setAttribute("aria-describedby", "lpCard");
+  if (el.matches(".pv-t")) el.setAttribute("aria-expanded", "true");
+}
+function lpClose() {
+  clearTimeout(lp.open); clearTimeout(lp.hide); cancelAnimationFrame(lp.raf); lp.raf = 0;
+  if (!lp.at) return;
+  lp.at.removeAttribute("aria-describedby");
+  if (lp.at.matches(".pv-t")) lp.at.setAttribute("aria-expanded", "false");
+  lp.card.hidden = true; lp.at = null; lp.ref = ""; lp.pinned = false;
+}
+function lpArm(el, ms) {
+  clearTimeout(lp.hide);
+  if (lp.at === el) return;
+  clearTimeout(lp.open);
+  const ref = lpRefOf(el);
+  if (ref) lp.open = setTimeout(() => lpShow(el, ref), lp.at ? 80 : ms);  // already browsing cards: switch almost at once
+}
+function lpDisarm() { clearTimeout(lp.open); if (!lp.pinned) { clearTimeout(lp.hide); lp.hide = setTimeout(lpClose, 160); } }
+function lpSway(e) {  // the card leans a little toward the cursor, springing after it
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const r = lp.at.getBoundingClientRect();
+  lp.goal = Math.max(-36, Math.min(36, (e.clientX - r.left - r.width / 2) / 2));
+  if (lp.raf) return;
+  const step = () => {
+    lp.x += (lp.goal - lp.x) * .16;
+    lp.card.style.translate = `${lp.x.toFixed(1)}px 0`;
+    lp.raf = Math.abs(lp.goal - lp.x) > .3 ? requestAnimationFrame(step) : 0;
+  };
+  lp.raf = requestAnimationFrame(step);
+}
+function lpReplay(gid) {  // open a game's replay, loading its season first if another one is on screen
+  const season = gpIdSeason(gid), go = () => { if (openGame(gid)) showTab("games", true); };
+  if (REPLAY && season !== gpSeason && REPLAY.some(r => r.season === season)) gpSetSeason(season, gid).then(ok => ok && go()); else go();
+}
+function lpGo(kind, id) {
+  lpClose();
+  if (kind === "p") openProfile(+id);
+  else if (kind === "c") { showTab("coaches", true); coPick(id, "off", true); }
+  else if (kind === "g") lpReplay(id);
+}
+function lpInit() {
+  const card = (lp.card = document.createElement("div"));
+  card.className = "lp"; card.id = "lpCard"; card.setAttribute("role", "tooltip"); card.hidden = true;
+  document.body.append(card);
+  const mouse = e => e.pointerType === "mouse";
+  document.addEventListener("pointerover", e => {
+    if (!mouse(e)) return;
+    if (card.contains(e.target)) { clearTimeout(lp.hide); return; }
+    const t = e.target.closest(LP_SEL);
+    if (t && !t.closest(".lp-off")) lpArm(t, 260);
+  });
+  document.addEventListener("pointerout", e => {
+    if (!mouse(e) || (e.relatedTarget && card.contains(e.relatedTarget))) return;
+    const t = e.target.closest(LP_SEL);
+    if ((t && !t.contains(e.relatedTarget)) || (card.contains(e.target) && !card.contains(e.relatedTarget))) lpDisarm();
+  });
+  document.addEventListener("pointermove", e => { if (lp.at && mouse(e) && e.target.closest(LP_SEL) === lp.at) lpSway(e); });
+  document.addEventListener("focusin", e => {
+    const t = e.target.closest(LP_SEL);
+    if (t && !card.contains(t) && t.matches(":focus-visible") && !t.closest(".lp-off")) { clearTimeout(lp.open); lpShow(t, lpRefOf(t)); }
+  });
+  document.addEventListener("focusout", e => { if (lp.at && !lp.pinned && !card.contains(e.relatedTarget) && e.target === lp.at) lpClose(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && lp.at) { const at = lp.at; lpClose(); if (card.contains(document.activeElement)) at.focus(); } });
+  document.addEventListener("pointerdown", e => { if (lp.at && !card.contains(e.target) && !lp.at.contains(e.target)) lpClose(); });
+  addEventListener("scroll", e => { if (lp.at && !card.contains(e.target)) lpClose(); }, { passive: true, capture: true });
+  addEventListener("resize", () => lp.at && lpClose());
+  document.addEventListener("click", e => {
+    const go = e.target.closest("[data-go-p], [data-go-c], [data-go-g]");
+    if (go && card.contains(go)) { e.preventDefault(); lpGo(go.dataset.goP ? "p" : go.dataset.goC ? "c" : "g", go.dataset.goP || go.dataset.goC || go.dataset.goG); return; }
+    const a = e.target.closest("a.pv, button.pv");
+    if (!a) return;
+    e.preventDefault();
+    const ref = a.dataset.pv, kind = ref[0], id = ref.slice(2);
+    if (kind === "t") {  // a team has no page of its own: its card is the destination, pinned until dismissed
+      if (card.contains(a)) { lpShow(lp.at, ref); lp.pinned = true; return; }  // inside a card: become that team's card
+      if (lp.at === a && lp.pinned) { lpClose(); return; }
+      lpShow(a, ref); lp.pinned = true;
+      if (!e.detail) card.querySelector("button, a")?.focus();  // keyboard: step into the card
+      return;
+    }
+    lpGo(kind, id);
+  });
 }
 
 /* ---------- tabs + theme ---------- */
@@ -6375,6 +6590,7 @@ scInit();
 muInit();
 srcInit();
 try { initH2H(); } catch (e) { console.error(e); }
+try { lpInit(); } catch (e) { console.error(e); }  // hover cards on every player, coach and team name
 homeInit();
 initTabs();
 replayFromHash();
