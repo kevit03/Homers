@@ -2,7 +2,7 @@
 
 Reads assets/credits.json (file, title, author, license, source for every photo) and the JPEGs in
 assets/img. Missing files are skipped; the page falls back to plain gradients.
-Used by export_dashboard.py.
+Used by export/export_dashboard.py.
 """
 import base64
 import json

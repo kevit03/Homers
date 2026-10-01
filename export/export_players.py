@@ -1,6 +1,6 @@
 """Player / defender / coach data for the dashboard, including shot-model weights for in-browser inference.
 
-Used by export_dashboard.py when --shot_run is given.
+Used by export/export_dashboard.py when --shot_run is given.
 """
 import json
 from pathlib import Path
@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import torch
 
-from build_shots import STYLES, ZONES
-from fetch_context import PLAY_TYPES
-from player_names import full_name
-from shot_model import ShotNet, encode, player_priors, split_shots, team_profiles
+from models.build_shots import STYLES, ZONES
+from fetch.fetch_context import PLAY_TYPES
+from models.player_names import full_name
+from models.shot_model import ShotNet, encode, player_priors, split_shots, team_profiles
 
 ZONE_VALUE = np.array([3 if z.endswith("_3") else 2 for z in ZONES], dtype=np.float32)
 RIM, MID, THREE = [0, 1], [2, 3, 4, 5], [6, 7]
@@ -76,7 +76,7 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
     prof_off, prof_def, _ = team_profiles(context)
     rng = np.random.default_rng(seed)
 
-    # names: full names from player_names.py; the play-by-play surname only if no source knows him
+    # names: full names from models/player_names.py; the play-by-play surname only if no source knows him
     shooter_names = shots.drop_duplicates("shooterId").set_index("shooterId")["shooter"].to_dict()
     name = lambda pid: full_name(pid, shooter_names.get(int(pid)), context)
 
@@ -179,8 +179,8 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
             "playtypes": pt_player.get(pid),
         })
 
-    # defensive play types, tracking actions, hustle and rim defense (export_tracking.py), career totals
-    from export_tracking import labels, player_units
+    # defensive play types, tracking actions, hustle and rim defense (export/export_tracking.py), career totals
+    from export.export_tracking import labels, player_units
     track = player_units(context, ids=[p["id"] for p in players])
     if track:
         for p in players:

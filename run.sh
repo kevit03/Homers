@@ -31,10 +31,10 @@ need_python() {
 py() { need_python; PYTHONWARNINGS=ignore "$PY" -u "$@"; }
 
 # Python processes running a project script, printed as "script.py args"
-jobs_matching() { ps -Ao command | grep -E "^[^ ]*[Pp]ython[0-9.]* (-u )?[^ ]*$1" | sed -E 's/^.*[Pp]ython[0-9.]* (-u )?//'; }
+jobs_matching() { ps -Ao command | grep -E "^[^ ]*[Pp]ython[0-9.]* (-u )?(-m )?[^ ]*$1" | sed -E 's/^.*[Pp]ython[0-9.]* (-u )?(-m )?//'; }
 running() { [ -n "$(jobs_matching "$1")" ]; }
 guard_training() {
-  if running "train\\.py.*runs/base"; then
+  if running "train(\\.py)? .*runs/base"; then
     die "a training run is already writing to runs/base. Wait for it (./run.sh status) or pass --out runs/other."
   fi
 }
@@ -56,49 +56,49 @@ cmd_setup() {
 }
 
 cmd_demo() {
-  step "1/5 Generating 400 synthetic games";    py synthetic.py --games 400
-  step "2/5 Tokenizing";                        py tokenize_pbp.py --raw data/raw_synthetic --out data/processed/synthetic.pkl
-  step "3/5 Fitting the baseline";              py baseline.py --data data/processed/synthetic.pkl --out runs/baseline_syn.joblib
-  step "4/5 Training a small model";            py train.py --data data/processed/synthetic.pkl --out runs/syn \
+  step "1/5 Generating 400 synthetic games";    py -m models.synthetic --games 400
+  step "2/5 Tokenizing";                        py -m models.tokenize_pbp --raw data/raw_synthetic --out data/processed/synthetic.pkl
+  step "3/5 Fitting the baseline";              py -m models.baseline --data data/processed/synthetic.pkl --out runs/baseline_syn.joblib
+  step "4/5 Training a small model";            py -m models.train --data data/processed/synthetic.pkl --out runs/syn \
                                                   --baseline runs/baseline_syn.joblib --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3 "$@"
-  step "5/5 Building the dashboard";            py export_dashboard.py --ckpt runs/syn/best.pt \
+  step "5/5 Building the dashboard";            py -m export.export_dashboard --ckpt runs/syn/best.pt \
                                                   --data data/processed/synthetic.pkl --baseline runs/baseline_syn.joblib
   open dashboard.html 2>/dev/null || bold "Open dashboard.html in your browser."
 }
 
 cmd_fetch() {
-  step "Play-by-play, 1996-97 on (resumable)";  py fetch_data.py "$@"
-  step "Results before play-by-play, 1946-47 to 1995-96 (box scores only*, resumable)"; py fetch_history.py
-  step "Coaches, play types, matchups (resumable)"; py fetch_context.py
-  step "Rosters";                               py fetch_rosters.py
-  step "Current rosters (Basketball-Reference)"; py fetch_bbref.py --refresh
-  step "Accolades and coaches (Basketball-Reference, resumable)"; py fetch_accolades.py
+  step "Play-by-play, 1996-97 on (resumable)";  py -m fetch.fetch_data "$@"
+  step "Results before play-by-play, 1946-47 to 1995-96 (box scores only*, resumable)"; py -m fetch.fetch_history
+  step "Coaches, play types, matchups (resumable)"; py -m fetch.fetch_context
+  step "Rosters";                               py -m fetch.fetch_rosters
+  step "Current rosters (Basketball-Reference)"; py -m fetch.fetch_bbref --refresh
+  step "Accolades and coaches (Basketball-Reference, resumable)"; py -m fetch.fetch_accolades
 }
 
-cmd_tokenize() { step "Tokenizing play-by-play"; py tokenize_pbp.py "$@"; }
+cmd_tokenize() { step "Tokenizing play-by-play"; py -m models.tokenize_pbp "$@"; }
 
 cmd_train() {
   case " $* " in *" --out "*) ;; *) guard_training ;; esac
-  step "Fitting the baseline";                  py baseline.py
-  step "Rating teams (pre-game Elo)";           py team_strength.py
-  step "Training the transformer";              py train.py --out runs/base "$@"
+  step "Fitting the baseline";                  py -m models.baseline
+  step "Rating teams (pre-game Elo)";           py -m models.team_strength
+  step "Training the transformer";              py -m models.train --out runs/base "$@"
 }
 
 cmd_evaluate() {
   [ -f runs/base/best.pt ] || die "no trained model yet. Run: ./run.sh train"
-  step "Evaluating on the test season";         py evaluate.py --ckpt runs/base/best.pt "$@"
+  step "Evaluating on the test season";         py -m models.evaluate --ckpt runs/base/best.pt "$@"
   bold "Metrics and plots are in results/"
 }
 
 cmd_shots() {
-  step "Building the shot table";               py build_shots.py
-  step "Training the shot model";               py shot_model.py --batch_size 256 "$@"
+  step "Building the shot table";               py -m models.build_shots
+  step "Training the shot model";               py -m models.shot_model --batch_size 256 "$@"
 }
 
 cmd_dashboard() {
   step "Building the dashboard"
   # shellcheck disable=SC2046
-  py export_dashboard.py $(dashboard_inputs) --all_seasons "$@"  # every season in Game replay: games/<season>.js
+  py -m export.export_dashboard $(dashboard_inputs) --all_seasons "$@"  # every season in Game replay: games/<season>.js
   open dashboard.html 2>/dev/null || bold "Open dashboard.html in your browser."
 }
 
@@ -139,7 +139,7 @@ EOF
 
   bold "Running now"
   local any=0
-  for j in fetch_data fetch_history fetch_context fetch_rosters fetch_accolades tokenize_pbp build_shots "train\\.py" evaluate shot_model export_dashboard; do
+  for j in fetch_data fetch_history fetch_context fetch_rosters fetch_accolades tokenize_pbp build_shots "train(\\.py)? " evaluate shot_model export_dashboard; do
     if running "$j"; then jobs_matching "$j" | sed 's/^/  /'; any=1; fi
   done
   [ $any = 1 ] || echo "  nothing"

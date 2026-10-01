@@ -7,7 +7,7 @@ its playoffs, so the two never mix. A player's game log covers his latest season
 Everything comes from the raw play-by-play (plus data/context/rosters.parquet for bios, if fetched),
 so it works without the shot model. Per-game results are cached in data/processed/profiles_cache.pkl.
 
-    python export_profiles.py                 # build/refresh the cache and print a summary
+    python -m export.export_profiles                 # build/refresh the cache and print a summary
 """
 import argparse
 import pickle
@@ -18,9 +18,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from build_shots import TEAM_ID_MIN, load_matchups, name_map, norm
-from player_names import full_name
-from tokenize_pbp import STOI, classify, game_order, parse_clock, season_key
+from models.build_shots import TEAM_ID_MIN, load_matchups, name_map, norm
+from models.player_names import full_name
+from models.tokenize_pbp import STOI, classify, game_order, parse_clock, season_key
 
 STATS = ["min", "pts", "fgm", "fga", "tpm", "tpa", "ftm", "fta", "oreb", "dreb", "ast", "stl", "blk", "tov", "pf"]
 FP_WEIGHTS = {"pts": 1, "reb": 1.2, "ast": 1.5, "stl": 3, "blk": 3, "tov": -1}  # NBA.com / FanDuel scoring

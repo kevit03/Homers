@@ -3,9 +3,9 @@
 Runs the model once over the chosen split and bakes every prediction into the page,
 so the result is a single file you can open locally or host anywhere static.
 
-    python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl
-    python export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
-    python export_dashboard.py --all_seasons   # also every other season's games for Game replay, in games/<season>.js
+    python -m export.export_dashboard --ckpt runs/base/best.pt --data data/processed/games.pkl
+    python -m export.export_dashboard --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
+    python -m export.export_dashboard --all_seasons   # also every other season's games for Game replay, in games/<season>.js
 
 The held-out season is always baked into the page. With --all_seasons the model also runs over every other season and
 writes each to games/<season>.js next to the page, which loads one when its season is picked in Game replay (a <script>
@@ -19,11 +19,11 @@ import joblib
 import numpy as np
 import torch
 
-from baseline import baseline_features
-from evaluate import brier, calibration
-from model import Config, Tempo, load_data, make_features
+from models.baseline import baseline_features
+from models.evaluate import brier, calibration
+from models.model import Config, Tempo, load_data, make_features
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 TOP_K = 5
 
 
@@ -120,8 +120,8 @@ def main():
     ap.add_argument("--context", default="data/context")
     ap.add_argument("--raw", default="data/raw", help="raw play-by-play for player profiles; skipped for synthetic data")
     ap.add_argument("--profile_cache", default="data/processed/profiles_cache.pkl")
-    ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch_bbref.py")
-    ap.add_argument("--matchup_run", default="runs/matchups", help="man-to-man model from matchup_model.py; skipped if missing")
+    ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch/fetch_bbref.py")
+    ap.add_argument("--matchup_run", default="runs/matchups", help="man-to-man model from models/matchup_model.py; skipped if missing")
     ap.add_argument("--all_seasons", action="store_true", help="also write every other season's replay games to games/<season>.js")
     args = ap.parse_args()
 
@@ -174,51 +174,51 @@ def main():
         "shots": None,
     }
     if (Path(args.shot_run) / "best.pt").exists() and Path(args.shots).exists():
-        from export_players import build_players_payload
+        from export.export_players import build_players_payload
         payload["shots"] = build_players_payload(args.shots, args.shot_run, args.context)
         print(f"added {len(payload['shots']['players'])} players, {len(payload['shots']['defenders'])} defenders, "
               f"{len(payload['shots']['coaches'])} coaches")
     payload["profiles"] = None
     if not payload["meta"]["synthetic"] and Path(args.raw).exists():
-        from export_profiles import build_profiles_payload
+        from export.export_profiles import build_profiles_payload
         payload["profiles"] = build_profiles_payload(args.raw, out_games, args.context, args.profile_cache)
         if payload["profiles"]:
             print(f"added {len(payload['profiles']['players'])} player profiles, "
                   f"play-by-play actors for {len(payload['profiles']['games'])}/{len(out_games)} games")
         if payload["profiles"]:
-            from export_accolades import add_accolades
+            from export.export_accolades import add_accolades
             payload["profiles"]["accolades"] = add_accolades(payload["profiles"], args.context)
     payload["coaches"] = None
     if not payload["meta"]["synthetic"]:
-        from export_coaches import build_coaches_payload
+        from export.export_coaches import build_coaches_payload
         payload["coaches"] = build_coaches_payload(args.context, (payload["shots"] or {}).get("coaches"))
         if payload["coaches"]:
             print(f"added {len(payload['coaches']['coaches'])} coaches, {len(payload['coaches']['units'])} team seasons of play data")
     payload["coachDefense"] = payload["coachScheme"] = None
     if not payload["meta"]["synthetic"] and Path(args.shots).exists():
-        from export_coach_defense import build_coach_defense_payload
+        from export.export_coach_defense import build_coach_defense_payload
         payload["coachDefense"] = build_coach_defense_payload(args.shots)
         print(f"added opponents' shooting by shot type, style and zone for {len(payload['coachDefense']['units'])} team seasons")
-        from export_coach_scheme import build_coach_scheme_payload
+        from export.export_coach_scheme import build_coach_scheme_payload
         payload["coachScheme"] = build_coach_scheme_payload(args.shots, f"{args.context}/playtypes.parquet", f"{args.context}/matchups")
         if payload["coachScheme"]:
             print(f"added estimated coverage schemes for {len(payload['coachScheme']['units'])} team seasons")
     payload["coachPlays"] = None
     if not payload["meta"]["synthetic"]:
-        from export_coach_plays import build_coach_plays_payload
+        from export.export_coach_plays import build_coach_plays_payload
         payload["coachPlays"] = build_coach_plays_payload(args.context)
         if payload["coachPlays"]:
             print(f"added play-type results (scored, FG, turnovers) for {len(payload['coachPlays']['units'])} team seasons")
     payload["shotcharts"] = None
     if Path(args.shots).exists():
-        from export_shotcharts import build_shotcharts_payload
+        from export.export_shotcharts import build_shotcharts_payload
         payload["shotcharts"] = build_shotcharts_payload(args.shots, args.rosters)
         sc = payload["shotcharts"]
         print(f"added shot charts for {sum(1 for p in sc['players'] if p['p'])} players ({', '.join(sc['seasons'])}), "
               f"current teams: {sc['roster']['season'] or 'not fetched'}")
     payload["matchups"] = None
     if (Path(args.matchup_run) / "best.pt").exists():
-        from export_matchups import build_matchups_payload
+        from export.export_matchups import build_matchups_payload
         payload["matchups"] = build_matchups_payload(args.matchup_run, args.rosters)
         print(f"added man-to-man matchups: {len(payload['matchups']['players'])} players, "
               f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
@@ -228,11 +228,11 @@ def main():
         test = [{"season": out_games[0]["season"], "n": len(out_games), "split": args.split, "file": None}] if out_games else []
         payload["replay"] = sorted(test + write_replay_seasons(model, clf, d, args.split, Path(args.out).parent, args.raw),
                                    key=lambda x: x["season"])
-    from export_assets import build_assets_payload
+    from export.export_assets import build_assets_payload
     payload["assets"] = build_assets_payload(ROOT / "assets")
     if payload["assets"] and payload["coaches"]:  # Wikipedia photos of coaches NBA.com and Basketball-Reference have none of
         payload["assets"]["credits"] += [{**c, "use": "Coaches", "title": f"{c['title']} (coach photo)"} for c in payload["coaches"]["credits"]]
-    from export_sources import build_seasons_payload, build_sources_payload
+    from export.export_sources import build_seasons_payload, build_sources_payload
     payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shots, d)
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
                                                synthetic=payload["meta"]["synthetic"])

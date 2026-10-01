@@ -7,9 +7,9 @@ NBA.com personId by name so the dashboard can join the two.
 Raw pages are cached in data/context/bbref/<season>/, and requests are spaced 3.5 s apart to stay
 under Basketball-Reference's limit of 20 requests a minute.
 
-    python fetch_bbref.py                    # current season (2026-27 from August 2026 on)
-    python fetch_bbref.py --season 2025-26   # any other season
-    python fetch_bbref.py --refresh          # re-download cached pages (rosters change all offseason)
+    python -m fetch.fetch_bbref                    # current season (2026-27 from August 2026 on)
+    python -m fetch.fetch_bbref --season 2025-26   # any other season
+    python -m fetch.fetch_bbref --refresh          # re-download cached pages (rosters change all offseason)
 """
 import argparse
 import html

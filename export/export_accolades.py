@@ -1,4 +1,4 @@
-"""Basketball-Reference accolades for the dashboard's player profiles (fetch_accolades.py).
+"""Basketball-Reference accolades for the dashboard's player profiles (fetch/fetch_accolades.py).
 
 Adds to each profile player (by NBA.com personId):
   acc   career accolades as Basketball-Reference lists them under his name ("4x MVP", "22x All Star")
@@ -6,7 +6,7 @@ Adds to each profile player (by NBA.com personId):
         (MVP-4 = fourth in MVP voting, AS = All-Star, NBA1 / DEF2 = All-NBA first team / All-Defensive second team)
   bref  his Basketball-Reference id, for a link to his page
 
-Used by export_dashboard.py.
+Used by export/export_dashboard.py.
 """
 import json
 from pathlib import Path

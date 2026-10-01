@@ -2,7 +2,7 @@
 
 Outputs (in --out): metrics.json, calibration.png, game_<id>.png
 
-    python evaluate.py --ckpt runs/base/best.pt
+    python -m models.evaluate --ckpt runs/base/best.pt
 """
 import argparse
 import json
@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from baseline import baseline_features, elo_features, fit_elo_baseline
-from model import Config, GameDataset, Tempo, collate, load_data
+from models.baseline import baseline_features, elo_features, fit_elo_baseline
+from models.model import Config, GameDataset, Tempo, collate, load_data
 
 
 def brier(p, y):

@@ -5,17 +5,17 @@ For each player and season it stores counts only; the dashboard sums seasons and
 percentage in the browser. A season's playoffs are their own entry ("2024-25 Playoffs"):
 
   - location zones (restricted area, paint, mid-range L/C/R, corner 3 L/R, above-the-break 3 L/C/R, heaves)
-  - shot types (layup, dunk, ...) and styles (pull-up, step-back, ...) from build_shots.py
+  - shot types (layup, dunk, ...) and styles (pull-up, step-back, ...) from models/build_shots.py
   - a sparse hexbin grid of attempts / makes for the court chart
   - 3-pointers, assisted makes, total shot distance and games played
 
-Current teams and bios come from data/context/bbref_rosters.parquet (fetch_bbref.py, Basketball-Reference).
+Current teams and bios come from data/context/bbref_rosters.parquet (fetch/fetch_bbref.py, Basketball-Reference).
 Players on a current roster who have no shots in the data yet (mostly rookies) are included with an
 empty shot history, so every player in the league can be looked up.
 
-Used by export_dashboard.py when data/processed/shots.parquet exists. Run it alone for a size check:
+Used by export/export_dashboard.py when data/processed/shots.parquet exists. Run it alone for a size check:
 
-    python export_shotcharts.py --shots data/processed/shots.parquet
+    python -m export.export_shotcharts --shots data/processed/shots.parquet
 """
 import argparse
 import json
@@ -27,9 +27,9 @@ import pandas as pd
 
 from nba_api.stats.static import teams as nba_teams
 
-from build_shots import STYLES, ZONES
-from player_names import full_name
-from tokenize_pbp import season_key
+from models.build_shots import STYLES, ZONES
+from models.player_names import full_name
+from models.tokenize_pbp import season_key
 
 # Court units are tenths of a foot with the hoop at (0, 0); the baseline is y = -52.5.
 LOC_ZONES = ["Restricted area", "Paint (non-RA)", "Mid-range left", "Mid-range center", "Mid-range right",
@@ -75,7 +75,7 @@ def pair_counts(codes, made, n):
 
 
 def player_names(ids, shots):
-    """Full names (player_names.py); the play-by-play surname only for anyone no name source knows."""
+    """Full names (models/player_names.py); the play-by-play surname only for anyone no name source knows."""
     last = shots.drop_duplicates("shooterId").set_index("shooterId")["shooter"].to_dict()
     return {int(p): full_name(p, last.get(p)) for p in ids}
 

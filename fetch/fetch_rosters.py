@@ -1,7 +1,7 @@
 """Download team rosters (name, number, position, height, weight, age, experience, school) for the
 player profiles in the dashboard -> data/context/rosters.parquet. Cached, so re-running is cheap.
 
-    python fetch_rosters.py --seasons 2021-22 2022-23 2023-24 2024-25
+    python -m fetch.fetch_rosters --seasons 2021-22 2022-23 2023-24 2024-25
 """
 import argparse
 import time
@@ -11,7 +11,7 @@ import pandas as pd
 from nba_api.stats.endpoints import commonteamroster
 from nba_api.stats.static import teams
 
-from fetch_data import SEASONS
+from fetch.fetch_data import SEASONS
 
 
 def main():

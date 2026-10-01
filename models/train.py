@@ -1,11 +1,11 @@
 """Train Tempo on next-event prediction + win probability.
 
-The win-prob head is a residual on a logistic baseline (python baseline.py; with Elo in the data,
-the baseline refit with the pre-game Elo edge from python team_strength.py), and after training a temperature is fitted
+The win-prob head is a residual on a logistic baseline (python -m models.baseline; with Elo in the data,
+the baseline refit with the pre-game Elo edge from python -m models.team_strength), and after training a temperature is fitted
 on the validation season and saved in the checkpoint's config.
 
-    python train.py --out runs/base
-    python train.py --out runs/small --n_layer 2 --n_embd 64 --n_head 2
+    python -m models.train --out runs/base
+    python -m models.train --out runs/small --n_layer 2 --n_embd 64 --n_head 2
 """
 import argparse
 import json
@@ -19,8 +19,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from baseline import fit_elo_baseline
-from model import Config, GameDataset, Tempo, collate, compute_losses, load_data
+from models.baseline import fit_elo_baseline
+from models.model import Config, GameDataset, Tempo, collate, compute_losses, load_data
 
 
 def get_args(argv=None):
@@ -111,7 +111,7 @@ def main(argv=None):
 
     has_elo = any(g.get("elo") for g in games)
     if not has_elo and not args.no_elo:
-        print("no pre-game Elo in the data (run team_strength.py); training without it")
+        print("no pre-game Elo in the data (run models/team_strength.py); training without it")
     base_coef = None
     if not args.no_residual:
         # with Elo, start from the logistic baseline that also sees Elo, so the plays have to add something on top of it

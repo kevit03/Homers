@@ -2,11 +2,11 @@
 Basketball-Reference's record, titles and awards, and each team season's offensive and defensive play data.
 
 Sources (all in data/context):
-  bbref_coach_seasons.parquet, bbref_coaches.json   fetch_accolades.py (Basketball-Reference)
-  nba_coaches.parquet                               fetch_accolades.py (NBA.com coach ids and headshots)
-  tracking.parquet, playtypes.parquet               fetch_context.py (see export_tracking.py)
+  bbref_coach_seasons.parquet, bbref_coaches.json   fetch/fetch_accolades.py (Basketball-Reference)
+  nba_coaches.parquet                               fetch/fetch_accolades.py (NBA.com coach ids and headshots)
+  tracking.parquet, playtypes.parquet               fetch/fetch_context.py (see export/export_tracking.py)
 
-Used by export_dashboard.py.
+Used by export/export_dashboard.py.
 """
 import json
 import re
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from export_tracking import labels, team_units
+from export.export_tracking import labels, team_units
 
 NBA_HEAD = "https://cdn.nba.com/headshots/nba/latest/1040x760/{}.png"
 MINOR_AWARD = re.compile(r"Coach of the Month", re.I)

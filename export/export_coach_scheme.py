@@ -9,7 +9,7 @@ five signals the free data does have, and placed on two axes, each a z-score amo
               night, low = the assignment kept changing, through switches or zone. scramble = -z(HHI).
   aggression  how far the defense comes out to meet the pick-and-roll, from four signs:
                 + turnovers forced on pick-and-roll ball-handler plays (Synergy): traps and hedges force them
-                - opponents' pull-up and step-back mid-range share (road games, like export_coach_defense.py):
+                - opponents' pull-up and step-back mid-range share (road games, like export/export_coach_defense.py):
                   what a drop big concedes
                 + opponents' rim share: a big pulled up to the ball leaves the rim
                 - roll-man possessions (Synergy): a drop big lets the screener roll free; traps and switches take him
@@ -28,9 +28,9 @@ Checked against schemes reported at the time (rank among 30 that season; 1 = mos
               roll-man signal out still puts them 8th-9th.
   pressure    TOR 2020-21 and 2021-22 (Nurse: traps, zone, junk defenses): aggression 3rd and 1st, scramble 6th and 8th.
 
-Used by export_dashboard.py. Run it alone to print the checks above:
+Used by export/export_dashboard.py. Run it alone to print the checks above:
 
-    python export_coach_scheme.py
+    python -m export.export_coach_scheme
 """
 import argparse
 from pathlib import Path

@@ -4,7 +4,7 @@ Shot zone and style come from the play-by-play shot description, distance and co
 Lineups are rebuilt from substitutions. The primary defender is the on-floor opponent who
 guarded the shooter most in that game (from the NBA matchup feed, weighted by shots attempted).
 
-    python build_shots.py --raw data/raw --context data/context --out data/processed/shots.parquet
+    python -m models.build_shots --raw data/raw --context data/context --out data/processed/shots.parquet
 """
 import argparse
 import json
@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tokenize_pbp import parse_clock, seconds_remaining
+from models.tokenize_pbp import parse_clock, seconds_remaining
 
 ZONES = ["LAYUP", "DUNK", "FLOATER", "HOOK", "SHORT_MID", "LONG_MID", "CORNER_3", "ABOVE_BREAK_3"]
 STYLES = ["STANDARD", "PULLUP", "STEPBACK", "FADEAWAY", "DRIVING", "CUTTING", "PUTBACK", "ALLEY_OOP", "RUNNING"]

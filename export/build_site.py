@@ -1,6 +1,6 @@
 """Pack dashboard.html and games/ into site/, a static folder Vercel can host.
 
-    python build_site.py            # then: npx vercel deploy --prod --cwd site   (or ./deploy.sh)
+    python -m export.build_site            # then: npx vercel deploy --prod --cwd site   (or ./deploy.sh)
 
 The page is one ~50 MB HTML file and every other season's replay games add ~15 MB each, more than the 100 MB a Hobby
 account may upload in one deployment. So everything ships gzipped: site/index.html is a small loader that fetches
@@ -13,7 +13,7 @@ import json
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 
 LOADER = """<!doctype html>
 <html lang="en">
@@ -87,7 +87,7 @@ def main():
 
     page, games, out = Path(args.page), Path(args.games), Path(args.out)
     if not page.exists():
-        raise SystemExit(f"{page} not found: build it first (python export_dashboard.py, or ./run.sh dashboard).")
+        raise SystemExit(f"{page} not found: build it first (python -m export.export_dashboard, or ./run.sh dashboard).")
     out.mkdir(exist_ok=True)
     # clear what an earlier run wrote, but keep .vercel (the project link)
     for p in out.iterdir():

@@ -1,8 +1,8 @@
 """Generate fake play-by-play in the PlayByPlayV3 schema, for testing the pipeline
 without hitting the NBA API.
 
-    python synthetic.py --games 600 --out data/raw_synthetic
-    python tokenize_pbp.py --raw data/raw_synthetic --out data/processed/synthetic.pkl
+    python -m models.synthetic --games 600 --out data/raw_synthetic
+    python -m models.tokenize_pbp --raw data/raw_synthetic --out data/processed/synthetic.pkl
 """
 import argparse
 from pathlib import Path

@@ -64,7 +64,7 @@ Use the section that matches the role you are targeting. Each bullet is written 
 * **Answer Blueprint (The Chronological Out-of-Order Logging Bug):**
   * *Context:* "When training the sequence transformer on raw NBA API play-by-play, validation perplexity plateaued around 4.90."
   * *Investigation:* "I inspected play sequence anomalies and discovered that official scorers often log plays late (e.g. substitutions, technical fouls, or reviewed plays) by assigning high `actionNumber`s that don't match game-clock time. Sorting solely by `actionNumber` caused 17,890 plays across 4,235 games to be displaced by several minutes in the causal sequence."
-  * *Resolution:* "I developed a deterministic chronological state reconciliation algorithm in `tokenize_pbp.py` that sorts primarily by period, secondarily by remaining game clock, and tertiarily by event dependency rules."
+  * *Resolution:* "I developed a deterministic chronological state reconciliation algorithm in `models/tokenize_pbp.py` that sorts primarily by period, secondarily by remaining game clock, and tertiarily by event dependency rules."
   * *Impact:* "Resolving this restored true causal ordering, immediately dropping sequence perplexity from 4.90 to 4.44 and boosting next-play accuracy to 42.1%."
 
 ---

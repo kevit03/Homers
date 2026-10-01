@@ -990,6 +990,9 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .tx-q b { color: var(--ink); }
 .tx-q ul { display: grid; gap: 10px; padding-left: 18px; }
 .tx-wide { grid-column: 1 / -1; }
+.tx-wide ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 40px; }
+@media (max-width: 760px) { .tx-wide ul { grid-template-columns: minmax(0, 1fr); } }
+.tx-q a { color: var(--model); }
 .tx-toks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .tx-toks code { font-size: 12px; padding: 4px 7px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
 .tx-toks code.h { border-color: var(--model); }
@@ -1424,6 +1427,11 @@ h3.co-side.def::before { background: var(--base); }
 .dz-pbar span { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .dz-pbar span i { display: block; height: 100%; border-radius: inherit; background: var(--base); }
 .dz-pbar.elite span i { background: linear-gradient(90deg, var(--base), #8fc0ff); }
+.dz-tile p.cav { font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.dz-tile p.cav span { font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); margin-right: 2px; }
+.dz-tiles > .dz-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.dz-why { margin-top: 16px; padding: 12px 14px; border-left: 3px solid var(--model); background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dz-why b { color: var(--ink); }
 .dz-act { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
 .dz-ray-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
 .dz-ray-sum { font-size: 14.5px; color: var(--ink-2); max-width: 72ch; }
@@ -4962,6 +4970,35 @@ function srcInit() {
   const R = S.runs, G = R.tempo, A = G ? G.args : {}, C = (DATA.meta && DATA.meta.config) || (G && G.config) || {};
   const SH = R.shots, SA = SH ? SH.args : {};
   const syn = DATA.meta && DATA.meta.synthetic;
+
+  // "Tempo, explained": the same model in plain words, with this build's numbers, so the verdicts stay true after a retrain
+  {
+    const sp = (DATA.meta && DATA.meta.splits) || {}, bm = M.brier_model, bb = M.brier_baseline, bc = M.brier_constant ?? 0.25;
+    const beats = bm < bb, f4 = v => v.toFixed(4), qs = (M.by_quarter || []).filter(r => r.model < r.baseline).map(r => "Q" + r.q);
+    const elo = (C.n_feat || 0) > 4, resid = !!C.wp_residual, q = (h, body, wide) => `<div class="tx-q${wide ? " tx-wide" : ""}"><h3>${h}</h3>${body}</div>`;
+    const toks = ["PERIOD_START", "H_JUMPBALL", "A_2PT_MISS", "H_DREB", "H_3PT_MAKE", "A_TOV", "H_2PT_MAKE", "A_TIMEOUT"];
+    $("tempoExplain").innerHTML = [
+      q("What is Tempo?", `<p><b>Tempo is a causal transformer</b>, the same kind of model as GPT but far smaller (${n((G && G.n_params) || META.n_params)} parameters), that reads a basketball game the way a language model reads a sentence: one play at a time instead of one word at a time.</p>
+        <p><b>Causal</b> means it only looks backward. At every play it sees everything that has happened so far and nothing after, the way a fan watching live does. After each play it makes two predictions: <b>what happens next</b>, out of 31 kinds of play, and <b>the home team's chance to win</b>.</p>`),
+      q("How does it read a game?", `<p>Every play becomes a token. <code>H_</code> is the home team and <code>A_</code> the away team. A game opens like this:</p>
+        <div class="tx-toks">${toks.map(t => `<code class="${t.startsWith("H_") ? "h" : ""}">${t}</code>`).join("<span>→</span>")}<span>→</span><code class="next">?</code></div>
+        <p>Alongside each token it gets the clock, the score margin, the quarter and how big the lead is for the time left${elo ? ", plus how much stronger the home team was going in (an Elo rating built only from earlier games)" : ""}. The transformer's attention lets any play look back at any earlier one, so it can pick up runs, foul trouble and who keeps getting second chances.</p>`),
+      q("How did it learn?", `<p>It was shown ${n(sp.train || 0)} games and asked over and over to predict the next play and the final result, adjusting itself a little after every mistake. Another ${n(sp.val || 0)} games were held back to decide when to stop, before it started memorising instead of learning.</p>
+        <p>The ${n(sp.test || DATA.games.length)} games in Game replay are from a season it <b>never saw</b> during training. Every score on this page comes from those games, so it's an honest test, not a recap of what it memorised.</p>`),
+      q("What is the baseline?", `<p>The baseline is a <b>logistic regression on the scoreboard</b>: three numbers, the score margin, the minutes left, and the margin scaled by the time left. It knows nothing about who has the ball, which plays happened or how the game got here. It's the dashed line in Game replay.</p>
+        <p>It exists as a yardstick. A model that reads every play should beat one that only reads the scoreboard. If it doesn't, the plays aren't adding anything the score and clock don't already say.${resid ? " This version of Tempo starts from the baseline's answer and learns only a correction on top, so where the plays tell it nothing, it falls back to the scoreboard." : ""}</p>`),
+      q("How are they graded?", `<p>With the <b>Brier score</b>: the squared gap between the predicted chance and what happened (1 = home win, 0 = loss), averaged over every play of every held-out game. Say 80% and the home team wins: (1 − 0.8)² = 0.04. Say 80% and it loses: 0.64. <b>Lower is better.</b> Always guessing the home team's usual win rate scores about ${bc.toFixed(2)}.</p>
+        <div class="tx-score"><div class="${beats ? "win" : ""}"><span>Tempo</span><b>${f4(bm)}</b><small>Brier, held-out games</small></div><div class="${beats ? "" : "win"}"><span>Baseline</span><b>${f4(bb)}</b><small>scoreboard only</small></div><div><span>No information</span><b>${f4(bc)}</b><small>same guess every play</small></div></div>`, true),
+      q("What does it mean if…", `<ul>
+        <li><b>…Tempo's score is lower than the baseline's?</b> The plays carry information the scoreboard doesn't: possession after a turnover, a team on a run, free throws still to come. ${beats ? `<b>That's the case now</b>: ${f4(bm)} against ${f4(bb)}.` : ""}</li>
+        <li><b>…the baseline's score is lower?</b> Over these games, score and clock already explain almost all of who wins, and Tempo's extra reading adds as much noise as signal. ${beats ? "" : `<b>That's the case now</b>: ${f4(bb)} against Tempo's ${f4(bm)}${qs.length ? `, though Tempo is better in ${qs.join(" and ")}` : ""}. The two are close because most of a win probability really is the score and the clock; the hard part is the small remainder.`}</li>
+        <li><b>…the two lines split apart in a replay?</b> Tempo is reacting to something the scoreboard doesn't show, such as a steal that hands one team the ball or a string of offensive rebounds. The gap is exactly what the plays add, for better or worse.</li>
+        <li><b>…Tempo says 90% and that team loses?</b> One game can't prove it wrong: a 90% call should miss about 1 time in 10. The calibration chart in <a href="#/model">Model quality</a> checks this, grouping every prediction and comparing it with how often that team actually won.</li>
+        <li><b>…it only guesses the next play right ${(M.acc * 100).toFixed(0)}% of the time?</b> Basketball is noisy, and there are 31 options; a random guess is right about 3% of the time. Its perplexity of ${M.ppl.toFixed(2)} means it's usually torn between about ${Math.round(M.ppl)} plausible next plays, like a miss, a defensive rebound or a foul, rather than lost among 31.</li>
+        <li><b>…a season is marked "held out" or "validation"?</b> Held out: Tempo never saw those games, so its numbers there are a fair test. Validation: it saw them only to decide when to stop training, never to learn from.</li>
+      </ul>`, true),
+    ].join("");
+  }
   const status = (ok, yes, no) => `<span class="tag ${ok ? "status-ok" : "status-no"}">${ok ? "✓ " + yes : "○ " + no}</span>`;
   const nShots = S.n_shots ? S.n_shots.toLocaleString() : "every";
   // headline number per model card, keyed by card title
@@ -5796,12 +5833,12 @@ function initH2H() {
    Rim protection from NBA.com tracking (FG% at the rim against what those shooters usually make), Deterrence from the shot model
    (how much he moves shots away from the rim), and blocks and steals per 36. The Wall rating is their weighted mean, 0 to 100. */
 const DZ_AX = [  // crest order, clockwise from the top
-  { k: "lock", name: "Lockdown", w: 2, low: true, tip: "Points per possession by the scorers he guards, from the matchup model" },
-  { k: "con", name: "Contest", w: 1.5, low: true, tip: "FG% of the scorers he guards, from the matchup model" },
-  { k: "rim", name: "Rim", w: 1, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking)" },
-  { k: "blk", name: "Blocks", w: 1, low: false, tip: "Blocks per 36 minutes" },
-  { k: "stl", name: "Steals", w: 1, low: false, tip: "Steals per 36 minutes" },
-  { k: "det", name: "Deter", w: .5, low: true, tip: "Change in the share of shots taken at the rim against him, from the shot model" },
+  { k: "lock", name: "Lockdown", w: 2, low: true, tip: "Points per possession by the scorers he guards, from the matchup model. Only sees his assigned man, not help defense" },
+  { k: "con", name: "Contest", w: 1.5, low: true, tip: "FG% of the scorers he guards, from the matchup model. Only sees his assigned man, not shots he contests in help" },
+  { k: "rim", name: "Rim", w: 1, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking). Bigs see far more of these shots than guards" },
+  { k: "blk", name: "Blocks", w: 1, low: false, tip: "Blocks per 36 minutes. Rewards bigs and shot-blocking gambles; can't see shots that never happen" },
+  { k: "stl", name: "Steals", w: 1, low: false, tip: "Steals per 36 minutes. Rewards gambling; players asked to stay home in the paint get fewer chances" },
+  { k: "det", name: "Deter", w: .5, low: true, tip: "Change in the share of shots taken at the rim against him, from the shot model. Can't see drives that never start because he's there" },
 ];
 const DZ_RANK = [["score", "Wall rating"], ["lock", "Lockdown"], ["con", "Contest"], ["rim", "Rim"], ["blk", "Blocks"], ["stl", "Steals"], ["hw", "Hardware"]];
 const DZ_POS = [["", "All"], ["G", "Guards"], ["F", "Wings"], ["C", "Bigs"]];
@@ -5818,10 +5855,11 @@ function dzBuild() {
   const sig = z => 1 / (1 + Math.exp(-z)), fg0 = MU ? sig(MU.b[3]) : 0;
   const seasons = new Set();
   for (const [k, P] of Object.entries(PF.players)) {
-    const id = +k; let min = 0, blk = 0, stl = 0;
-    for (const [s, r] of Object.entries(P.seasons || {})) if (!isPO(s)) { min += r.min || 0; blk += r.blk || 0; stl += r.stl || 0; seasons.add(s); }
+    const id = +k; let min = 0, blk = 0, stl = 0, gp = 0;
+    for (const [s, r] of Object.entries(P.seasons || {})) if (!isPO(s)) { min += r.min || 0; blk += r.blk || 0; stl += r.stl || 0; gp += r.gp || 0; seasons.add(s); }
     if (min < DZ_MIN) continue;
-    const x = { id, name: P.name, team: P.team || playerTeam(id), pos: dzPosOf((P.bio && P.bio.pos) || ""), bio: P.bio || {}, min, v: { blk: blk / min * 36, stl: stl / min * 36 }, p: {} };
+    const x = { id, name: P.name, team: P.team || playerTeam(id), pos: dzPosOf((P.bio && P.bio.pos) || ""), bio: P.bio || {}, min, gp, v: { blk: blk / min * 36, stl: stl / min * 36 }, p: {},
+      g: { blk: blk / Math.max(gp, 1), stl: stl / Math.max(gp, 1), stk: (blk + stl) / Math.max(gp, 1) } };  // per game, for the Stocks tile
     const i = mi.get(id);
     if (i != null && MU.players[i].dp >= 2000) { const e = MU.def[i]; x.v.lock = Math.exp(e[0]) - 1; x.v.con = sig(MU.b[3] + e[3]) - fg0; x.dp = MU.players[i].dp; }
     const t = tr.get(id);
@@ -5841,6 +5879,7 @@ function dzBuild() {
     const has = dz.pool.filter(x => x.v[k] != null).sort((a, b) => low ? b.v[k] - a.v[k] : a.v[k] - b.v[k]);
     has.forEach((x, j) => { x.p[k] = has.length > 1 ? j / (has.length - 1) : .5; });
   }
+  [...dz.pool].sort((a, b) => a.g.stk - b.g.stk).forEach((x, j, all) => { x.pStk = all.length > 1 ? j / (all.length - 1) : .5; });
   dz.pool = dz.pool.filter(x => Object.keys(x.p).length >= 4);
   for (const x of dz.pool) {
     let s = 0, w = 0;
@@ -5919,20 +5958,40 @@ function dzReport(x) {
   const hw = [x.dpoy ? `<span class="gold">${x.dpoy}× Defensive POY</span>` : x.best ? `<span>DPOY voting: best ${nth(x.best)}</span>` : "",
     x.alld ? `<span class="silver">${x.alld}× All-Defense</span>` : ""].join("");
   const bar = p => `<div class="dz-pbar${p >= .9 ? " elite" : ""}"><span><i style="width:${(p * 100).toFixed(0)}%"></i></span>${dzPct(p)} percentile</div>`;
-  const tile = (k, val, text, p) => `<div class="dz-tile"><span class="k">${k}</span><b>${val}</b><p>${text}</p>${p == null ? "" : bar(p)}</div>`;
-  const v = x.v, tiles = [
-    v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", "points per possession for the scorers he guards, after accounting for who they are.", x.p.lock),
-    v.con != null && tile("Contest", dzSg(v.con * 100), "FG% points for the scorers he guards, against an average defender.", x.p.con),
-    v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, x.p.rim),
-    tile("Stocks", (v.blk + v.stl).toFixed(1), `blocks and steals per 36 minutes: ${v.blk.toFixed(1)} blocks, ${v.stl.toFixed(1)} steals${x.defl ? `, plus ${x.defl.toFixed(1)} deflections` : ""}.`, (x.p.blk + x.p.stl) / 2),
-    v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", x.p.det),
-  ].filter(Boolean).slice(0, 4).join("");
+  const tile = (k, val, text, p, cav) => `<div class="dz-tile"><span class="k">${k}</span><b>${val}</b><p>${text}</p>${p == null ? "" : bar(p)}${cav ? `<p class="cav"><span>Caveat</span> ${cav}</p>` : ""}</div>`;
+  const v = x.v, big = x.pos === "C", g = x.g, him = pfSplitName(x.name)[1];
+  // a note only where his role likely moves the number: bigs anchor the paint, so matchup stats miss their help defense
+  const role = (k, why) => (x.p[k] != null && x.p[k] < .6 && big ? ` ${why}` : "");
+  const tiles = [
+    v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", "points per possession for the scorers he guards, after accounting for who they are.", x.p.lock,
+      "It only credits the man he's matched up with. Help defense, like rotating over to stop someone else's drive, isn't counted, and bigs are usually matched with centers and roll men who score close to the basket." +
+      role("lock", `That likely undersells ${him}: as a rim protector, most of his value comes as the help defender.`)),
+    v.con != null && tile("Contest", dzSg(v.con * 100), "FG% points for the scorers he guards, against an average defender.", x.p.con,
+      "Same matchup tracking as Lockdown, so a shot he challenges as the helper counts against a teammate. Shooting percentages are also noisy: one hot or cold stretch moves this." + role("con", "A paint-bound big is rarely the assigned defender on the shots he changes most.")),
+    v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, x.p.rim,
+      big ? "Only shots where he was the nearest defender at the rim. Bigs see far more of these than anyone, and a feared shot-blocker faces fewer drives, so the attempts that remain come from players confident enough to challenge him."
+        : `Only shots where he was the nearest defender at the rim. ${x.pos === "G" ? "Guards" : "Wings"} defend far fewer of these than bigs, so a few makes or misses swing it more.`),
+    tile("Stocks", g.stk.toFixed(1), `steals plus blocks per game: ${g.blk.toFixed(1)} blocks, ${g.stl.toFixed(1)} steals over ${x.gp.toLocaleString()} games${x.defl ? `, plus ${x.defl.toFixed(1)} deflections per 36` : ""}.`, x.pStk,
+      `Only counts plays that end a possession. ${big ? "A big told to stay home in the paint, or to sit back in drop coverage, gets few chances to jump passing lanes, so his steals stay low no matter how good he is; blocks carry this number." : "Gambling for steals can pile these up while giving up easy baskets, and staying disciplined can keep them low."} Per game, so heavy minutes also push it up.`),
+    v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", x.p.det,
+      "Measured only on shots where he was the closest defender. It can't see drives that never start because he's waiting at the rim." + role("det", `A big who lives in the paint is the closest defender on most rim attempts, so even a feared protector like ${him} can read near zero.`)),
+  ].filter(Boolean).join("");
+  // why the rating lands where it does: his best and worst parts, and what the weak ones can't see
+  const parts = DZ_AX.filter(a => x.p[a.k] != null).map(a => ({ ...a, p: x.p[a.k] })).sort((a, c) => c.p - a.p);
+  const top = parts.filter(a => a.p >= .9), low = parts.filter(a => a.p < .6), list = as => as.map(a => `${a.name} (${dzPct(a.p)})`).join(", ");
+  const matchupLow = low.filter(a => a.k === "lock" || a.k === "con" || a.k === "det");
+  const why = [`<b>Wall rating ${x.score}.</b>`,
+    top.length ? `Elite in ${list(top)}.` : "",
+    low.length ? `Held down by ${list(low)}${low.some(a => a.k === "lock") ? "; Lockdown counts double in the rating" : ""}.` : "No weak spots: every part is above the 60th percentile.",
+    matchupLow.length && big ? `${matchupLow.map(a => a.name).join(" and ")} only see the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
+    x.dpoy || x.alld ? `Voters saw ${x.score >= 85 ? "it the same way" : "more"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
   const rank = [...dz.pool].sort((a, c) => c.score - a.score).findIndex(y => y.id === x.id) + 1;
   const canSim = SH && SH.defenders.some(d => d.id === x.id);
   $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
       <div><p class="kicker" style="color:var(--model)">${nth(rank)} of ${dz.pool.length} defenders</p><h3 class="cast">${esc(x.name)}</h3>
       <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes since ${dz.span.slice(0, 4)}`].filter(Boolean).map(esc).join(" · ")}</p>
       ${hw ? `<div class="dz-hw">${hw}</div>` : ""}</div></div>
+    <p class="dz-why">${why}</p>
     <div class="dz-tiles">${tiles}</div>
     <div class="dz-act">${P.name ? `<button type="button" class="pf-open" data-pid="${x.id}">Player card ›</button>` : ""}${canSim ? `<button type="button" id="dzSim">Guard someone in the simulator ›</button>` : ""}</div>`;
 }
@@ -5999,7 +6058,7 @@ function initDefense() {
   chips($("dzRank"), DZ_RANK.filter(([k]) => k === "score" || k === "hw" ? dz.pool.some(x => k === "score" || x.hw) : dz.pool.some(x => x.p[k] != null)), () => dz.rank, v => dz.rank = v);
   chips($("dzPos"), DZ_POS, () => dz.pos, v => dz.pos = v);
   $("dzFoot").innerHTML = `<span><i class="g"></i>Defensive Player of the Year</span><span><i class="s"></i>All-Defense team</span><span><i class="r"></i>dim to lit: rank on the wall</span>`
-    + tip(`Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles among them: Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Awards from Basketball-Reference.`);
+    + tip(`Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles among them: Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Lockdown, Contest and Deterrence only see the man a player is assigned to, so help-side rim protectors tend to rate lower than their real impact. Awards from Basketball-Reference.`);
   $("dzWall").addEventListener("click", e => { const b = e.target.closest(".dz-brick"); if (b) dzPick(+b.dataset.id, true); });
   new ResizeObserver(() => { const w = $("dzWall").clientWidth, c = Math.max(2, Math.min(7, Math.floor(w / 160))); if (w && c !== dz.cols) dzWall(!dz.cols); }).observe($("dzWall"));
   const items = [...dz.pool].sort((a, b) => b.score - a.score).map(x => ({ key: x.id, id: x.id, name: x.name, team: x.team, meta: `Wall rating ${x.score}` }));

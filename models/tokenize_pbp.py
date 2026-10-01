@@ -4,7 +4,7 @@ Each event becomes one token such as H_3PT_MAKE or A_DREB (H = home, A = away).
 Alongside each token we store the game state *after* that event:
 seconds remaining, score differential (home - away), and period.
 
-    python tokenize_pbp.py --raw data/raw --out data/processed/games.pkl
+    python -m models.tokenize_pbp --raw data/raw --out data/processed/games.pkl
 """
 import argparse
 import json
@@ -124,7 +124,7 @@ def process_game(df: pd.DataFrame):
 
     return {
         "gameId": str(df["gameId"].iloc[0]),
-        "home": side.get("h"), "away": side.get("v"),  # team IDs, for team_strength.py
+        "home": side.get("h"), "away": side.get("v"),  # team IDs, for models/team_strength.py
         "season": str(df["season"].iloc[0]),
         "tokens": np.array(tokens, dtype=np.int16),
         "sec": np.array(sec, dtype=np.float32),

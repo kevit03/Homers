@@ -1,6 +1,6 @@
 """Offensive and defensive play data for players and teams, for the dashboard's Tendencies and Coaches tabs.
 
-Everything is regular-season totals from data/context (fetch_context.py):
+Everything is regular-season totals from data/context (fetch/fetch_context.py):
 
   - Synergy play types, offense (11) and defense (11 for teams, 7 for players): possessions and points
   - tracking actions: drives, catch-and-shoot, pull-ups, paint / post / elbow touches, screen assists
@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from fetch_context import PLAY_TYPES, PLAYER_DEF_PLAY_TYPES
+from fetch.fetch_context import PLAY_TYPES, PLAYER_DEF_PLAY_TYPES
 
 # measure, count column, points column, makes, attempts
 ACTIONS = [("Drives", "DRIVES", "DRIVE_PTS", "DRIVE_FGM", "DRIVE_FGA"),

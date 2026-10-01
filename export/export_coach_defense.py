@@ -14,9 +14,9 @@ Basketball-Reference stints. Shots' defCoachId is not used: it comes from NBA.co
 wrong head coach for some team seasons. Counts are stored as flat [attempts, makes, attempts, makes, ...] lists;
 the page derives every percentage, and the per-season league totals it compares against.
 
-Used by export_dashboard.py. Run it alone for a size check:
+Used by export/export_dashboard.py. Run it alone for a size check:
 
-    python export_coach_defense.py --shots data/processed/shots.parquet
+    python -m export.export_coach_defense --shots data/processed/shots.parquet
 """
 import argparse
 import json
@@ -25,8 +25,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from build_shots import STYLES, ZONES
-from export_shotcharts import LOC_ZONES, loc_zone
+from models.build_shots import STYLES, ZONES
+from export.export_shotcharts import LOC_ZONES, loc_zone
 
 
 def _counts(df, col, cats):

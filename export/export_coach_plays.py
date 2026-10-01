@@ -2,7 +2,7 @@
 
 export_tracking.team_units already carries each Synergy play type's possessions and points. This adds what the
 cards show next to them, for the team's offense and for what opponents ran against its defense (regular season,
-data/context/playtypes.parquet from fetch_context.py):
+data/context/playtypes.parquet from fetch/fetch_context.py):
 
   - field goals made and attempted on the play
   - possessions that scored, that ended in a turnover, and that drew free throws
@@ -11,9 +11,9 @@ Units are keyed "<season>|<tricode>" like team_units and hold, per play type in 
 [possessions, fgm, fga, scored, turnovers, free throws] for "off" and "def". The page turns them into percentages
 and compares them with the season's league totals.
 
-Used by export_dashboard.py. Run it alone for a size check:
+Used by export/export_dashboard.py. Run it alone for a size check:
 
-    python export_coach_plays.py
+    python -m export.export_coach_plays
 """
 import json
 from pathlib import Path
@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from fetch_context import PLAY_TYPES
+from fetch.fetch_context import PLAY_TYPES
 
 FIELDS = ["poss", "fgm", "fga", "scored", "tov", "ft"]
 

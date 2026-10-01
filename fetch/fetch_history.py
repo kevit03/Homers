@@ -5,12 +5,12 @@ never tokenized, trained on or replayed. What it does have is each team's line f
 date, opponent, home or away, the final score, and team box-score totals. NBA.com's team logs are thin for old
 seasons: before 1982-83 mostly points, field goals and free throws made (threes from 1979-80, when the line came in);
 rebounds, assists and attempts from 1982-83; the full team box score from 1985-86. tracked() lists each season's.
-They are used for the seasons history on the dashboard and, opt-in, to warm up Elo (team_strength.py --history).
+They are used for the seasons history on the dashboard and, opt-in, to warm up Elo (models/team_strength.py --history).
 
 One call per season and type, cached, so the script can be stopped and re-run safely.
 
-    python fetch_history.py                     # 1946-47 to 1995-96
-    python fetch_history.py --seasons 1985-86   # just these
+    python -m fetch.fetch_history                     # 1946-47 to 1995-96
+    python -m fetch.fetch_history --seasons 1985-86   # just these
 -> data/context/history_team_games.parquet  (one row per team per game, as NBA.com sends it)
 """
 import argparse

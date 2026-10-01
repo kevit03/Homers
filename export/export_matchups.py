@@ -1,9 +1,9 @@
 """Man-to-man matchup data for the dashboard: the trained model's weights (so predictions run in the
 browser for any scorer / defender pair), every pair's actual head-to-head totals, current teams, and
-the held-out scores. Used by export_dashboard.py when runs/matchups/best.pt exists.
+the held-out scores. Used by export/export_dashboard.py when runs/matchups/best.pt exists.
 
-    python matchup_model.py            # train first
-    python export_matchups.py          # size check
+    python -m models.matchup_model            # train first
+    python -m export.export_matchups          # size check
 """
 import argparse
 import json
@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from player_names import full_name
+from models.player_names import full_name
 
 
 def r(a, nd=4):

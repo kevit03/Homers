@@ -1,6 +1,6 @@
 """Man-to-man matchup model: what happens when scorer X is guarded by defender Y.
 
-Data is the NBA's matchup feed (BoxScoreMatchupsV3, fetched by fetch_context.py): for every offensive
+Data is the NBA's matchup feed (BoxScoreMatchupsV3, fetched by fetch/fetch_context.py): for every offensive
 player / defender pair in every game, the partial possessions they spent matched up and what the
 scorer did in them (points, field goals, threes, turnovers).
 
@@ -20,7 +20,7 @@ games, then score the held-out season against league-average, scorer-only and ad
 (scorer + defender, no interaction) versions of the same model. The final model is refit on all
 seasons with the chosen number of epochs, and that is what the dashboard uses.
 
-    python matchup_model.py --context data/context --out runs/matchups
+    python -m models.matchup_model --context data/context --out runs/matchups
 """
 import argparse
 import json
@@ -32,7 +32,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
-from tokenize_pbp import chrono_games
+from models.tokenize_pbp import chrono_games
 
 TARGETS = ["pts", "fga", "tov"]        # Poisson counts per possession
 COLS = {"matchupFieldGoalsMade": "fgm", "matchupFieldGoalsAttempted": "fga", "playerPoints": "pts",

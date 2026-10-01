@@ -1,6 +1,6 @@
 """Train several model sizes and plot validation loss vs. parameter count.
 
-    python scaling.py --epochs 15
+    python -m models.scaling --epochs 15
 """
 import argparse
 import json
@@ -10,8 +10,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-import train
-
+from models import train
 SIZES = [  # (n_layer, n_head, n_embd)
     (1, 2, 32),
     (2, 2, 64),

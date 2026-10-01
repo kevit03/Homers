@@ -14,9 +14,9 @@ Requests are spaced 3.5 s apart to stay under Basketball-Reference's limit of 20
 coach pages are parsed as they arrive and only the parsed result is kept, so a run can be stopped and
 resumed. Player pages go in order of minutes played, so the most-watched players come first.
 
-    python fetch_accolades.py                   # every season in fetch_data.SEASONS
-    python fetch_accolades.py --skip_players    # coaches only (about 5 minutes)
-    python fetch_accolades.py --refresh         # re-download pages already parsed
+    python -m fetch.fetch_accolades                   # every season in fetch_data.SEASONS
+    python -m fetch.fetch_accolades --skip_players    # coaches only (about 5 minutes)
+    python -m fetch.fetch_accolades --refresh         # re-download pages already parsed
 """
 import argparse
 import html
@@ -29,8 +29,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from fetch_bbref import BASE, BBREF_ABBR, UA, cell_text, current_season, norm_name
-from fetch_data import SEASONS
+from fetch.fetch_bbref import BASE, BBREF_ABBR, UA, cell_text, current_season, norm_name
+from fetch.fetch_data import SEASONS
 
 NBA_ABBR = {v: k for k, v in BBREF_ABBR.items()}  # Basketball-Reference -> NBA.com tricodes
 NBA_ABBR.update({"NOH": "NOP", "NJN": "BKN", "CHH": "CHA", "SEA": "OKC", "VAN": "MEM"})
@@ -243,7 +243,7 @@ def fetch_coach_seasons(f, seasons, cache):
 
 
 def current_coaches(context):
-    """This season's head coaches from the team pages fetch_bbref.py cached."""
+    """This season's head coaches from the team pages fetch/fetch_bbref.py cached."""
     season = current_season()
     out = []
     for page_path in sorted((Path(context) / "bbref" / season).glob("*.html")):
@@ -389,7 +389,7 @@ def wiki_coach_photos(context, need):
 def coach_photos(context):
     """NBA.com headshots first; Wikipedia for coaches neither NBA.com nor Basketball-Reference has a photo of."""
     nba_coach_photos(context)
-    from export_coaches import build_coaches_payload
+    from export.export_coaches import build_coaches_payload
     p = build_coaches_payload(context)
     wiki_coach_photos(context, {c["name"]: c["id"] for c in p["coaches"] if not c["photos"]})
 

@@ -13,7 +13,7 @@ that prior plus a learned adjustment from the context. So the model can never do
 
 The network is a small MLP on purpose: the dashboard runs it in the browser.
 
-    python shot_model.py --shots data/processed/shots.parquet --out runs/shots
+    python -m models.shot_model --shots data/processed/shots.parquet --out runs/shots
 """
 import argparse
 import json
@@ -26,9 +26,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from build_shots import STYLES, ZONES
-from fetch_context import PLAY_TYPES
-from tokenize_pbp import chrono_games
+from models.build_shots import STYLES, ZONES
+from fetch.fetch_context import PLAY_TYPES
+from models.tokenize_pbp import chrono_games
 
 N_STATE = 5  # sec, margin, period, is_home, defender confidence
 

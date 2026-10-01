@@ -2,7 +2,7 @@
 
 Everything here is read from what is actually on disk (seasons, game counts, fetch dates, training
 settings from the run logs), so the tab stays accurate after every re-fetch or re-train.
-Used by export_dashboard.py.
+Used by export/export_dashboard.py.
 """
 import json
 from datetime import datetime
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from tokenize_pbp import game_type
+from models.tokenize_pbp import game_type
 
 
 def _mtime(path):
@@ -67,9 +67,9 @@ def _finals(season_dir):
 
 
 def _history_seasons(history, before):
-    """Seasons before `before` from fetch_history.py, flagged pbp=False: results and box scores only, no play-by-play.
+    """Seasons before `before` from fetch/fetch_history.py, flagged pbp=False: results and box scores only, no play-by-play.
     The dashboard marks them with an asterisk."""
-    from fetch_history import finals, load_games, tracked
+    from fetch.fetch_history import finals, load_games, tracked
     g = load_games(history)
     if g.empty:
         return []
@@ -83,7 +83,7 @@ def _history_seasons(history, before):
 def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", data=None,
                           history="data/context/history_team_games.parquet"):
     """One record per season for the Home tab's orbit: games by type, shots, the Finals, and how Tempo used its games.
-    Seasons from before the play-by-play (fetch_history.py) come first, with pbp=False."""
+    Seasons from before the play-by-play (fetch/fetch_history.py) come first, with pbp=False."""
     root = Path(raw)
     if not root.exists():
         return None
@@ -108,7 +108,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
                           ckpt=None, shot_run="runs/shots", baseline="runs/baseline.joblib", synthetic=False):
     ctx = Path(context)
     pbp = _season_counts(raw)
-    from fetch_history import load_games
+    from fetch.fetch_history import load_games
     hist = load_games(ctx / "history_team_games.parquet")
     hist = hist[hist["season"] < min(pbp)] if len(hist) and pbp else hist
     hist_counts = hist.groupby("season").size().astype(int).to_dict() if len(hist) else {}
@@ -132,10 +132,10 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
         {"name": "NBA.com Stats: PlayByPlayV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Every event of every game: shots with court x/y location, distance, shot type, makes/misses, assists, substitutions, "
                  "score and clock. Feeds the game tokens for Tempo, the shot charts and the player profiles.",
-         "coverage": _cov_by_type(raw), "updated": _mtime(raw), "script": "fetch_data.py", "file": f"{raw}/<season>/<gameId>.parquet"},
+         "coverage": _cov_by_type(raw), "updated": _mtime(raw), "script": "fetch/fetch_data.py", "file": f"{raw}/<season>/<gameId>.parquet"},
         {"name": "NBA.com Stats: LeagueGameFinder", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "The list of regular-season and playoff game IDs to download for each season.",
-         "coverage": ", ".join(pbp) or "not fetched yet", "updated": _mtime(raw), "script": "fetch_data.py", "file": "(not stored)"},
+         "coverage": ", ".join(pbp) or "not fetched yet", "updated": _mtime(raw), "script": "fetch/fetch_data.py", "file": "(not stored)"},
         {"name": "NBA.com Stats: LeagueGameLog (before play-by-play)*", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "* Box scores only. NBA.com has no play-by-play before 1996-97, so these seasons are never tokenized, trained on "
                  "or replayed: each game's date, teams, final score and team totals, which thin out with age (before 1982-83 mostly "
@@ -143,48 +143,48 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
                  "and, opt-in, to warm up the pre-game Elo ratings.",
          "coverage": (f"{min(hist_counts)} to {max(hist_counts)}: {sum(hist_counts.values()):,} games, "
                       f"{int((hist['season_type'] == 'Playoffs').sum()):,} of them playoffs") if hist_counts else "not fetched yet",
-         "updated": _mtime(ctx / "history_team_games.parquet"), "script": "fetch_history.py", "file": f"{context}/history_team_games.parquet"},
+         "updated": _mtime(ctx / "history_team_games.parquet"), "script": "fetch/fetch_history.py", "file": f"{context}/history_team_games.parquet"},
         {"name": "NBA.com Stats: BoxScoreMatchupsV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Who guarded whom in each game: partial possessions, points, shots, turnovers. Used to estimate each shot's primary defender and to train the man-to-man matchup model. NBA.com has it from 2017-18 on.",
-         "coverage": _cov_by_type(ctx / "matchups"), "updated": _mtime(ctx / "matchups"), "script": "fetch_context.py", "file": f"{context}/matchups/<season>/<gameId>.parquet"},
+         "coverage": _cov_by_type(ctx / "matchups"), "updated": _mtime(ctx / "matchups"), "script": "fetch/fetch_context.py", "file": f"{context}/matchups/<season>/<gameId>.parquet"},
         {"name": "NBA.com Stats: CommonTeamRoster", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Head coach of every team each season" + (", plus season rosters (number, position, height, weight, age, experience, school)" if roster_seasons else "") + ".",
          "coverage": ", ".join(sorted(set(coach_seasons) | set(roster_seasons))) or "not fetched yet",
-         "updated": _mtime(ctx / "coaches.parquet"), "script": "fetch_context.py" + (", fetch_rosters.py" if roster_seasons else ""),
+         "updated": _mtime(ctx / "coaches.parquet"), "script": "fetch/fetch_context.py" + (", fetch/fetch_rosters.py" if roster_seasons else ""),
          "file": f"{context}/coaches.parquet" + (f", {context}/rosters.parquet" if roster_seasons else "")},
         {"name": "NBA.com Stats: SynergyPlayTypes", "org": "NBA.com / Synergy Sports via nba_api", "url": "https://www.nba.com/stats/players/isolation",
          "used": "How often each team and player uses each play type (isolation, pick-and-roll, spot-up, ...) and points per possession, "
                  "on offense and on defense: what each team allows, and what each player allows as the defender.",
-         "coverage": ", ".join(pt_seasons) or "not fetched yet", "updated": _mtime(ctx / "playtypes.parquet"), "script": "fetch_context.py",
+         "coverage": ", ".join(pt_seasons) or "not fetched yet", "updated": _mtime(ctx / "playtypes.parquet"), "script": "fetch/fetch_context.py",
          "file": f"{context}/playtypes.parquet"},
         {"name": "NBA.com Stats: tracking and hustle", "org": "NBA.com / Second Spectrum via nba_api", "url": "https://www.nba.com/stats/players/drives",
          "used": "Player-tracking actions for teams and players: drives, catch-and-shoot and pull-up shots, paint, post and elbow touches, "
                  "screen assists; hustle stats (deflections, contested shots, charges drawn, loose balls, box outs); and opponents' "
                  "FG% at the rim and from three against each defender and team (LeagueDashPtStats, LeagueHustleStats, LeagueDashPtDefend).",
-         "coverage": ", ".join(tr_seasons) or "not fetched yet", "updated": _mtime(ctx / "tracking.parquet"), "script": "fetch_context.py",
+         "coverage": ", ".join(tr_seasons) or "not fetched yet", "updated": _mtime(ctx / "tracking.parquet"), "script": "fetch/fetch_context.py",
          "file": f"{context}/tracking.parquet"},
         {"name": "Basketball-Reference awards and coaches", "org": "Sports Reference LLC", "url": "https://www.basketball-reference.com/awards/",
          "used": "Player accolades as Basketball-Reference lists them (All-Star, All-NBA, MVP, titles, ...) and each season's award votes; "
                  "every head coach's record, titles, Coach of the Year and other awards, season by season, and coach photos.",
-         "coverage": acc_cov, "updated": acc_updated, "script": "fetch_accolades.py",
+         "coverage": acc_cov, "updated": acc_updated, "script": "fetch/fetch_accolades.py",
          "file": f"{context}/bbref_accolades.json, {context}/bbref_coaches.json"},
         {"name": "NBA.com Stats: CommonAllPlayers", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats/players",
          "used": "Official player IDs and names, used to match Basketball-Reference rosters to NBA.com players (including this year's rookies).",
-         "coverage": "All players, all time", "updated": _mtime(ctx / "bbref" / "nba_all_players.parquet"), "script": "fetch_bbref.py",
+         "coverage": "All players, all time", "updated": _mtime(ctx / "bbref" / "nba_all_players.parquet"), "script": "fetch/fetch_bbref.py",
          "file": f"{context}/bbref/nba_all_players.parquet"},
         {"name": "Basketball-Reference team rosters", "org": "Sports Reference LLC", "url": "https://www.basketball-reference.com/teams/",
          "used": "Current team for every player, plus position, height, weight, birth date, years of experience and college.",
          "coverage": (", ".join(f"{s} ({(bb['season'] == s).sum()} players, {bb.loc[bb['season'] == s, 'team'].nunique()} teams)"
                                 for s in sorted(bb["season"].unique())) if bb is not None else "not fetched yet"),
-         "updated": bb["fetched"].max() if bb is not None else None, "script": "fetch_bbref.py", "file": str(bbref)},
+         "updated": bb["fetched"].max() if bb is not None else None, "script": "fetch/fetch_bbref.py", "file": str(bbref)},
         {"name": "nba_api static data", "org": "nba_api (open source)", "url": "https://github.com/swar/nba_api",
          "used": "Offline list of the 30 teams (IDs, names, abbreviations) and players' full names.",
          "coverage": "Bundled with the installed nba_api package", "updated": None, "script": "(library)", "file": "(library)"},
     ]
     if synthetic:
-        sources.append({"name": "Synthetic games", "org": "This project (synthetic.py)", "url": None,
+        sources.append({"name": "Synthetic games", "org": "This project (models/synthetic.py)", "url": None,
                         "used": "Simulated games that stand in for real ones in the game replay and model sections until Tempo is trained on real seasons.",
-                        "coverage": "Simulated seasons 2098-99 and 2099-00", "updated": _mtime("data/raw_synthetic"), "script": "synthetic.py",
+                        "coverage": "Simulated seasons 2098-99 and 2099-00", "updated": _mtime("data/raw_synthetic"), "script": "models/synthetic.py",
                         "file": "data/raw_synthetic/"})
 
     # extras for the Sources tab cards: per-season counts (drawn as bars), season lists (drawn as pills),

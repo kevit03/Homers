@@ -2,7 +2,7 @@
 
 The transformer has to beat this to be interesting.
 
-    python baseline.py --data data/processed/games.pkl
+    python -m models.baseline --data data/processed/games.pkl
 """
 import argparse
 from pathlib import Path
@@ -11,7 +11,7 @@ import joblib
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-from model import load_data
+from models.model import load_data
 
 
 def baseline_features(sec, diff):
@@ -37,7 +37,7 @@ def elo_features(g, L):
 
 
 def fit_elo_baseline(games, max_rows=2_000_000, seed=0):
-    """The same logistic regression given the pre-game Elo too: Tempo's win head starts from it, and evaluate.py
+    """The same logistic regression given the pre-game Elo too: Tempo's win head starts from it, and models/evaluate.py
     reports it, since Tempo has to beat it to show the plays add something the team ratings don't."""
     X = np.concatenate([elo_features(g, len(g["sec"])) for g in games])
     y = np.concatenate([np.full(len(g["sec"]), g["home_win"]) for g in games])

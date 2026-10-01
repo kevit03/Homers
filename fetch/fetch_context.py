@@ -8,7 +8,7 @@
 
 Everything is cached, so the script can be stopped and re-run safely.
 
-    python fetch_context.py --seasons 2021-22 2022-23 2023-24 2024-25
+    python -m fetch.fetch_context --seasons 2021-22 2022-23 2023-24 2024-25
 """
 import argparse
 import time
@@ -20,7 +20,7 @@ from nba_api.stats.endpoints import (boxscorematchupsv3, commonteamroster, leagu
                                      synergyplaytypes)
 from nba_api.stats.static import teams
 
-from fetch_data import SEASON_TYPES, SEASONS, get_game_ids
+from fetch.fetch_data import SEASON_TYPES, SEASONS, get_game_ids
 
 PLAY_TYPES = ["Isolation", "Transition", "PRBallHandler", "PRRollman", "Postup", "Spotup",
               "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"]

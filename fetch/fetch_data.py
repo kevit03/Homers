@@ -4,9 +4,9 @@ Each game is cached as its own parquet file, so the script can be stopped and
 re-run safely; finished games are skipped. Playoff games sit in the same season folder
 as the regular season; the game ID tells them apart (002... regular season, 004... playoffs).
 
-    python fetch_data.py                     # every season NBA.com has play-by-play for: 1996-97 on
-    python fetch_data.py --seasons 2021-22 2022-23 2023-24 2024-25
-    python fetch_data.py --season_types Playoffs
+    python -m fetch.fetch_data                     # every season NBA.com has play-by-play for: 1996-97 on
+    python -m fetch.fetch_data --seasons 2021-22 2022-23 2023-24 2024-25
+    python -m fetch.fetch_data --season_types Playoffs
 """
 import argparse
 import time
@@ -15,7 +15,7 @@ from pathlib import Path
 from nba_api.stats.endpoints import leaguegamefinder, playbyplayv3
 
 SEASONS = [f"{y}-{str(y + 1)[2:]}" for y in range(2016, 2026)]  # 2016-17 to 2025-26: the context scripts' default
-# Play-by-play goes back further, to where NBA.com's starts. Older seasons are box scores only (fetch_history.py).
+# Play-by-play goes back further, to where NBA.com's starts. Older seasons are box scores only (fetch/fetch_history.py).
 PBP_SEASONS = [f"{y}-{str(y + 1)[2:]}" for y in range(1996, 2026)]  # 1996-97 to 2025-26
 SEASON_TYPES = ["Regular Season", "Playoffs"]
 

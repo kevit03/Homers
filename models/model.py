@@ -22,7 +22,7 @@ N_FEAT = 6  # a checkpoint may use fewer: Config.n_feat takes the first n
 
 
 def make_features(sec, diff, period, elo=0.0):
-    """elo: the home team's pre-game edge as a logit (team_strength.py); it matters less as the clock runs."""
+    """elo: the home team's pre-game edge as a logit (models/team_strength.py); it matters less as the clock runs."""
     minutes = np.maximum(sec, 0) / 60.0
     frac_left = np.clip(sec / 2880.0, 0, 1) * (period <= 4)
     return np.stack([sec / 2880.0, diff / 20.0, np.minimum(period, 6) / 4.0,

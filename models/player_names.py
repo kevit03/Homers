@@ -1,8 +1,8 @@
 """One full name per NBA player ID, shared by every export that shows a player on the dashboard.
 
 Play-by-play only carries surnames ("Brunson") and initials ("J. Brunson"), so names come from, in order:
-NBA.com's CommonAllPlayers list (fetch_bbref.py, every player all time), nba_api's bundled player list,
-and the season rosters (fetch_rosters.py). Callers pass their own fallback for anyone none of these know.
+NBA.com's CommonAllPlayers list (fetch/fetch_bbref.py, every player all time), nba_api's bundled player list,
+and the season rosters (fetch/fetch_rosters.py). Callers pass their own fallback for anyone none of these know.
 """
 from functools import lru_cache
 from pathlib import Path

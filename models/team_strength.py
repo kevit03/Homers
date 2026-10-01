@@ -13,12 +13,12 @@ Ratings follow the FiveThirtyEight NBA recipe:
   - between seasons each rating moves back toward the mean: R = carry * R + (1 - carry) * 1505
 K, HCA and carry are chosen by grid search on the pre-game log loss of the training games only.
 
-Opt-in: --history runs the ratings through every game since 1946-47 that has no play-by-play (fetch_history.py)
+Opt-in: --history runs the ratings through every game since 1946-47 that has no play-by-play (fetch/fetch_history.py)
 before the first tokenized game, so 1996-97 doesn't start with every team at 1505. Those games only move ratings;
 they are never scored, in the grid search or the report. Off by default, so the default output never changes.
 
-    python team_strength.py --data data/processed/games.pkl
-    python team_strength.py --history data/context/history_team_games.parquet
+    python -m models.team_strength --data data/processed/games.pkl
+    python -m models.team_strength --history data/context/history_team_games.parquet
 """
 import argparse
 import itertools
@@ -99,12 +99,12 @@ def run_elo(games, order, teams, k, hca, carry):
 
 
 def with_history(games, order, teams, path):
-    """Put the pre-play-by-play results (fetch_history.py) ahead of the tokenized games, as warm-up games.
+    """Put the pre-play-by-play results (fetch/fetch_history.py) ahead of the tokenized games, as warm-up games.
     Returns the longer games list, its order, the teams map, and how many warm-up games lead it."""
-    from fetch_history import load_games
+    from fetch.fetch_history import load_games
     h = load_games(path)
     if h.empty:
-        raise SystemExit(f"no history games in {path}; run fetch_history.py")
+        raise SystemExit(f"no history games in {path}; run fetch/fetch_history.py")
     first, last = min(g["season"] for g in games), h["season"].max()
     if int(first[:4]) != int(last[:4]) + 1:  # one carry step per new season: a gap would leave stale ratings
         raise SystemExit(f"history ends {last} but the play-by-play starts {first}; --history needs them back to back")
@@ -126,7 +126,7 @@ def main():
     ap.add_argument("--raw", default="data/raw")
     ap.add_argument("--warmup", type=int, default=400, help="skip this many earliest games when scoring the grid (ratings start flat)")
     ap.add_argument("--history", help="opt-in: warm up the ratings on pre-1996-97 results first "
-                                      "(data/context/history_team_games.parquet from fetch_history.py)")
+                                      "(data/context/history_team_games.parquet from fetch/fetch_history.py)")
     args = ap.parse_args()
 
     with open(args.data, "rb") as fh:

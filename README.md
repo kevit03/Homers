@@ -178,7 +178,7 @@ Trained PyTorch models are exported into a single self-contained file, `dashboar
 ```
 PyTorch state_dict
       │
-      ▼  export_players.py / export_dashboard.py
+      ▼  export/export_players.py / export/export_dashboard.py
 Weights and prior lookup tables embedded as JSON
       │
       ▼
@@ -270,15 +270,15 @@ On macOS, the dashboard can also be opened by double-clicking `Open Dashboard.co
 pip install -r requirements.txt
 
 # Synthetic dataset and baseline
-python synthetic.py --games 400
-python tokenize_pbp.py --raw data/raw_synthetic --out data/processed/synthetic.pkl
-python baseline.py --data data/processed/synthetic.pkl
+python -m models.synthetic --games 400
+python -m models.tokenize_pbp --raw data/raw_synthetic --out data/processed/synthetic.pkl
+python -m models.baseline --data data/processed/synthetic.pkl
 
 # Train Tempo
-python train.py --data data/processed/synthetic.pkl --out runs/syn --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3
+python -m models.train --data data/processed/synthetic.pkl --out runs/syn --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3
 
 ad# Build dashboard (dashboard.html is a build output and isn't committed; the live build is at homers-nu.vercel.app)
-python export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
+python -m export.export_dashboard --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
 open dashboard.html
 ```
 
@@ -290,24 +290,24 @@ Full reproduction on real NBA data:
 
 ```bash
 # Play-by-play, 10 seasons (resumable, cached as Parquet)
-python fetch_data.py --seasons 2016-17 2025-26
+python -m fetch.fetch_data --seasons 2016-17 2025-26
 
 # Synergy, tracking and BoxScoreMatchupsV3
-python fetch_context.py
+python -m fetch.fetch_context
 
 # Rosters, coaches and accolades
-python fetch_rosters.py
-python fetch_bbref.py
-python fetch_accolades.py
+python -m fetch.fetch_rosters
+python -m fetch.fetch_bbref
+python -m fetch.fetch_accolades
 
 # Tokenization and reordering
-python tokenize_pbp.py
+python -m models.tokenize_pbp
 
 # Training
-python baseline.py
-python train.py --out runs/base
-python shot_model.py --shots data/processed/shots.parquet --out runs/shots
-python matchup_model.py --context data/context --out runs/matchups
+python -m models.baseline
+python -m models.train --out runs/base
+python -m models.shot_model --shots data/processed/shots.parquet --out runs/shots
+python -m models.matchup_model --context data/context --out runs/matchups
 
 # Dashboard export
 ./refresh_players.sh
@@ -315,21 +315,21 @@ python matchup_model.py --context data/context --out runs/matchups
 
 | Stage | Script | Output | Description |
 |:---|:---|:---|:---|
-| Play-by-play | `fetch_data.py` | `data/raw/<season>/<gameId>.parquet` | Raw NBA play-by-play |
-| Context | `fetch_context.py` | `data/context/matchups/`, `playtypes.parquet` | Tracking, Synergy play types, matchups |
-| Accolades | `fetch_accolades.py` | `data/context/bbref_accolades.json` | Awards, votes, coaching records, photos |
-| Tokenization | `tokenize_pbp.py` | `data/processed/games.pkl` | Event tokens and game-state features |
-| Shot table | `build_shots.py` | `data/processed/shots.parquet` | On-court lineups and primary defenders per attempt |
-| Tempo | `train.py` | `runs/<name>/best.pt` | Warmup, cosine decay, early stopping |
-| ShotNet | `shot_model.py` | `runs/shots/best.pt` | Zone, style and make probability |
-| Matchups | `matchup_model.py` | `runs/matchups/best.pt` | Poisson/binomial GLM with low-rank interaction |
-| Evaluation | `evaluate.py` | `results/metrics.json` | Per-quarter Brier scores, calibration |
-| Export | `export_dashboard.py` | `dashboard.html` | Weights, data and UI in a single file |
-| Site | `build_site.py` | `site/` | Gzipped static site for Vercel |
+| Play-by-play | `fetch/fetch_data.py` | `data/raw/<season>/<gameId>.parquet` | Raw NBA play-by-play |
+| Context | `fetch/fetch_context.py` | `data/context/matchups/`, `playtypes.parquet` | Tracking, Synergy play types, matchups |
+| Accolades | `fetch/fetch_accolades.py` | `data/context/bbref_accolades.json` | Awards, votes, coaching records, photos |
+| Tokenization | `models/tokenize_pbp.py` | `data/processed/games.pkl` | Event tokens and game-state features |
+| Shot table | `models/build_shots.py` | `data/processed/shots.parquet` | On-court lineups and primary defenders per attempt |
+| Tempo | `models/train.py` | `runs/<name>/best.pt` | Warmup, cosine decay, early stopping |
+| ShotNet | `models/shot_model.py` | `runs/shots/best.pt` | Zone, style and make probability |
+| Matchups | `models/matchup_model.py` | `runs/matchups/best.pt` | Poisson/binomial GLM with low-rank interaction |
+| Evaluation | `models/evaluate.py` | `results/metrics.json` | Per-quarter Brier scores, calibration |
+| Export | `export/export_dashboard.py` | `dashboard.html` | Weights, data and UI in a single file |
+| Site | `export/build_site.py` | `site/` | Gzipped static site for Vercel |
 
 ### Deploying to Vercel
 
-The dashboard is a static site. `./deploy.sh` packs it with `build_site.py` and uploads `site/` with the Vercel CLI (project `homers`); run `npx vercel login` once first.
+The dashboard is a static site. `./deploy.sh` packs it with `export/build_site.py` and uploads `site/` with the Vercel CLI (project `homers`); run `npx vercel login` once first.
 
 ```bash
 ./deploy.sh              # current dashboard.html to production
@@ -337,7 +337,7 @@ The dashboard is a static site. `./deploy.sh` packs it with `build_site.py` and 
 ./deploy.sh --rebuild    # re-export dashboard.html and games/ from the newest model first
 ```
 
-The page (~50 MB) and the replay seasons in `games/` (~15 MB each) are over the 100 MB a Hobby account can upload, so `build_site.py` gzips everything (about 80 MB): `index.html` is a small loader that unzips the page in the browser, and Game replay unzips each season when it is picked. The build stops if the total passes 100 MB; on a Pro account pass `--max_mb 1000`.
+The page (~50 MB) and the replay seasons in `games/` (~15 MB each) are over the 100 MB a Hobby account can upload, so `export/build_site.py` gzips everything (about 80 MB): `index.html` is a small loader that unzips the page in the browser, and Game replay unzips each season when it is picked. The build stops if the total passes 100 MB; on a Pro account pass `--max_mb 1000`.
 
 ---
 
@@ -345,32 +345,48 @@ The page (~50 MB) and the replay seasons in `games/` (~15 MB each) are over the 
 
 ```
 .
-├── model.py                 # Tempo transformer
-├── shot_model.py            # ShotNet
-├── matchup_model.py         # Matchup GLM
-├── tokenize_pbp.py          # Event reordering and tokenization
-├── build_shots.py           # Lineup tracking and shot table
-├── train.py                 # Transformer training loop
-├── baseline.py              # Score-and-clock logistic baseline
-├── evaluate.py              # Out-of-time evaluation and calibration
-├── scaling.py               # Loss vs. model size study
-├── synthetic.py             # Synthetic game generator for local development
-├── export_dashboard.py      # Builds dashboard.html
-├── export_players.py        # Player, defender and coach embeddings and weights
-├── export_profiles.py       # Player profiles (career stats, accolades, fantasy)
-├── export_shotcharts.py     # Hexbin and zone shot charts
-├── export_coaches.py        # Coach scheme summaries
-├── export_tracking.py       # Tracking and Synergy aggregates
-├── export_sources.py        # Data provenance and training settings
-├── dashboard_template.html  # Dashboard template
-├── run.sh                   # Setup, demo, training and status commands
-├── refresh_players.sh       # Rebuilds exported player data
-├── build_site.py            # Packs the gzipped static site for Vercel (site/)
-├── deploy.sh                # build_site.py + Vercel CLI upload
-├── docs/                    # Images and assets
-├── logs/                    # Output of long fetch runs (nohup ... > logs/<name>.log)
-└── archive/                 # Old results and snapshots, kept for reference
+├── fetch/                       # Downloads (resumable)
+│   ├── fetch_data.py            # NBA.com play-by-play, 1996-97 on
+│   ├── fetch_history.py         # Results and box scores before play-by-play
+│   ├── fetch_context.py         # Coaches, tracking, Synergy play types, matchups
+│   ├── fetch_rosters.py         # Season rosters
+│   ├── fetch_bbref.py           # Current rosters (Basketball-Reference)
+│   └── fetch_accolades.py       # Awards, votes, coaching records, photos
+├── models/                      # Data prep and models
+│   ├── tokenize_pbp.py          # Event reordering and tokenization
+│   ├── build_shots.py           # Lineup tracking and shot table
+│   ├── model.py                 # Tempo transformer
+│   ├── train.py                 # Transformer training loop
+│   ├── baseline.py              # Score-and-clock logistic baseline
+│   ├── team_strength.py         # Pre-game Elo
+│   ├── evaluate.py              # Out-of-time evaluation and calibration
+│   ├── shot_model.py            # ShotNet
+│   ├── matchup_model.py         # Matchup GLM
+│   ├── scaling.py               # Loss vs. model size study
+│   ├── synthetic.py             # Synthetic game generator for local development
+│   └── player_names.py          # Full-name lookup shared by the exporters
+├── export/                      # Dashboard build
+│   ├── export_dashboard.py      # Builds dashboard.html
+│   ├── export_players.py        # Player, defender and coach embeddings and weights
+│   ├── export_profiles.py       # Player profiles (career stats, accolades, fantasy)
+│   ├── export_shotcharts.py     # Hexbin and zone shot charts
+│   ├── export_coach*.py         # Coach records, defense, scheme and play types
+│   ├── export_tracking.py       # Tracking and Synergy aggregates
+│   ├── export_matchups.py       # Head-to-head matchup data
+│   ├── export_sources.py        # Data provenance and training settings
+│   ├── export_accolades.py, export_assets.py
+│   └── build_site.py            # Packs the gzipped static site for Vercel (site/)
+├── dashboard_template.html      # Dashboard template
+├── run.sh                       # Setup, demo, training and status commands
+├── refresh_players.sh           # Rebuilds exported player data
+├── deploy.sh                    # export/build_site.py + Vercel CLI upload
+├── tests/                       # Browser-console checks for the dashboard
+├── docs/                        # Images and assets
+├── logs/                        # Output of long fetch runs (nohup ... > logs/<name>.log)
+└── archive/                     # Old results and snapshots, kept for reference
 ```
+
+Scripts are run from the repo root as modules, e.g. `python -m models.train` (or through `./run.sh`).
 
 ---
 
