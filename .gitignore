@@ -5,3 +5,5 @@ __pycache__/
 .claude/
 games/
 site/
+# build output of export_dashboard.py (~50 MB, past GitHub's 50 MB warning); rebuild it locally, the live copy is on Vercel
+dashboard.html

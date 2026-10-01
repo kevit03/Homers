@@ -67,11 +67,11 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
     # actual head-to-head totals for pairs that met often enough to be worth showing
     pair = df.groupby(["personIdOff", "personIdDef"])[["poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov"]].sum()
     pair = pair[pair["poss"] >= min_pair_poss].reset_index()
-    seasons_met = df.groupby(["personIdOff", "personIdDef"])["season"].nunique()
+    # career totals ship as just [off, def, poss]: pts..tov and the season count are exact sums of the pair's h2h_s rows, which the
+    # page adds back up on load (saves ~3 MB). poss stays because the per-season values are rounded to 0.1 before summing.
     h2h = []
     for row in pair.itertuples(index=False):
-        h2h += [int(row.personIdOff), int(row.personIdDef), round(float(row.poss), 1), int(row.pts), int(row.fgm), int(row.fga),
-                int(row.fg3m), int(row.fg3a), int(row.tov), int(seasons_met[(row.personIdOff, row.personIdDef)])]
+        h2h += [int(row.personIdOff), int(row.personIdDef), round(float(row.poss), 1)]
     # the same pairs season by season, in h2h's order: for each pair, k then k rows of h2h_s_cols
     si_of = {s: i for i, s in enumerate(meta["seasons"])}
     per = (df.merge(pair[["personIdOff", "personIdDef"]], on=["personIdOff", "personIdDef"])
@@ -94,7 +94,7 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
         "season_for_predictions": last_complete, "roster_season": roster_season,
         "b": r(W("b") + W("season.weight")[si]),  # league rates in the latest complete season
         "off": r(W("off.weight")), "def": r(W("dfn.weight")), "U": r(W("U.weight")), "V": r(W("V.weight")), "w": r(W("w")),
-        "players": players, "h2h": h2h, "h2h_cols": ["off", "def", "poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov", "seasons"],
+        "players": players, "h2h": h2h, "h2h_cols": ["off", "def", "poss"],
         "h2h_s": h2h_s, "h2h_s_cols": ["si", "poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov"],
         # league rates season by season, so predictions can be read in any season's scoring environment
         "b_season": {s: r(W("b") + W("season.weight")[i]) for i, s in enumerate(meta["seasons"])},

@@ -5014,6 +5014,15 @@ function srcInit() {
 
 /* ---------- man-to-man matchups ---------- */
 const MU = DATA.matchups || null;
+if (MU && MU.h2h_s && MU.h2h_cols.length === 3) {  // the export ships career pairs as [off, def, poss]: the rest is the sum of the pair's seasons
+  const S = MU.h2h_s, W = MU.h2h_s_cols.length, full = [];
+  for (let i = 0, j = 0; i < MU.h2h.length; i += 3) {
+    const k = S[j++], t = [0, 0, 0, 0, 0, 0];  // pts, fgm, fga, fg3m, fg3a, tov
+    for (let m = 0; m < k; m++, j += W) for (let x = 0; x < 6; x++) t[x] += S[j + 2 + x];
+    full.push(MU.h2h[i], MU.h2h[i + 1], MU.h2h[i + 2], ...t, k);
+  }
+  MU.h2h = full; MU.h2h_cols = ["off", "def", "poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov", "seasons"];
+}
 const mu = { off: null, def: null, season: "", avgO: new Map(), avgD: new Map() };  // season "": every season together
 let MU_BY_ID = new Map(), MU_H2H = new Map(), MU_H2H_S = new Map(), MU_DEFS = [], MU_OFFS = [];
 function muEta(o, d) {  // with a season picked, that season's league rates: the same pair scores differently in 2018 and 2025

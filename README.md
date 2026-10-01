@@ -277,7 +277,7 @@ python baseline.py --data data/processed/synthetic.pkl
 # Train Tempo
 python train.py --data data/processed/synthetic.pkl --out runs/syn --n_layer 2 --n_embd 64 --n_head 2 --lr 1e-3
 
-# Build dashboard
+ad# Build dashboard (dashboard.html is a build output and isn't committed; the live build is at homers-nu.vercel.app)
 python export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
 open dashboard.html
 ```
