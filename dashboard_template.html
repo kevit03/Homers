@@ -981,6 +981,26 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .method .m-lead { font-size: 14px; color: var(--ink-2); }
 .method details summary { cursor: pointer; font: 600 12px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .method details[open] summary { margin-bottom: 10px; }
+/* "Tempo, explained": plain-language questions and answers above the model spec cards */
+.tx-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 32px; }
+@media (max-width: 760px) { .tx-grid { grid-template-columns: minmax(0, 1fr); } }
+.tx-q { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tx-q h3 { font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.tx-q p, .tx-q li { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); max-width: 68ch; }
+.tx-q b { color: var(--ink); }
+.tx-q ul { display: grid; gap: 10px; padding-left: 18px; }
+.tx-wide { grid-column: 1 / -1; }
+.tx-toks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tx-toks code { font-size: 12px; padding: 4px 7px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.tx-toks code.h { border-color: var(--model); }
+.tx-toks span { color: var(--muted); }
+.tx-toks code.next { border-style: dashed; color: var(--muted); }
+.tx-score { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tx-score div { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); }
+.tx-score span { font: 600 11px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.tx-score b { font-family: var(--font-display); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tx-score small { font-size: 12px; color: var(--muted); }
+.tx-score .win { border-color: var(--good); }
 .soft a { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line-strong); text-decoration: none; }
 /* coverage strip: one slot per season; a bar's height is the games fetched against the fullest season */
 .src-cov { display: grid; gap: 6px; align-content: start; }
@@ -2038,6 +2058,9 @@ h3.co-side.def::before { background: var(--base); }
 
   <div class="sec-head"><h2 class="cast">The data<span id="srcDataCap"></span></h2></div>
   <div class="src-feat" id="srcList"></div>
+
+  <div class="sec-head"><h2 class="cast">Tempo, explained</h2></div>
+  <div class="panel tx-grid" id="tempoExplain"></div>
 
   <div class="sec-head">
     <h2 id="h-methods" class="cast">The models<span class="tip" tabindex="0" role="note" aria-label="What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs." data-tip="What each model is, what kind of regression it does, and exactly how it was trained. Settings are read from the training logs.">i</span></h2>

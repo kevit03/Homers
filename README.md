@@ -365,7 +365,11 @@ The page (~50 MB) and the replay seasons in `games/` (~15 MB each) are over the 
 ├── dashboard_template.html  # Dashboard template
 ├── run.sh                   # Setup, demo, training and status commands
 ├── refresh_players.sh       # Rebuilds exported player data
-└── docs/                    # Images and assets
+├── build_site.py            # Packs the gzipped static site for Vercel (site/)
+├── deploy.sh                # build_site.py + Vercel CLI upload
+├── docs/                    # Images and assets
+├── logs/                    # Output of long fetch runs (nohup ... > logs/<name>.log)
+└── archive/                 # Old results and snapshots, kept for reference
 ```
 
 ---
