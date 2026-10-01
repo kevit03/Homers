@@ -194,11 +194,15 @@ def main():
         payload["coaches"] = build_coaches_payload(args.context, (payload["shots"] or {}).get("coaches"))
         if payload["coaches"]:
             print(f"added {len(payload['coaches']['coaches'])} coaches, {len(payload['coaches']['units'])} team seasons of play data")
-    payload["coachDefense"] = None
+    payload["coachDefense"] = payload["coachScheme"] = None
     if not payload["meta"]["synthetic"] and Path(args.shots).exists():
         from export_coach_defense import build_coach_defense_payload
         payload["coachDefense"] = build_coach_defense_payload(args.shots)
         print(f"added opponents' shooting by shot type, style and zone for {len(payload['coachDefense']['units'])} team seasons")
+        from export_coach_scheme import build_coach_scheme_payload
+        payload["coachScheme"] = build_coach_scheme_payload(args.shots, f"{args.context}/playtypes.parquet", f"{args.context}/matchups")
+        if payload["coachScheme"]:
+            print(f"added estimated coverage schemes for {len(payload['coachScheme']['units'])} team seasons")
     payload["coachPlays"] = None
     if not payload["meta"]["synthetic"]:
         from export_coach_plays import build_coach_plays_payload

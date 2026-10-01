@@ -1172,6 +1172,34 @@ h3.co-side.def::before { background: var(--base); }
 .co-more { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
 .co-more > summary { cursor: pointer; font: 600 13px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); }
 .co-more[open] > summary { margin-bottom: 14px; }
+/* coverage scheme (estimated): a quadrant map, aggression across and scramble up, beside the verdict and the signals behind it */
+.cs-wrap { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 720px) { .cs-wrap { grid-template-columns: minmax(0, 1fr); } .cs-map { max-width: 340px; justify-self: center; } }
+.cs-map { display: block; width: 100%; height: auto; }
+.cs-map .q-bg { fill: var(--bg); }
+.cs-map .q-bg.on { fill: var(--base); fill-opacity: .1; }
+.cs-map .ax { stroke: var(--line-strong); stroke-width: 1; }
+.cs-map .qd { font: 700 11px var(--font-label); letter-spacing: .08em; text-transform: uppercase; fill: var(--muted); }
+.cs-map .qd.on { fill: var(--base); }
+.cs-map .axl { font: 600 9.5px var(--font-label); letter-spacing: .06em; text-transform: uppercase; fill: var(--muted); }
+.cs-map .lg { fill: var(--line-strong); }
+.cs-map .mine { fill: var(--surface); stroke: var(--base); stroke-width: 1.5; }
+.cs-map .me { fill: var(--base); stroke: var(--surface); stroke-width: 2; }
+.cs-map .tag { font: 700 11px var(--font-label); fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.cs-side { display: grid; gap: 14px; min-width: 0; }
+.cs-verdict { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.cs-verdict .label { font: 600 11px/1.2 var(--font-label); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.cs-verdict b { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1.05; }
+.cs-verdict p { font-size: 13.5px; color: var(--ink-2); }
+.cs-verdict small { font-size: 12.5px; color: var(--muted); }
+.cs-bars { display: grid; gap: 10px; }
+.cs-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; align-items: baseline; }
+.cs-row span { font-size: 13.5px; font-weight: 600; }
+.cs-row em { font-style: normal; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cs-row small { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.cs-bar { grid-column: 1 / -1; position: relative; height: 8px; border-radius: 4px; background: var(--bg); }
+.cs-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--base); }
+.cs-bar em { position: absolute; left: 50%; top: -3px; width: 2px; height: 14px; margin-left: -1px; border-radius: 1px; background: var(--ink); }
 /* "?" buttons: hover, focus or tap shows what a play or a number means, with a court diagram for plays */
 .q { all: unset; box-sizing: border-box; display: inline-grid; place-items: center; width: 18px; height: 18px; flex: none; border-radius: 50%; cursor: help;
   border: 1.5px solid var(--line-strong); color: var(--muted); font: 700 11px/1 var(--font-body); letter-spacing: 0; text-transform: none; }
@@ -1271,9 +1299,20 @@ h3.co-side.def::before { background: var(--base); }
 .h2h-row.ctx .h2h-bar i { background: var(--muted); }
 .h2h-side.win .h2h-v b { color: var(--ink); font-weight: 800; }
 .h2h-side.win .h2h-bar i { opacity: 1; }
-.h2h-side.win .h2h-v b::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--c); margin: 0 0 4px 6px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
-.h2h-side.b.win .h2h-v b::after { display: none; }
-.h2h-side.b.win .h2h-v b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--c); margin: 0 6px 4px 0; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
+.h2h-n { display: inline-flex; align-items: center; gap: 7px; }
+.h2h-side.b .h2h-n { flex-direction: row-reverse; }
+.h2h-diff { flex: none; font-family: var(--font-display); font-size: 14px; font-weight: 700; line-height: 20px; padding: 0 8px; border-radius: 999px; color: var(--ink);
+            font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--c) 20%, transparent); box-shadow: inset 0 0 0 1.5px var(--c); }
+.h2h-diff.ctx { --c: var(--line-strong); color: var(--ink-2); }
+.h2h-diff.even { --c: var(--line-strong); color: var(--muted); font-size: 12px; line-height: 17px; justify-self: center; margin-top: 2px; }
+.h2h-share { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+.h2h-share button { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; padding: 10px 18px; border-radius: 999px; }
+.h2h-share button svg { width: 17px; height: 17px; }
+.h2h-share button.go { background: var(--model); border-color: var(--model); color: #fff; }
+.h2h-share button.go:hover { filter: brightness(1.08); }
+.h2h-share button:disabled { opacity: .5; cursor: default; }
+.h2h-share button[hidden] { display: none; }
+.h2h-share .caption { flex-basis: 100%; max-width: none; text-align: center; min-height: 1.4em; }
 .h2h-lab { display: grid; text-align: center; line-height: 1.15; }
 .h2h-lab b { font-family: var(--font-label); font-size: 14px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
 .h2h-lab small { font-size: 11.5px; color: var(--muted); }
@@ -1285,6 +1324,115 @@ h3.co-side.def::before { background: var(--base); }
   .h2h-bar { display: none; } .h2h-side.b { flex-direction: row; justify-content: flex-end; } .h2h-v { min-width: 0; }
   .h2h-v b { font-size: 21px; } .h2h-lab b { font-size: 12.5px; }
 }
+/* ---------- defense tab: the wall (one brick per defender), a crest per defender, and the stars he shrank ---------- */
+.dz { --dz-ink: #eef2f7; --dz-mute: rgb(238 242 247 / .64); --dz-gold: #e9bd55; --dz-steel: #5b9dff; --dz-hot: #ff6f5e;
+      position: relative; overflow: hidden; isolation: isolate; display: grid; gap: 22px; border-radius: 16px; padding: 44px 36px 26px; color: var(--dz-ink);
+      background: radial-gradient(110% 70% at 50% -12%, #1e2a3b 0%, #0c0e12 64%) #0c0e12; }
+.dz::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain); opacity: .14; mix-blend-mode: overlay; pointer-events: none; }
+.dz-top { display: grid; gap: 22px; }
+.dz-title { display: grid; gap: 12px; max-width: 600px; }
+.dz-title .kicker { color: #9cc3ff; }
+.dz h2.cast { font-size: clamp(56px, 8.4vw, 104px); }
+.dz h2.cast em { font-style: inherit; background: linear-gradient(180deg, #d9e8ff 10%, var(--dz-steel) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .06em; }
+.dz-lede { font-size: 16.5px; line-height: 1.5; color: var(--dz-mute); max-width: 56ch; }
+.dz-ctl { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 14px 28px; }
+.dz-ctl > div { display: grid; gap: 8px; }
+.dz-ctl .label { color: var(--dz-mute); }
+.dz-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dz-chips button { all: unset; box-sizing: border-box; cursor: pointer; font-family: var(--font-label); font-size: 12.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+                   padding: 6px 12px; border-radius: 999px; border: 1px solid rgb(255 255 255 / .22); color: var(--dz-mute); }
+.dz-chips button:hover { color: #fff; border-color: rgb(255 255 255 / .55); }
+.dz-chips button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #0c0e12; }
+.dz-chips button:focus-visible, .dz-brick:focus-visible { outline: 2px solid var(--dz-steel); outline-offset: 2px; }
+.dz-wall { display: grid; gap: 6px; perspective: 1000px; min-height: 200px; }
+.dz-row { display: grid; gap: 6px; grid-template-columns: repeat(var(--c), minmax(0, 1fr)); }
+.dz-half { grid-column: span 1; height: 60px; border-radius: 3px; background: #151920; box-shadow: inset 0 1px 0 rgb(255 255 255 / .04), inset 0 -3px 0 rgb(0 0 0 / .35); }
+.dz-half.full { grid-column: span 2; }
+.dz-brick { all: unset; box-sizing: border-box; cursor: pointer; position: relative; grid-column: span 2; height: 60px; min-width: 0; border-radius: 3px;
+            display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 10px 7px 11px; color: #fff;
+            background: linear-gradient(180deg, rgb(255 255 255 / .07), transparent 40%), color-mix(in srgb, var(--dz-steel) calc(var(--v) * 70%), #1a1f28);
+            box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), inset 0 -3px 0 rgb(0 0 0 / .3), 0 0 calc(var(--v) * 26px) color-mix(in srgb, var(--dz-steel) calc(var(--v) * 40%), transparent);
+            transition: transform .16s ease, filter .16s ease; animation: dz-lay .55s cubic-bezier(.2, .8, .25, 1.15) both; animation-delay: calc(var(--i) * 16ms); }
+.dz-wall.laid .dz-brick { animation: none; }
+.dz-brick:hover { transform: translateY(-2px); filter: brightness(1.14); }
+.dz-brick[aria-current="true"] { outline: 2px solid #fff; outline-offset: 2px; transform: translateY(-2px); z-index: 1; }
+.dz-brick.gold { color: #2b1d00; background: linear-gradient(180deg, #fbe39d, #d6a23c); box-shadow: inset 0 1px 0 rgb(255 255 255 / .55), inset 0 -3px 0 rgb(90 55 0 / .35), 0 0 22px rgb(233 189 85 / .38); }
+.dz-brick.silver::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 1.5px solid rgb(226 233 242 / .78); pointer-events: none; }
+.dz-b-t { display: grid; min-width: 0; line-height: 1; gap: 4px; }
+.dz-b-t b { font-family: var(--font-cast); font-size: 21px; font-weight: 800; font-style: italic; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dz-b-t small, .dz-b-v small { font-family: var(--font-label); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dz-b-v { display: grid; justify-items: end; line-height: 1; gap: 4px; font-family: var(--font-cast); font-size: 23px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@keyframes dz-lay { from { opacity: 0; transform: translateY(-30px) rotateX(40deg); } to { opacity: 1; transform: none; } }
+.dz-foot { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 12.5px; color: var(--dz-mute); }
+.dz-foot i { display: inline-block; width: 22px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.dz-foot .g { background: linear-gradient(180deg, #fbe39d, #d6a23c); }
+.dz-foot .s { background: #2b3b55; box-shadow: inset 0 0 0 1.5px rgb(226 233 242 / .78); }
+.dz-foot .r { width: 54px; background: linear-gradient(90deg, #1a1f28, var(--dz-steel)); }
+.dz-foot .tip { color: var(--dz-mute); border-color: rgb(255 255 255 / .3); }
+.dz-card { display: grid; gap: 18px; }
+.dz-card .ps { max-width: 420px; }
+.dz-grid { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 26px 34px; align-items: start; }
+.dz-crest svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 14px 22px rgb(0 0 0 / .28)); }
+.dz-c-shield { fill: #0e1218; stroke: #3c4d66; stroke-width: 3; }
+.dz-c-shield.gold { stroke: #e2b552; } .dz-c-shield.silver { stroke: #cfd8e3; }
+.dz-c-inner { fill: none; stroke: rgb(255 255 255 / .08); stroke-width: 1.2; }
+.dz-c-ring { fill: none; stroke: rgb(255 255 255 / .12); stroke-width: 1; }
+.dz-c-ring.mid { stroke: rgb(255 255 255 / .42); stroke-dasharray: 3 4; }
+.dz-c-area { fill: rgb(91 157 255 / .34); stroke: #7db2ff; stroke-width: 2.4; stroke-linejoin: round; }
+.dz-c-dot { fill: #fff; stroke: #5b9dff; stroke-width: 2; }
+.dz-c-lab { fill: #fff; font-family: var(--font-label); font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.dz-c-lab .pv { fill: rgb(255 255 255 / .6); font-weight: 600; font-size: 11.5px; letter-spacing: .03em; }
+.dz-c-lab.na { fill: rgb(255 255 255 / .35); }
+.dz-c-k { fill: rgb(255 255 255 / .6); font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: .18em; }
+.dz-c-score { fill: #fff; font-family: var(--font-cast); font-size: 50px; font-weight: 800; font-style: italic; }
+.dz-c-star { fill: #e9bd55; }
+.dz-who { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: end; }
+.dz-face { position: relative; width: 132px; aspect-ratio: 26 / 19; border-radius: 10px; overflow: hidden; background: linear-gradient(160deg, var(--tc, #2b313a), #0c0e12); }
+.dz-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.dz-who h3.cast { font-size: clamp(34px, 4.4vw, 46px); text-transform: uppercase; }
+.dz-who .meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.dz-hw { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.dz-hw span { font-family: var(--font-label); font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); }
+.dz-hw span.gold { color: #2b1d00; background: linear-gradient(180deg, #f8dc8c, #dcaa3f); border-color: #e7c066; }
+.dz-hw span.silver { color: var(--ink); background: var(--accent-soft); border-color: #aeb8c4; }
+.dz-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.dz-tile { display: grid; gap: 4px; align-content: start; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); min-width: 0; }
+.dz-tile b { font-family: var(--font-cast); font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.dz-tile .k { font-family: var(--font-label); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.dz-tile p { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+.dz-pbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-top: 6px; font-family: var(--font-label); font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.dz-pbar span { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.dz-pbar span i { display: block; height: 100%; border-radius: inherit; background: var(--base); }
+.dz-pbar.elite span i { background: linear-gradient(90deg, var(--base), #8fc0ff); }
+.dz-act { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+.dz-ray-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+.dz-ray-sum { font-size: 14.5px; color: var(--ink-2); max-width: 72ch; }
+.dz-ray-sum b { font-family: var(--font-cast); font-size: 22px; color: var(--ink); }
+.dz-ray { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 22px 10px; margin-top: 8px; }
+.dz-r { display: grid; justify-items: center; gap: 6px; text-align: center; min-width: 0; margin: 0; }
+.dz-r-orb { position: relative; width: 124px; height: 124px; }
+.dz-r-ring, .dz-r-in { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+.dz-r-ring { border: 2px dashed var(--line-strong); }
+.dz-r-in { overflow: hidden; background: linear-gradient(160deg, var(--tc, #2b313a), #0c0e12); box-shadow: 0 0 0 3px var(--base);
+           animation: dz-shrink 1.2s cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(.25s + var(--i) * 70ms); }
+.dz-r.grew .dz-r-in { box-shadow: 0 0 0 3px var(--dz-hot, #e5533f); }
+.dz-r-in img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+@keyframes dz-shrink { from { transform: translate(-50%, -50%) scale(var(--k)); } to { transform: translate(-50%, -50%) scale(1); } }
+.dz-r figcaption { display: grid; gap: 2px; min-width: 0; max-width: 100%; }
+.dz-r figcaption b { font-family: var(--font-label); font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dz-r figcaption span { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dz-r figcaption em { font-style: normal; font-family: var(--font-label); font-weight: 700; font-size: 12px; justify-self: center; padding: 1px 8px; border-radius: 999px; background: var(--good-bg); color: var(--good); }
+.dz-r.grew figcaption em { background: color-mix(in srgb, #e5533f 16%, transparent); color: #d1432f; }
+.dz-ray-keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.dz-ray-keys i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; margin-right: 6px; }
+.dz-ray-keys .ring { border: 2px dashed var(--line-strong); } .dz-ray-keys .in { background: #3b4352; box-shadow: 0 0 0 2px var(--base); }
+@media (prefers-reduced-motion: reduce) { .dz-brick, .dz-r-in { animation: none !important; transition: none !important; } }
+@media (max-width: 760px) {
+  .dz { padding: 30px 16px 20px; }
+  .dz-grid { grid-template-columns: minmax(0, 1fr); } .dz-crest { max-width: 320px; margin-inline: auto; width: 100%; }
+  .dz-half, .dz-brick { height: 54px; } .dz-b-t b { font-size: 18px; } .dz-b-v { font-size: 20px; }
+}
+@media (max-width: 520px) { .dz-tiles { grid-template-columns: minmax(0, 1fr); } .dz-who { grid-template-columns: minmax(0, 1fr); } .dz-ray { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
 <div class="wrap">
@@ -1323,10 +1471,10 @@ h3.co-side.def::before { background: var(--base); }
             <li><a class="nm-link" href="#/shots" data-nav="shots"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Shot charts</span><p>Every shot by every player, hot and cold against the league.</p></a></li>
             <li><a class="nm-link" href="#/matchups" data-nav="matchups"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Matchups</span><p>Who guards whom, and what it does to the scorer.</p></a></li>
             <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-players"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tendencies</span><p>A player's shot diet and the matchup simulator.</p></a></li>
-            <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-defenders"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Defenders</span><p>How each defender changes what shooters take.</p></a></li>
           </ul>
         </div>
       </li>
+      <li class="nm-item"><a class="nm-plain" href="#/defense" data-nav="defense">Defense</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/coaches" data-nav="coaches">Coaches</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/fantasy" data-nav="fantasy">Fantasy</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/h2h" data-nav="h2h">H2H</a></li>
@@ -1628,20 +1776,36 @@ h3.co-side.def::before { background: var(--base); }
     </div>
   </section>
 
-  <section aria-labelledby="h-defenders" id="defenders" data-tab="players" hidden>
-    <div class="sec-head">
-      <h2 id="h-defenders">Defender indicators</h2>
-      <p class="caption">Negative pts / shot = good defense<span class="tip" tabindex="0" role="note" aria-label="How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Rim, mid-range and 3PT columns are the change in shot share (percentage points) versus an average defender." data-tip="How the shot model says each defender changes what shooters take, averaged over 20,000 real shots. Rim, mid-range and 3PT columns are the change in shot share (percentage points) versus an average defender.">i</span></p>
-    </div>
-    <div class="panel" style="display:grid;gap:10px">
-      <div class="filter">
-        <div class="field grow"><label class="label" for="dFilter">Find a defender</label><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="dFilter" placeholder="Name or team" autocomplete="off" spellcheck="false"></div></div>
-        <div class="field"><label class="label" for="dMin">Min. shots</label><select id="dMin"><option value="0">Any</option><option value="100">100</option><option value="300" selected>300</option><option value="600">600</option></select></div>
+  <section aria-labelledby="h-defenders" id="defenders" data-tab="defense" hidden>
+    <div class="dz">
+      <div class="dz-top">
+        <div class="dz-title">
+          <p class="kicker" id="dzKicker">Defense</p>
+          <h2 id="h-defenders" class="cast">The <em>Wall</em></h2>
+          <p class="dz-lede">Every brick is a defender, lit by how hard he is to score on. Gold bricks won Defensive Player of the Year; a silver edge means All-Defense. Pick one to see his crest.</p>
+        </div>
+        <div class="dz-ctl">
+          <div><span class="label" id="dzRankL">Build the wall by</span><div class="dz-chips" id="dzRank" role="group" aria-labelledby="dzRankL"></div></div>
+          <div><span class="label" id="dzPosL">Position</span><div class="dz-chips" id="dzPos" role="group" aria-labelledby="dzPosL"></div></div>
+        </div>
       </div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Defender</th><th class="r sort" data-k="n" title="Shots defended">Shots</th><th class="r sort" data-k="fg">Opp. FG%</th>
-          <th class="r sort" data-k="rim" title="Change in rim share vs an average defender (pct. points)">Rim</th><th class="r sort" data-k="mid" title="Change in mid-range share vs an average defender (pct. points)">Mid</th><th class="r sort" data-k="three" title="Change in 3-point share vs an average defender (pct. points)">3PT</th><th class="r sort on" data-k="pps">Pts / shot</th></tr></thead>
-        <tbody id="dTable"></tbody></table></div>
+      <div class="dz-wall" id="dzWall" aria-label="The wall: defenders ranked, best at the top"></div>
+      <p class="dz-foot" id="dzFoot"></p>
+    </div>
+
+    <div class="panel dz-card" id="dzCard">
+      <div class="field"><label class="label" for="dzFind">Find a defender</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="dzFind" placeholder="Search defenders…" autocomplete="off" spellcheck="false"></div></div></div>
+      <div class="dz-grid">
+        <div class="dz-crest" id="dzCrest"></div>
+        <div id="dzReport"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="dzRayPanel" style="display:grid;gap:12px">
+      <div class="dz-ray-head"><h3 id="dzRayT">Stars he shrank</h3>
+        <p class="dz-ray-keys"><span><i class="ring"></i>what the scorer usually scores</span><span><i class="in"></i>what he scored against this defender</span></p></div>
+      <p class="dz-ray-sum" id="dzRaySum"></p>
+      <div class="dz-ray" id="dzRay"></div>
     </div>
   </section>
 
@@ -1698,6 +1862,13 @@ h3.co-side.def::before { background: var(--base); }
           </div>
           <div class="co-pane" id="coDefPlan" role="tabpanel" aria-labelledby="coTabDef" hidden>
             <div class="co-tiles" id="coDefTiles"></div>
+            <div class="co-sec" id="csSec" hidden>
+              <div class="co-sh"><h3>Coverage scheme</h3><span class="q-slot" data-q="m:scheme"></span><p>An estimate of how the defense plays screens: whether its big drops back, steps up or switches, against the league that season</p></div>
+              <div class="cs-wrap">
+                <svg class="cs-map" id="csMap" viewBox="0 0 320 320" role="img" aria-label="Defensive coverage map: aggression across, switching up"></svg>
+                <div class="cs-side"><div class="cs-verdict" id="csVerdict"></div><div class="cs-bars" id="csBars"></div></div>
+              </div>
+            </div>
             <div class="co-sec" id="coDefBook">
               <div class="co-sh"><h3>What opponents run against them</h3><span class="q-slot" data-q="m:playbookDef"></span><p>How opponents' possessions ended, and how well it worked for them</p></div>
               <div class="co-cards co-def" id="coDefCards"></div>
@@ -1758,7 +1929,7 @@ h3.co-side.def::before { background: var(--base); }
   <section id="h2h" aria-labelledby="h-h2h" data-tab="h2h" hidden>
     <div class="sec-head">
       <h2 id="h-h2h" class="cast">Head to head</h2>
-      <p class="caption" id="h2hCap">Pick any two players. A dot marks who's ahead in each category. Minutes and games played are shown for context and don't count toward the score.</p>
+      <p class="caption" id="h2hCap">Pick any two players. The chip by a number shows who's ahead in that category and by how much. Minutes, games and fouls are shown for context and don't count toward the score.</p>
     </div>
     <div class="panel h2h-pick">
       <div class="field"><label class="label" for="h2hA">Player 1</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="h2hA" placeholder="Search players…" autocomplete="off" spellcheck="false"></div></div></div>
@@ -1772,6 +1943,11 @@ h3.co-side.def::before { background: var(--base); }
     <div class="h2h-face" id="h2hFace"></div>
     <p class="h2h-verdict" id="h2hVerdict"></p>
     <div class="panel h2h-board" id="h2hBoard"></div>
+    <div class="h2h-share">
+      <button type="button" class="go" id="h2hSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Save image</button>
+      <button type="button" id="h2hCopy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy image</button>
+      <span class="caption" id="h2hShareMsg" role="status"></span>
+    </div>
   </section>
 
   <section aria-labelledby="h-quality" data-tab="model">
@@ -2735,20 +2911,6 @@ function runSim() {
     barRow(ZN[z], sim.pz[i], base.pz[i], pct(sim.pz[i], 0), pct(sim.pm[i], 0), { max: mx })).join("");
 }
 
-/* defenders table */
-let dSort = "pps", dAsc = true;
-function renderDefTable() {
-  const m = nameOrTeam($("dFilter").value), min = +$("dMin").value;
-  const rows = SH.defenders.filter(d => d.n >= min && m(d.name, playerTeam(d.id)));
-  const key = d => dSort === "n" ? d.n : dSort === "fg" ? (d.fg ?? 1) : d.effect[dSort];
-  rows.sort((a, b) => (dAsc ? 1 : -1) * (key(a) - key(b)));
-  $("dTable").innerHTML = rows.slice(0, 40).map(d => `<tr class="jump" data-id="${d.id}" tabindex="0"><td>${playerTeam(d.id) ? `<span class="team-tag">${playerTeam(d.id)}</span>` : ""}${esc(d.name)}</td><td class="r">${d.n.toLocaleString()}</td><td class="r">${d.fg == null ? "–" : pct(d.fg)}</td>
-    <td class="r">${pp(d.effect.rim)}</td><td class="r">${pp(d.effect.mid)}</td><td class="r">${pp(d.effect.three)}</td>
-    <td class="r ${d.effect.pps < -0.0005 ? "up" : d.effect.pps > 0.0005 ? "down" : ""}" style="font-weight:600">${d.effect.pps >= 0 ? "+" : "−"}${Math.abs(d.effect.pps).toFixed(3)}</td></tr>`).join("")
-    || `<tr><td colspan="7" class="caption">No defenders match. Lower the minimum shots or clear the search.</td></tr>`;
-  document.querySelectorAll("#defenders th.sort").forEach(th => th.classList.toggle("on", th.dataset.k === dSort));
-}
-
 /* ---------- offense and defense play blocks: a team season (coaches) or a player's career (tendencies) ----------
    A unit holds regular-season totals (export_tracking.py): Synergy play types as [possessions, points], tracking actions as
    [count, points, makes, attempts], hustle counts, and [makes, attempts, expected makes] for opponents at the rim and from three.
@@ -2898,6 +3060,7 @@ const QM = {  // numbers and sections
   rim: ["At the rim", "Shots in the restricted area, the half circle 4 feet from the basket."],
   types: ["Shot types", "Layups, dunks, floaters, hooks, mid-range jumpers and threes, from the play-by-play description and the shot's distance."],
   styles: ["Shot styles", "How the shot was created: off the catch, a pull-up, a step-back, a drive, a cut. Counted in road games only, because each arena's scorer labels styles differently."],
+  scheme: ["Coverage scheme", "No public data labels coverages, so this is an estimate. Up the map: how often a scorer's defender changes during a game (NBA.com matchup tracking), which rises with switching and zone. Across: how far the defense comes out on pick-and-rolls, from the turnovers it forces on them, the pull-up jumpers and rim shots it gives up, and how often the screener finishes the play. It puts the Bucks with Brook Lopez and the Jazz and Wolves with Rudy Gobert in Drop, the 2021-24 Celtics in Switch, and Nick Nurse's Raptors in Pressure / zone, but it can't tell zone from switching. Starts in 2017-18, when matchup tracking began."],
 };
 function qBtn(key, label, side) {
   return `<button type="button" class="q" data-q="${key}"${side ? ` data-side="${side}"` : ""} aria-label="What is ${esc(label)}?">?</button>`;
@@ -3151,6 +3314,52 @@ function coCourt(u, L) {  // opponents' FG% in each court zone, coloured against
     `<span>Big: opponents' FG%. Small: points vs league.</span>`;
 }
 
+/* the coverage scheme: an estimate (export_coach_scheme.py), since no public feed labels drop, switch or zone. Each team season sits
+   on two axes, z-scores among the 30 teams that season: s = scramble (how often a scorer's defender changes), a = aggression (how far
+   the defense comes out on the pick-and-roll). f / p: the signals behind them and their percentiles, in CS.features order. */
+const CS = DATA.coachScheme || null;
+const CS_Q = [  // index: (aggressive ? 1 : 0) + (scrambled ? 2 : 0)
+  ["Drop", "The big sinks toward the rim on pick-and-rolls and defenders stay with their men: protects the paint, gives up pull-up jumpers."],
+  ["Hedge / blitz", "Bigs step up to the ball handler or trap him while matchups mostly hold: forces turnovers, leaves the roll man and the rim open."],
+  ["Switch", "Defenders swap men on screens instead of fighting through them: keeps the ball in front, invites isolations against mismatches."],
+  ["Pressure / zone", "Matchups change often and the defense comes out to the ball: switching with ball pressure, traps, scrambling rotations or zone. The data can't tell zone from switching."],
+];
+const CS_F = {  // feature: [label, what it measures, value format, true if a high value means switching / scrambling rather than more of it]
+  hhi: ["Defender changes", "how often a scorer's defender changes in a game", null, true],
+  bh_tov: ["Pick-and-roll turnovers forced", "of ball-handler plays end in a turnover", v => pct(v)],
+  pu_mid: ["Pull-up mid-range allowed", "of opponents' shots (road games)", v => pct(v)],
+  rim: ["Rim shots allowed", "of opponents' shots are layups or dunks", v => pct(v)],
+  rm_freq: ["Roll-man plays allowed", "of opponents' plays finish with the screener, who rolls free against a drop", v => pct(v)],
+};
+const csXY = u => [160 + Math.max(-2.6, Math.min(2.6, u.a)) * 54, 160 - Math.max(-2.6, Math.min(2.6, u.s)) * 54];
+function csRender(key, u, c) {
+  const [season, team] = key.split("|"), q = (u.a > 0 ? 1 : 0) + (u.s > 0 ? 2 : 0);
+  const same = Object.keys(CS.units).filter(k => k.startsWith(season + "|")).map(k => CS.units[k]);
+  const rankS = 1 + same.filter(x => x.s > u.s).length, rankA = 1 + same.filter(x => x.a > u.a).length, n = same.length;
+  const mine = c.stints.map(st => `${st.season}|${st.team}`).filter(k => k !== key && CS.units[k]);
+  const quad = [[0, 160, 0], [160, 160, 1], [0, 0, 2], [160, 0, 3]];  // [x, y, CS_Q index]: aggressive on the right, scrambled on top
+  $("csMap").innerHTML =
+    quad.map(([x, y, i]) => `<rect class="q-bg${i === q ? " on" : ""}" x="${x}" y="${y}" width="160" height="160"/>`).join("") +
+    `<line class="ax" x1="160" y1="0" x2="160" y2="320"/><line class="ax" x1="0" y1="160" x2="320" y2="160"/>` +
+    quad.map(([x, y, i]) => `<text class="qd${i === q ? " on" : ""}" x="${x + (i % 2 ? 152 : 8)}" y="${y + (i < 2 ? 150 : 18)}" text-anchor="${i % 2 ? "end" : "start"}">${CS_Q[i][0]}</text>`).join("") +
+    `<text class="axl" x="8" y="174">Conservative</text><text class="axl" x="312" y="174" text-anchor="end">Aggressive</text>` +
+    `<text class="axl" x="155" y="8" text-anchor="end" transform="rotate(-90 155 8)">Switch / scramble</text>` +
+    `<text class="axl" x="155" y="312" transform="rotate(-90 155 312)">Locked matchups</text>` +
+    same.map(x => { const [cx, cy] = csXY(x); return `<circle class="lg" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5"/>`; }).join("") +
+    mine.map(k => { const [cx, cy] = csXY(CS.units[k]), [ss, tt] = k.split("|");
+      return `<circle class="mine" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5"><title>${esc(tt)} ${ss}</title></circle>`; }).join("") +  // a coach's seasons often cluster, so only the selected one is labelled
+    (([cx, cy]) => `<circle class="me" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="7"/><text class="tag" x="${(cx + 10).toFixed(1)}" y="${(cy + 4).toFixed(1)}">${esc(team)} ${season.slice(2)}</text>`)(csXY(u));
+  const d = Math.hypot(u.a, u.s), how = d < 0.35 ? "Balanced" : `${d > 1 ? "" : "Leans "}${CS_Q[q][0]}`;
+  $("csVerdict").innerHTML = `<span class="label">${esc(team)} ${season} · estimated</span><b>${how}</b>` +
+    `<p>${d < 0.35 ? "Close to the league's middle on both axes: no one coverage stands out." : CS_Q[q][1]}</p>` +
+    `<small>${nth(rankS)} of ${n} in defender changes · ${nth(rankA)} of ${n} in aggression</small>` +
+    `<small>Grey dots: the other teams that season${mine.length ? ". Rings: his other seasons (hover for which)" : ""}.</small>`;
+  $("csBars").innerHTML = CS.features.map((k, i) => {
+    const [lbl, sub, fmt, flip] = CS_F[k], p = flip ? 1 - u.p[i] : u.p[i], r = 1 + Math.round((1 - p) * (n - 1));
+    return `<div class="cs-row"><span>${lbl}</span><em>${nth(r)} of ${n}</em><div class="cs-bar"><i style="width:${(p * 100).toFixed(1)}%"></i><em></em></div>` +
+      `<small>${fmt ? fmt(u.f[i]) + " " : ""}${sub}</small></div>`;
+  }).join("");
+}
 function coRender() {
   const c = coById(co.sel);
   if (!c) return;
@@ -3210,6 +3419,9 @@ function coRender() {
   // defensive game plan: what opponents shoot on every kind of shot
   $("coDefTiles").hidden = $("coDefShots").hidden = !du;
   $("coDefMore").hidden = !du && !u && !sc;
+  const cu = key && CS && CS.units[key];
+  $("csSec").hidden = !cu;
+  if (cu) csRender(key, cu, c);
   if (du) {
     $("coDefTiles").innerHTML = coDefTiles(du, dL, s.season);
     coCourt(du, dL);
@@ -3293,7 +3505,7 @@ function initCoaches() {
 
 function initPlayers() {
   if (!SH) return;
-  ["players", "defenders"].forEach(id => $(id).hidden = false);
+  $("players").hidden = false;
   document.querySelectorAll(".nav .needs-shots").forEach(a => a.hidden = false);
   const M2 = SH.metrics, better = M2.zone_nll < M2.zone_nll_player;
   $("plCaption").innerHTML = `${SH.n_shots.toLocaleString()} shots · ${SH.seasons.length > 2 ? `${SH.seasons[0]} to ${SH.seasons.at(-1)}` : SH.seasons.join(", ")}` +
@@ -3314,19 +3526,11 @@ function initPlayers() {
   ["simDef", "simCoach", "simQ", "simM"].forEach(id => $(id).addEventListener("input", runSim));
   $("zoneBars").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; const z = +b.dataset.z; zoneFocus = zoneFocus === z ? null : z; renderDots(); renderZoneBars(); });
   const loadDef = id => { if (!SH.defenders.some(d => d.id === id)) return; $("simDef").value = String(id); runSim(); $("simPanel").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); };
-  for (const tb of ["faced", "dTable"]) {
+  for (const tb of ["faced"]) {
     $(tb).addEventListener("click", e => { const tr = e.target.closest("tr[data-id]"); if (tr) loadDef(+tr.dataset.id); });
     $(tb).addEventListener("keydown", e => { const tr = e.target.closest("tr[data-id]"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); loadDef(+tr.dataset.id); } });
   }
-  document.querySelectorAll("#defenders th.sort").forEach(th => th.addEventListener("click", () => {
-    if (dSort === th.dataset.k) dAsc = !dAsc; else { dSort = th.dataset.k; dAsc = th.dataset.k !== "n"; }
-    renderDefTable();
-  }));
-  $("dFilter").addEventListener("input", renderDefTable); $("dMin").addEventListener("change", renderDefTable);
-  if (!SH.defenders.some(d => d.n >= 300)) $("dMin").value = "0";
-  selSeg($("dMin"));
   if (SH.players.length) renderPlayer(SH.players[0]);
-  renderDefTable();
 }
 
 /* ---------- player profiles ---------- */
@@ -5204,7 +5408,8 @@ function homeInit() {
   const TOUR = {
     shots: ["Every shot, hot and cold, against the league.", "card-shots"],
     matchups: ["Who guards whom, and what it does to the scorer.", "card-matchups"],
-    players: ["Tendencies, defenders and the matchup simulator.", "card-players"],
+    players: ["Tendencies and the matchup simulator.", "card-players"],
+    defense: ["The league's best defenders, built into a wall.", null, () => dz.pool.length ? [...dz.pool].sort((a, b) => b.score - a.score).slice(0, 3).map(x => pfHead(x.id, "260x190")) : []],
     coaches: ["Every head coach: rings, awards, and how his teams play.", null, () => CO ? CO.coaches.filter(c => c.now && c.photos[0] && c.photos[0].includes("cdn.nba.com"))
       .sort((a, b) => b.titles - a.titles || (b.career.w || 0) - (a.career.w || 0)).slice(0, 3).map(c => coSmall(c.photos[0])) : []],
     fantasy: ["Fantasy points per game, by season and team.", null, () => {
@@ -5317,37 +5522,185 @@ function h2hCard(pid, s, col) {
       <span class="meta">${esc(bio)}</span><span class="meta">${esc(when)}</span>
       ${acc.length ? `<div class="h2h-acc">${acc.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}</div></div>`;
 }
-function h2hRender() {
+function h2hModel() {  // everything both the page and the saved image draw: the two lines, their colors, and one entry per row
   const key = h2h.season, sa = h2hLine(h2h.a, key), sb = h2hLine(h2h.b, key), L = h2hLeague(key), per36 = h2h.mode === "36";
   const rate = s => x => (per36 ? h2hDiv(x * 36, s.min) : h2hDiv(x, s.gp));
   const [ca, cb] = h2hColors(pfTeam(sa ? sa.team : PF.players[h2h.a].team), pfTeam(sb ? sb.team : PF.players[h2h.b].team));
-  let wa = 0, wb = 0, html = "";
+  let wa = 0, wb = 0;
+  const rows = [];
   for (const [grp, label, val, fmt, better, detail, note] of H2H_ROWS) {
     if (label === "Minutes" && per36) continue;
-    if (grp) html += `<div class="h2h-grp">${grp}</div>`;
     const va = sa ? val(sa, rate(sa)) : null, vb = sb ? val(sb, rate(sb)) : null;
     // compare what the reader sees: 24.96 and 25.04 both read 25.0, a tie
     const na = va == null ? null : parseFloat(fmt(va)), nb = vb == null ? null : parseFloat(fmt(vb));
-    let win = "";
-    if (better && na != null && nb != null && na !== nb) { win = (na > nb) === (better > 0) ? "a" : "b"; if (win === "a") wa++; else wb++; }
-    const max = Math.max(Math.abs(va || 0), Math.abs(vb || 0)) || 1;
+    let win = "", diff = null;
+    if (na != null && nb != null) {
+      if (better && na !== nb) { win = (na > nb) === (better > 0) ? "a" : "b"; if (win === "a") wa++; else wb++; }
+      // the differential sits by the leader (the higher number, for context rows): "+7.4", or "−0.9" when fewer is better
+      const lead = win || (na === nb ? "" : na > nb ? "a" : "b"), dec = (fmt(va).match(/\.(\d+)/) || [, ""])[1].length;
+      const d = Math.abs(na - nb), sign = (lead === "a" ? na > nb : nb > na) ? "+" : "−";
+      diff = lead ? { side: lead, text: sign + d.toFixed(dec), win: !!win,
+        title: fmt === h2hPct ? `${d.toFixed(dec)} percentage points` : Math.min(na, nb) > 0 ? `${Math.round(d / Math.min(na, nb) * 100)}% more` : "" } : { side: "", text: "Even" };
+    }
     const lg = L && (fmt === h2hPct ? val(L) : per36 && better && fmt === f1 ? val(L, x => h2hDiv(x * 36, L.min)) : null);
     const sub = [fmt === f1 && label !== "Minutes" ? (per36 ? "per 36" : "per game") : "", note, lg != null ? `league ${fmt(lg)}` : ""].filter(Boolean).join(" · ");
-    const side = (cls, v, s, c, w) => `<div class="h2h-side ${cls}${w ? " win" : ""}" style="--c:${c}">
-      <span class="h2h-v">${v == null ? `<b>—</b>` : `<b>${fmt(v)}</b>`}${v != null && detail ? `<small>${detail(s)}</small>` : ""}</span>
-      <span class="h2h-bar" aria-hidden="true"><i style="width:${v == null ? 0 : (Math.abs(v) / max * 100).toFixed(1)}%"></i></span></div>`;
-    html += `<div class="h2h-row${better ? "" : " ctx"}">${side("a", va, sa, ca, win === "a")}<div class="h2h-lab"><b>${label}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</div>${side("b", vb, sb, cb, win === "b")}</div>`;
+    rows.push({ grp, label, sub, better, win, diff, max: Math.max(Math.abs(va || 0), Math.abs(vb || 0)) || 1,
+      a: va == null ? null : { v: va, text: fmt(va), detail: detail ? detail(sa) : "" }, b: vb == null ? null : { v: vb, text: fmt(vb), detail: detail ? detail(sb) : "" } });
   }
-  $("h2hBoard").innerHTML = html;
-  const n = H2H_ROWS.filter(r => r[4]).length, la = h2hLast(h2h.a), lb = h2hLast(h2h.b);
+  const n = rows.filter(r => r.better).length;
+  const when = h2hIsCar(key) ? (key === H2H_CAR ? "over their regular-season careers" : "over their playoff careers") : `in ${key}`;
+  const verdict = !sa || !sb ? null : wa === wb ? `Dead even ${when}: ${wa} categories each${n - wa - wb ? `, ${n - wa - wb} tied` : ""}.`
+    : `${wa > wb ? pfName(h2h.a) : pfName(h2h.b)} leads ${Math.max(wa, wb)}–${Math.min(wa, wb)} ${when}${n - wa - wb ? ` (${n - wa - wb} tied)` : ""}.`;
+  return { key, sa, sb, ca, cb, wa, wb, n, rows, when, verdict, per36 };
+}
+function h2hRender() {
+  const M = h2hModel(), { sa, sb, ca, cb, wa, wb } = M;
+  const chip = (r, s) => r.diff && r.diff.side === s ? `<span class="h2h-diff${r.diff.win ? "" : " ctx"}"${r.diff.title ? ` title="${r.diff.title}"` : ""}>${r.diff.text}</span>` : "";
+  const side = (r, s, c) => { const x = r[s]; return `<div class="h2h-side ${s}${r.win === s ? " win" : ""}" style="--c:${c}">
+      <span class="h2h-v">${x ? `<span class="h2h-n"><b>${x.text}</b>${chip(r, s)}</span>${x.detail ? `<small>${x.detail}</small>` : ""}` : `<span class="h2h-n"><b>—</b></span>`}</span>
+      <span class="h2h-bar" aria-hidden="true"><i style="width:${x ? (Math.abs(x.v) / r.max * 100).toFixed(1) : 0}%"></i></span></div>`; };
+  $("h2hBoard").innerHTML = M.rows.map(r => (r.grp ? `<div class="h2h-grp">${r.grp}</div>` : "") +
+    `<div class="h2h-row${r.better ? "" : " ctx"}">${side(r, "a", ca)}<div class="h2h-lab"><b>${r.label}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ""}${r.diff && !r.diff.side ? `<span class="h2h-diff even">Even</span>` : ""}</div>${side(r, "b", cb)}</div>`).join("");
   $("h2hFace").innerHTML = h2hCard(h2h.a, sa, ca) + `<div class="h2h-mid"><span class="vs">VS</span>
       ${sa && sb ? `<span class="score" aria-label="${wa} categories to ${wb}"><span class="${wa >= wb ? "lead" : "trail"}">${wa}</span><i>–</i><span class="${wb >= wa ? "lead" : "trail"}">${wb}</span></span><span class="label">categories won</span>` : ""}</div>` + h2hCard(h2h.b, sb, cb);
-  const when = h2hIsCar(key) ? (key === H2H_CAR ? "over their regular-season careers" : "over their playoff careers") : `in ${key}`;
-  $("h2hVerdict").innerHTML = !sa || !sb ? `<b>${esc(!sa ? pfName(h2h.a) : pfName(h2h.b))}</b> has no games ${esc(when)}. Pick a season they both played.`
-    : wa === wb ? `Dead even ${esc(when)}: ${wa} categories each${n - wa - wb ? `, ${n - wa - wb} tied` : ""}.`
-    : `<b>${esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b))}</b> leads ${Math.max(wa, wb)}–${Math.min(wa, wb)} ${esc(when)}${n - wa - wb ? ` (${n - wa - wb} tied)` : ""}.`;
+  $("h2hVerdict").innerHTML = M.verdict ? esc(M.verdict).replace(esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b)), s => wa === wb ? s : `<b>${s}</b>`)
+    : `<b>${esc(!sa ? pfName(h2h.a) : pfName(h2h.b))}</b> has no games ${esc(M.when)}. Pick a season they both played.`;
+  $("h2hSave").disabled = $("h2hCopy").disabled = !(sa && sb);
+  $("h2hShareMsg").textContent = "";
   $("h2hA").placeholder = pfName(h2h.a); $("h2hB").placeholder = pfName(h2h.b);
   if (curTab === "h2h") try { history.replaceState(null, "", `#/h2h/${h2h.a}-${h2h.b}`); } catch (e) {}
+}
+
+/* the shareable image: drawn straight onto a canvas rather than screenshotting the page, because NBA.com's headshots and logos
+   don't allow cross-origin reads (a canvas holding them can't be saved). Basketball-Reference's headshots do, so the image uses those. */
+const h2hBrefHead = pid => new Promise(res => {
+  const id = PF.players[pid] && PF.players[pid].bref;
+  if (!id) return res(null);
+  const im = new Image();
+  im.crossOrigin = "anonymous";
+  im.onload = () => res(im); im.onerror = () => res(null);
+  setTimeout(() => res(null), 6000);
+  im.src = `https://www.basketball-reference.com/req/202106291/images/headshots/${id}.jpg`;
+});
+function h2hRound(g, x, y, w, h, r) { g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, r) : g.rect(x, y, w, h); }
+function h2hFit(g, text, max) {  // shrink the current font until text fits
+  let size = parseFloat(g.font.match(/(\d+(?:\.\d+)?)px/)[1]);
+  while (g.measureText(text).width > max && size > 10) { size -= 1; g.font = g.font.replace(/\d+(?:\.\d+)?px/, size + "px"); }
+}
+async function h2hImage() {
+  const M = h2hModel(), css = getComputedStyle(document.documentElement), tok = n => css.getPropertyValue(n).trim();
+  const C = { bg: tok("--bg"), surface: tok("--surface"), ink: tok("--ink"), ink2: tok("--ink-2"), muted: tok("--muted"), line: tok("--line"), soft: tok("--accent-soft"), brand: tok("--model") };
+  const DISP = '"Barlow Condensed", "Arial Narrow", sans-serif', LAB = '"Barlow Semi Condensed", "Barlow", sans-serif', BODY = '"Barlow", -apple-system, sans-serif';
+  await Promise.all([`italic 800 40px ${DISP}`, `700 20px ${DISP}`, `600 14px ${LAB}`, `500 14px ${BODY}`].map(f => document.fonts.load(f).catch(() => {})));
+  const heads = await Promise.all([h2hBrefHead(h2h.a), h2hBrefHead(h2h.b)]);
+  const W = 1080, pad = 48, cardY = 132, cardH = 318, boardY = cardY + cardH + 66, rowH = 50, grpH = 36;
+  const boardH = 24 + M.rows.reduce((t, r) => t + rowH + (r.grp ? grpH : 0), 0), H = boardY + boardH + 64, S = 2;
+  const cv = document.createElement("canvas"); cv.width = W * S; cv.height = H * S;
+  const g = cv.getContext("2d"); g.scale(S, S); g.textBaseline = "alphabetic";
+  const text = (t, x, y, font, color, align = "left", max) => { g.font = font; g.fillStyle = color; g.textAlign = align; if (max) h2hFit(g, t, max); g.fillText(t, x, y); };
+  g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+
+  // header
+  text("HEAD TO HEAD", pad, 74, `italic 800 50px ${DISP}`, C.ink);
+  g.font = `italic 800 30px ${DISP}`; const sW = g.measureText("s").width;
+  text("s", W - pad, 70, g.font, C.brand, "right"); text("HOMER", W - pad - sW, 70, g.font, C.ink, "right");
+  const season = h2hIsCar(M.key) ? (M.key === H2H_CAR ? "Career · regular season" : "Career · playoffs") : M.key;
+  text(`${season} · ${M.per36 ? "per 36 minutes" : "per game"}`.toUpperCase(), pad, 104, `600 15px ${LAB}`, C.muted);
+  g.fillStyle = C.ink; g.fillRect(pad, 118, W - 2 * pad, 3);
+
+  // the two players, each in his own team's colors, headshot on top
+  const mid = 170, cw = (W - 2 * pad - mid) / 2;
+  [[h2h.a, M.sa, pad, heads[0]], [h2h.b, M.sb, W - pad - cw, heads[1]]].forEach(([pid, s, x, img]) => {
+    const P = PF.players[pid], b = P.bio || {}, tri = s ? s.team : P.team, [tname, c1, c2] = pfTeam(tri);
+    g.save(); h2hRound(g, x, cardY, cw, cardH, 12); g.clip();
+    g.fillStyle = c1; g.fillRect(x, cardY, cw, cardH);
+    const shade = g.createLinearGradient(x, cardY, x + cw * .6, cardY + cardH);  // the page cards' fade from team color toward black
+    shade.addColorStop(0, "rgb(0 0 0 / 0)"); shade.addColorStop(1, "rgb(0 0 0 / .45)");
+    g.fillStyle = shade; g.fillRect(x, cardY, cw, cardH);
+    g.fillStyle = c2; g.fillRect(x, cardY + cardH - 6, cw, 6);
+    const hh = 186, hw = hh * 2 / 3, hx = x + (cw - hw) / 2, hy = cardY + 20;
+    h2hRound(g, hx, hy, hw, hh, 10); g.fillStyle = "rgb(255 255 255 / .12)"; g.fill();
+    if (img) { g.save(); h2hRound(g, hx, hy, hw, hh, 10); g.clip(); g.drawImage(img, hx, hy, hw, hh); g.restore(); }
+    else text(pfInitials(P.name), x + cw / 2, hy + hh / 2 + 22, `800 64px ${DISP}`, "rgb(255 255 255 / .5)", "center");
+    text(P.name.toUpperCase(), x + cw / 2, cardY + 248, `italic 800 34px ${DISP}`, "#fff", "center", cw - 28);
+    text([tname || tri, b.pos && (PF_POS[b.pos] || b.pos), b.num && `#${b.num}`].filter(Boolean).join(" · "), x + cw / 2, cardY + 274, `600 15px ${LAB}`, "rgb(255 255 255 / .9)", "center", cw - 28);
+    text(!s ? "Didn't play" : `${h2hIsCar(M.key) ? `${s.n} ${s.n === 1 ? "season" : "seasons"}` : M.key} · ${s.gp} games`, x + cw / 2, cardY + 296, `600 14px ${LAB}`, "rgb(255 255 255 / .75)", "center", cw - 28);
+    g.restore();
+  });
+  const cx = W / 2;
+  text("VS", cx, cardY + 112, `italic 800 26px ${DISP}`, C.muted, "center");
+  g.font = `800 66px ${DISP}`; const dash = "–", wA = String(M.wa), wB = String(M.wb), dw = g.measureText(dash).width + 12;
+  text(wA, cx - dw / 2, cardY + 182, g.font, M.wa >= M.wb ? C.ink : C.muted, "right");
+  text(dash, cx, cardY + 182, g.font, C.line, "center");
+  text(wB, cx + dw / 2, cardY + 182, g.font, M.wb >= M.wa ? C.ink : C.muted, "left");
+  text("CATEGORIES WON", cx, cardY + 208, `600 13px ${LAB}`, C.muted, "center");
+  if (M.verdict) text(M.verdict, cx, cardY + cardH + 40, `600 18px ${BODY}`, C.ink2, "center", W - 2 * pad);
+
+  // the board: value, differential chip by the leader, a bar toward the middle, the category in the middle
+  h2hRound(g, pad, boardY, W - 2 * pad, boardH, 12); g.fillStyle = C.surface; g.fill(); g.strokeStyle = C.line; g.lineWidth = 1; g.stroke();
+  const inL = pad + 24, inR = W - pad - 24, labW = 190, barIn = 168, barH = 10;
+  let y = boardY + 12;
+  for (const r of M.rows) {
+    if (r.grp) {
+      text(r.grp.toUpperCase(), cx, y + 24, `600 13px ${LAB}`, C.muted, "center");
+      g.fillStyle = C.line; g.fillRect(inL, y + grpH - 4, inR - inL, 1);
+      y += grpH;
+    }
+    const base = y + 32;
+    [["a", M.ca, inL, "left", 1], ["b", M.cb, inR, "right", -1]].forEach(([s, c, edge, align, dir]) => {
+      const x = r[s], win = r.win === s;
+      // bar: from the value area to the label, filled from the middle outward
+      const b0 = dir > 0 ? inL + barIn : cx + labW / 2 + 14, b1 = dir > 0 ? cx - labW / 2 - 14 : inR - barIn, len = b1 - b0;
+      h2hRound(g, b0, base - 14, len, barH, 5); g.fillStyle = C.soft; g.fill();
+      if (x) {
+        const w = Math.abs(x.v) / r.max * len;
+        g.globalAlpha = !r.better ? .5 : win ? 1 : .35;
+        h2hRound(g, dir > 0 ? b1 - w : b0, base - 14, w, barH, 5); g.fillStyle = r.better ? c : C.muted; g.fill();
+        g.globalAlpha = 1;
+      }
+      g.font = `${win ? 800 : 600} 28px ${DISP}`;
+      const vt = x ? x.text : "—", vw = g.measureText(vt).width;
+      text(vt, edge, base, g.font, win ? C.ink : C.ink2, align);
+      if (x && x.detail) text(x.detail, edge, base + 16, `500 12px ${BODY}`, C.muted, align);
+      if (r.diff && r.diff.side === s) {
+        g.font = `700 14px ${DISP}`;
+        const tw = g.measureText(r.diff.text).width + 16, px = dir > 0 ? edge + vw + 8 : edge - vw - 8 - tw;
+        h2hRound(g, px, base - 19, tw, 22, 11);
+        g.globalAlpha = .2; g.fillStyle = r.diff.win ? c : C.muted; g.fill(); g.globalAlpha = 1;
+        g.strokeStyle = r.diff.win ? c : C.line; g.lineWidth = 1.5; g.stroke();
+        text(r.diff.text, px + tw / 2, base - 3, g.font, C.ink, "center");
+      }
+    });
+    text(r.label.toUpperCase(), cx, base - 6, `600 15px ${LAB}`, C.ink, "center", labW);
+    const sub = r.diff && !r.diff.side ? ["even", r.sub].filter(Boolean).join(" · ") : r.sub;
+    if (sub) text(sub, cx, base + 11, `500 12px ${BODY}`, C.muted, "center", labW + 20);
+    y += rowH;
+  }
+  text("HOMERs · stats from NBA play-by-play · chips show the lead in each category", pad, H - 26, `500 13px ${BODY}`, C.muted);
+  return new Promise((res, rej) => { try { cv.toBlob(b => (b ? res(b) : rej(new Error("empty image"))), "image/png"); } catch (e) { rej(e); } });
+}
+const h2hFile = () => `h2h-${[h2h.a, h2h.b].map(p => fold(pfName(p)).replace(/\s+/g, "-")).join("-vs-")}-${h2h.season}${h2h.mode === "36" ? "-per36" : ""}.png`;
+async function h2hShare(copy) {
+  const msg = $("h2hShareMsg"), btn = copy ? $("h2hCopy") : $("h2hSave");
+  btn.disabled = true; msg.textContent = "Making the image…";
+  try {
+    if (copy) {
+      // Safari wants the ClipboardItem built synchronously inside the click, with the image still a promise
+      // a clipboard that never answers (no click behind the call, a permission prompt left open) mustn't leave the button stuck
+      await Promise.race([navigator.clipboard.write([new ClipboardItem({ "image/png": h2hImage() })]),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("clipboard timed out")), 10000))]);
+      msg.textContent = "Copied. Paste it anywhere.";
+    } else {
+      const url = URL.createObjectURL(await h2hImage()), a = document.createElement("a");
+      a.href = url; a.download = h2hFile(); document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      msg.textContent = `Saved ${a.download}`;
+    }
+  } catch (e) {
+    console.error(e);
+    msg.textContent = copy ? "Your browser blocked copying images. Use Save image instead." : "Couldn't make the image.";
+  }
+  btn.disabled = false;
 }
 function h2hSet(a, b) {
   h2h.a = a; h2h.b = b;
@@ -5370,6 +5723,8 @@ function initH2H() {
   playerSearch($("h2hA"), { items: () => items.filter(it => it.id !== h2h.b), pick: it => h2hSet(it.id, h2h.b), top: "Most minutes", browse: { rest: "No current team" } });
   playerSearch($("h2hB"), { items: () => items.filter(it => it.id !== h2h.a), pick: it => h2hSet(h2h.a, it.id), top: "Most minutes", browse: { rest: "No current team" } });
   $("h2hSwap").addEventListener("click", () => h2hSet(h2h.b, h2h.a));
+  $("h2hSave").addEventListener("click", () => h2hShare(false));
+  if (navigator.clipboard && window.ClipboardItem) $("h2hCopy").addEventListener("click", () => h2hShare(true)); else $("h2hCopy").hidden = true;
   $("h2hSeason").addEventListener("change", e => { h2h.season = e.target.value; h2hRender(); });
   $("h2hMode").addEventListener("click", e => {
     const btn = e.target.closest("button[data-m]");
@@ -5393,11 +5748,234 @@ function initH2H() {
   new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 }
 
+/* ---------- defense tab: the wall ----------
+   Every player with DZ_MIN regular-season minutes, rated on six axes, each a percentile among them (1 = best):
+   Lockdown and Contest from the matchup model (the points and FG% of the scorers he guards, after accounting for who they are),
+   Rim protection from NBA.com tracking (FG% at the rim against what those shooters usually make), Deterrence from the shot model
+   (how much he moves shots away from the rim), and blocks and steals per 36. The Wall rating is their weighted mean, 0 to 100. */
+const DZ_AX = [  // crest order, clockwise from the top
+  { k: "lock", name: "Lockdown", w: 2, low: true, tip: "Points per possession by the scorers he guards, from the matchup model" },
+  { k: "con", name: "Contest", w: 1.5, low: true, tip: "FG% of the scorers he guards, from the matchup model" },
+  { k: "rim", name: "Rim", w: 1, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking)" },
+  { k: "blk", name: "Blocks", w: 1, low: false, tip: "Blocks per 36 minutes" },
+  { k: "stl", name: "Steals", w: 1, low: false, tip: "Steals per 36 minutes" },
+  { k: "det", name: "Deter", w: .5, low: true, tip: "Change in the share of shots taken at the rim against him, from the shot model" },
+];
+const DZ_RANK = [["score", "Wall rating"], ["lock", "Lockdown"], ["con", "Contest"], ["rim", "Rim"], ["blk", "Blocks"], ["stl", "Steals"], ["hw", "Hardware"]];
+const DZ_POS = [["", "All"], ["G", "Guards"], ["F", "Wings"], ["C", "Bigs"]];
+const DZ_MIN = 4000, DZ_N = 60;
+const dz = { pool: [], byId: new Map(), rank: "score", pos: "", sel: null, cols: 0, tot: null, span: "" };
+const dzSg = (v, d = 1) => (v > 0.00001 ? "+" : v < -0.00001 ? "−" : "") + Math.abs(v).toFixed(d);
+const dzPosOf = pos => /C/.test(pos) ? "C" : pos.startsWith("G") ? "G" : pos ? "F" : "";
+const dzPct = p => nth(Math.max(1, Math.round(p * 100)));
+
+function dzBuild() {
+  const mi = new Map(MU ? MU.players.map((p, i) => [p.id, i]) : []);
+  const tr = new Map(SH ? SH.players.map(p => [+p.id, p.track]) : []);
+  const sd = new Map(SH ? SH.defenders.map(d => [d.id, d]) : []);
+  const sig = z => 1 / (1 + Math.exp(-z)), fg0 = MU ? sig(MU.b[3]) : 0;
+  const seasons = new Set();
+  for (const [k, P] of Object.entries(PF.players)) {
+    const id = +k; let min = 0, blk = 0, stl = 0;
+    for (const [s, r] of Object.entries(P.seasons || {})) if (!isPO(s)) { min += r.min || 0; blk += r.blk || 0; stl += r.stl || 0; seasons.add(s); }
+    if (min < DZ_MIN) continue;
+    const x = { id, name: P.name, team: P.team || playerTeam(id), pos: dzPosOf((P.bio && P.bio.pos) || ""), bio: P.bio || {}, min, v: { blk: blk / min * 36, stl: stl / min * 36 }, p: {} };
+    const i = mi.get(id);
+    if (i != null && MU.players[i].dp >= 2000) { const e = MU.def[i]; x.v.lock = Math.exp(e[0]) - 1; x.v.con = sig(MU.b[3] + e[3]) - fg0; x.dp = MU.players[i].dp; }
+    const t = tr.get(id);
+    if (t && t.rim) { const [m, a, xm] = t.rim[0]; if (a >= 300) { x.v.rim = (m - xm) / a; Object.assign(x, { rimFg: m / a, rimX: xm / a, rimA: a }); } }
+    if (t && t.hmin) x.defl = t.hus[0] / t.hmin * 36;
+    const d = sd.get(id);
+    if (d && d.n >= 500) x.v.det = d.effect.rim;
+    let dpoy = 0, alld = 0, best = 0;
+    for (const c of Object.values(P.aw || {})) for (const a of String(c).split(",")) {
+      const m = a.match(/^DPOY-(\d+)$/);
+      if (m) { if (+m[1] === 1) dpoy++; best = best ? Math.min(best, +m[1]) : +m[1]; } else if (/^DEF[12]$/.test(a)) alld++;
+    }
+    Object.assign(x, { dpoy, alld, best, hw: dpoy * 5 + alld });
+    dz.pool.push(x);
+  }
+  for (const { k, low } of DZ_AX) {  // worst first, so the index over the count is the percentile
+    const has = dz.pool.filter(x => x.v[k] != null).sort((a, b) => low ? b.v[k] - a.v[k] : a.v[k] - b.v[k]);
+    has.forEach((x, j) => { x.p[k] = has.length > 1 ? j / (has.length - 1) : .5; });
+  }
+  dz.pool = dz.pool.filter(x => Object.keys(x.p).length >= 4);
+  for (const x of dz.pool) {
+    let s = 0, w = 0;
+    for (const a of DZ_AX) if (x.p[a.k] != null) { s += a.w * x.p[a.k]; w += a.w; }
+    x.score = Math.round(s / w * 100);
+    dz.byId.set(x.id, x);
+  }
+  const ss = [...seasons].sort();
+  dz.span = ss.length ? `${ss[0].slice(0, 4)}–${ss.at(-1).slice(-2)}` : "";
+}
+
+function dzKey(x, k = dz.rank) { return k === "score" ? x.score : k === "hw" ? x.hw + x.score / 1000 : x.p[k]; }
+function dzList() {
+  return dz.pool.filter(x => (!dz.pos || x.pos === dz.pos) && dzKey(x) != null && (dz.rank !== "hw" || x.hw > 0)).sort((a, b) => dzKey(b) - dzKey(a));
+}
+function dzVal(x, k = dz.rank) {  // [value, unit] shown on a brick
+  const v = x.v;
+  return k === "score" ? [x.score, "Rating"] : k === "lock" ? [dzSg(v.lock * 100) + "%", "Pts allowed"] : k === "con" ? [dzSg(v.con * 100), "Opp. FG%"]
+    : k === "rim" ? [dzSg(v.rim * 100), "Rim FG%"] : k === "blk" ? [v.blk.toFixed(1), "Blk / 36"] : k === "stl" ? [v.stl.toFixed(1), "Stl / 36"]
+    : [x.dpoy ? `${x.dpoy}★ ${x.alld}` : x.alld, x.dpoy ? "DPOY · All-D" : "All-Defense"];
+}
+
+function dzWall(animate) {
+  const el = $("dzWall"), w = el.clientWidth;
+  if (!w) return;
+  const c = Math.max(2, Math.min(7, Math.floor(w / 160))), list = dzList().slice(0, c > 3 ? DZ_N : DZ_N / 2);  // a phone gets half the wall
+  dz.cols = c;
+  const keys = list.map(x => dzKey(x)), hi = Math.max(...keys), lo = Math.min(...keys);
+  const lit = x => hi > lo ? .18 + .82 * (dzKey(x) - lo) / (hi - lo) : 1;
+  let html = "", i = 0, row = 0;
+  while (i < list.length) {
+    const odd = row % 2 === 1, n = odd ? c - 1 : c, part = list.slice(i, i + n);
+    const bricks = part.map((x, j) => {
+      const [first, last] = pfSplitName(x.name), [val, unit] = dzVal(x), r = i + j + 1;
+      const cls = x.dpoy ? " gold" : x.alld ? " silver" : "";
+      const lab = `${r}. ${x.name}${x.team ? ", " + x.team : ""}: ${val} ${unit}${x.dpoy ? `, ${x.dpoy}× Defensive Player of the Year` : ""}${x.alld ? `, ${x.alld}× All-Defense` : ""}`;
+      return `<button type="button" class="dz-brick${cls}" data-id="${x.id}" style="--v:${lit(x).toFixed(2)};--i:${i + j}" aria-label="${esc(lab)}" title="${esc(x.name)}"${dz.sel === x.id ? ` aria-current="true"` : ""}>`
+        + `<span class="dz-b-t"><b>${esc(last)}</b><small>${r} · ${esc(first ? first[0] + "." : "")}${x.team ? " " + x.team : ""}</small></span><span class="dz-b-v">${val}<small>${unit}</small></span></button>`;
+    }).join("");
+    const fill = Array.from({ length: n - part.length }, () => `<span class="dz-half full"></span>`).join("");
+    html += `<div class="dz-row" style="--c:${2 * c}">${odd ? `<span class="dz-half"></span>` : ""}${bricks}${fill}${odd ? `<span class="dz-half"></span>` : ""}</div>`;
+    i += n; row++;
+  }
+  el.classList.toggle("laid", !animate);
+  el.innerHTML = html || `<p class="dz-lede">No defenders match.</p>`;
+}
+
+function dzCrest(x) {
+  const cx = 160, cy = 246, R = 88, n = DZ_AX.length;
+  const at = (j, r) => { const a = -Math.PI / 2 + j * 2 * Math.PI / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const poly = f => DZ_AX.map((_, j) => at(j, f(j)).map(v => v.toFixed(1)).join(",")).join(" ");
+  const rv = j => R * (.08 + .92 * (x.p[DZ_AX[j].k] ?? 0));
+  const tier = x.dpoy ? " gold" : x.alld ? " silver" : "";
+  const shield = "M160 8 L306 44 L306 224 C306 318 240 378 160 414 C80 378 14 318 14 224 L14 44 Z";
+  const stars = Array.from({ length: Math.min(x.dpoy, 6) }, (_, j) => {
+    const sx = cx + (j - (Math.min(x.dpoy, 6) - 1) / 2) * 16, sy = 104;
+    return `<path class="dz-c-star" transform="translate(${sx} ${sy}) scale(.55)" d="M0-10 2.9-3.1 10.3-3.1 4.4 1.4 6.5 8.6 0 4.4-6.5 8.6-4.4 1.4-10.3-3.1-2.9-3.1Z"/>`;
+  }).join("");
+  const labs = DZ_AX.map((a, j) => {
+    const [lx, ly] = at(j, R + 32), has = x.p[a.k] != null;
+    return `<text class="dz-c-lab${has ? "" : " na"}" x="${lx.toFixed(1)}" y="${(ly - 2).toFixed(1)}" text-anchor="middle"><title>${esc(a.tip)}</title>${a.name}<tspan class="pv" x="${lx.toFixed(1)}" dy="14">${has ? dzPct(x.p[a.k]) : "no data"}</tspan></text>`;
+  }).join("");
+  $("dzCrest").innerHTML = `<svg viewBox="0 0 320 422" role="img" aria-label="${esc(`${x.name}'s defensive crest: Wall rating ${x.score}. ` + DZ_AX.map(a => `${a.name} ${x.p[a.k] != null ? dzPct(x.p[a.k]) + " percentile" : "no data"}`).join(", "))}">
+    <path class="dz-c-shield${tier}" d="${shield}"/><path class="dz-c-inner" d="${shield}" transform="translate(160 211) scale(.93) translate(-160 -211)"/>
+    <text class="dz-c-k" x="160" y="38" text-anchor="middle">WALL RATING</text>
+    <text class="dz-c-score" x="160" y="84" text-anchor="middle">${x.score}</text>${stars}
+    ${[.25, .5, .75, 1].map(f => `<polygon class="dz-c-ring${f === .5 ? " mid" : ""}" points="${poly(() => R * (.08 + .92 * f))}"/>`).join("")}
+    ${DZ_AX.map((_, j) => { const [x2, y2] = at(j, R); return `<line class="dz-c-ring" x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join("")}
+    <polygon class="dz-c-area" points="${poly(rv)}"/>
+    ${DZ_AX.map((a, j) => x.p[a.k] == null ? "" : `<circle class="dz-c-dot" cx="${at(j, rv(j))[0].toFixed(1)}" cy="${at(j, rv(j))[1].toFixed(1)}" r="3.8"/>`).join("")}
+    ${labs}</svg>`;
+}
+
+function dzReport(x) {
+  const T = pfTeam(x.team), b = x.bio, P = PF.players[x.id] || {};
+  const hw = [x.dpoy ? `<span class="gold">${x.dpoy}× Defensive POY</span>` : x.best ? `<span>DPOY voting: best ${nth(x.best)}</span>` : "",
+    x.alld ? `<span class="silver">${x.alld}× All-Defense</span>` : ""].join("");
+  const bar = p => `<div class="dz-pbar${p >= .9 ? " elite" : ""}"><span><i style="width:${(p * 100).toFixed(0)}%"></i></span>${dzPct(p)} percentile</div>`;
+  const tile = (k, val, text, p) => `<div class="dz-tile"><span class="k">${k}</span><b>${val}</b><p>${text}</p>${p == null ? "" : bar(p)}</div>`;
+  const v = x.v, tiles = [
+    v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", "points per possession for the scorers he guards, after accounting for who they are.", x.p.lock),
+    v.con != null && tile("Contest", dzSg(v.con * 100), "FG% points for the scorers he guards, against an average defender.", x.p.con),
+    v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, x.p.rim),
+    tile("Stocks", (v.blk + v.stl).toFixed(1), `blocks and steals per 36 minutes: ${v.blk.toFixed(1)} blocks, ${v.stl.toFixed(1)} steals${x.defl ? `, plus ${x.defl.toFixed(1)} deflections` : ""}.`, (x.p.blk + x.p.stl) / 2),
+    v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", x.p.det),
+  ].filter(Boolean).slice(0, 4).join("");
+  const rank = [...dz.pool].sort((a, c) => c.score - a.score).findIndex(y => y.id === x.id) + 1;
+  const canSim = SH && SH.defenders.some(d => d.id === x.id);
+  $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
+      <div><p class="kicker" style="color:var(--model)">${nth(rank)} of ${dz.pool.length} defenders</p><h3 class="cast">${esc(x.name)}</h3>
+      <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes since ${dz.span.slice(0, 4)}`].filter(Boolean).map(esc).join(" · ")}</p>
+      ${hw ? `<div class="dz-hw">${hw}</div>` : ""}</div></div>
+    <div class="dz-tiles">${tiles}</div>
+    <div class="dz-act">${P.name ? `<button type="button" class="pf-open" data-pid="${x.id}">Player card ›</button>` : ""}${canSim ? `<button type="button" id="dzSim">Guard someone in the simulator ›</button>` : ""}</div>`;
+}
+
+function dzRay(x) {
+  $("dzRayPanel").hidden = !MU;
+  if (!MU) return;
+  const H = MU.h2h, W = MU.h2h_cols.length;
+  if (!dz.tot) {  // every scorer's points and possessions against everyone
+    dz.tot = new Map();
+    for (let i = 0; i < H.length; i += W) { const t = dz.tot.get(H[i]) || [0, 0]; t[0] += H[i + 2]; t[1] += H[i + 3]; dz.tot.set(H[i], t); }
+  }
+  const pairs = [];
+  let poss = 0, got = 0, exp = 0;
+  for (let i = 0; i < H.length; i += W) {
+    if (H[i + 1] !== x.id) continue;
+    const s = H[i], [tp, tg] = dz.tot.get(s), op = tp - H[i + 2];
+    if (op < 300) continue;
+    const usual = (tg - H[i + 3]) / op;  // his scoring against everyone else
+    poss += H[i + 2]; got += H[i + 3]; exp += usual * H[i + 2];
+    if (H[i + 2] >= 40 && tp >= 1500) pairs.push({ id: s, poss: H[i + 2], vs: H[i + 3] / H[i + 2] * 100, usual: usual * 100 });
+  }
+  $("dzRayT").textContent = `The stars ${pfSplitName(x.name)[1]} guarded`;
+  if (!poss) { $("dzRaySum").textContent = "No tracked matchups for him yet."; $("dzRay").innerHTML = ""; return; }
+  const show = pairs.sort((a, b) => b.poss - a.poss).slice(0, 30).sort((a, b) => b.usual - a.usual).slice(0, 10);
+  const sp = show.reduce((t, p) => t + p.poss, 0), sv = show.reduce((t, p) => t + p.vs * p.poss, 0) / sp, su = show.reduce((t, p) => t + p.usual * p.poss, 0) / sp;
+  const held = show.filter(p => p.vs < p.usual).length, d = sv / su - 1;
+  $("dzRaySum").innerHTML = show.length ? `<b>${held}</b> of these ${show.length} scored less than usual against him. Together they put up <b>${sv.toFixed(1)}</b> points per 100 matchup possessions on him, against the <b>${su.toFixed(1)}</b> they score on everyone else: <b class="${d < 0 ? "up" : "down"}">${dzSg(d * 100, 0)}%</b>.`
+    + tip(`NBA.com matchup tracking, ${MU.seasons[0]} to ${MU.seasons.at(-1)}: the biggest scorers among the 30 he guarded most (40+ possessions each). The dashed ring is the scorer's points per 100 possessions against every other defender; the photo is his points per 100 against this one. Raw results, not the model, so they don't adjust for help defense or role, and small samples swing. Across all ${Math.round(poss).toLocaleString()} of his matchup possessions: ${(got / poss * 100).toFixed(1)} points per 100 against ${(exp / poss * 100).toFixed(1)} expected.`) : "";
+  const mx = Math.max(...show.map(p => Math.max(p.usual, p.vs)), 1), D = 120, sz = r => D * Math.sqrt(r / mx);
+  $("dzRay").innerHTML = show.map((p, i) => {
+    const ring = sz(p.usual), inn = Math.max(18, sz(p.vs)), dd = p.vs / p.usual - 1, nm = MU.players.find(q => q.id === p.id), name = nm ? nm.n : pfName(p.id);
+    const tc = pfTeam(playerTeam(p.id))[1];
+    return `<figure class="dz-r${dd > 0 ? " grew" : ""}"><span class="dz-r-orb" role="img" aria-label="${esc(`${name}: ${p.vs.toFixed(1)} points per 100 against him, ${p.usual.toFixed(1)} against everyone else, over ${Math.round(p.poss)} possessions`)}">`
+      + `<span class="dz-r-ring" style="width:${ring.toFixed(1)}px;height:${ring.toFixed(1)}px"></span>`
+      + `<span class="dz-r-in" style="width:${inn.toFixed(1)}px;height:${inn.toFixed(1)}px;--k:${(ring / inn).toFixed(3)};--i:${i};--tc:${tc}"><img src="${pfHead(p.id, "260x190")}" alt="" loading="lazy" onerror="this.remove()"></span></span>`
+      + `<figcaption><b>${esc(name)}</b><span>${p.usual.toFixed(1)} → ${p.vs.toFixed(1)} · ${Math.round(p.poss)} poss</span><em>${dzSg(dd * 100, 0)}%</em></figcaption></figure>`;
+  }).join("") || `<p class="caption">Not enough possessions against any one scorer to show.</p>`;
+}
+
+function dzPick(id, scroll) {
+  const x = dz.byId.get(+id);
+  if (!x) return;
+  dz.sel = x.id;
+  $("dzFind").placeholder = x.name;
+  document.querySelectorAll('#dzWall .dz-brick[aria-current]').forEach(b => b.removeAttribute("aria-current"));
+  const cur = document.querySelector(`#dzWall .dz-brick[data-id="${x.id}"]`); if (cur) cur.setAttribute("aria-current", "true");
+  dzCrest(x); dzReport(x); dzRay(x);
+  if (scroll) $("dzCard").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+function initDefense() {
+  if (!PF || !(MU || SH)) return;
+  dzBuild();
+  if (dz.pool.length < 10) return;
+  $("defenders").hidden = false;
+  $("dzKicker").textContent = `Defense · ${dz.pool.length} defenders · ${dz.span}`;
+  const chips = (el, opts, get, set) => {
+    const draw = () => el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === get()));
+    el.innerHTML = opts.map(([v, l]) => `<button type="button" data-v="${v}">${l}</button>`).join("");
+    el.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; set(b.dataset.v); draw(); dzWall(true); });
+    draw();
+  };
+  chips($("dzRank"), DZ_RANK.filter(([k]) => k === "score" || k === "hw" ? dz.pool.some(x => k === "score" || x.hw) : dz.pool.some(x => x.p[k] != null)), () => dz.rank, v => dz.rank = v);
+  chips($("dzPos"), DZ_POS, () => dz.pos, v => dz.pos = v);
+  $("dzFoot").innerHTML = `<span><i class="g"></i>Defensive Player of the Year</span><span><i class="s"></i>All-Defense team</span><span><i class="r"></i>dim to lit: rank on the wall</span>`
+    + tip(`Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles among them: Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Awards from Basketball-Reference.`);
+  $("dzWall").addEventListener("click", e => { const b = e.target.closest(".dz-brick"); if (b) dzPick(+b.dataset.id, true); });
+  new ResizeObserver(() => { const w = $("dzWall").clientWidth, c = Math.max(2, Math.min(7, Math.floor(w / 160))); if (w && c !== dz.cols) dzWall(!dz.cols); }).observe($("dzWall"));
+  const items = [...dz.pool].sort((a, b) => b.score - a.score).map(x => ({ key: x.id, id: x.id, name: x.name, team: x.team, meta: `Wall rating ${x.score}` }));
+  playerSearch($("dzFind"), { items: () => items, pick: it => dzPick(it.id, false), top: "Best defenders", browse: {} });
+  $("dzReport").addEventListener("click", e => {
+    if (e.target.id !== "dzSim") return;
+    $("simDef").value = String(dz.sel); runSim();
+    showTab("players", true);
+    requestAnimationFrame(() => $("simPanel").scrollIntoView({ behavior: "smooth", block: "center" }));
+  });
+  dzPick(items[0].id, false);
+}
+
 /* ---------- tabs + theme ---------- */
 function scIndexOf(pid) { return SC ? SC.players.findIndex(p => p.id === +pid) : -1; }
 function scNowOf(pid) { const i = scIndexOf(pid); return i >= 0 ? SC.players[i].now : null; }
-const TABS = ["home", "shots", "matchups", "players", "coaches", "fantasy", "h2h", "games", "model", "sources"];
-const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", coaches: "Coaches", fantasy: "Fantasy", h2h: "Head to head", games: "Game replay", model: "Model", sources: "Sources" };
+const TABS = ["home", "shots", "matchups", "players", "defense", "coaches", "fantasy", "h2h", "games", "model", "sources"];
+const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", defense: "Defense", coaches: "Coaches", fantasy: "Fantasy", h2h: "Head to head", games: "Game replay", model: "Model", sources: "Sources" };
 let curTab = "home";
 function tabHasContent(name) {
   return [...document.querySelectorAll(`[data-tab~="${name}"]`)].some(el => !el.hidden && el.id !== "synNotice");
@@ -5546,10 +6124,11 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", buildAll);
 new MutationObserver(buildAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 buildAll();
-["lbFind", "dFilter", "pfSearch"].forEach(id => searchBox($(id)));
+["lbFind", "pfSearch"].forEach(id => searchBox($(id)));
 replayInit();
 sortGames();
 initPlayers();
+try { initDefense(); } catch (e) { console.error(e); }
 initProfiles();
 qInit();
 try { initCoaches(); } catch (e) { console.error(e); }  // a bug in one tab shouldn't stop the rest of the page from starting
