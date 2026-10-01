@@ -5,6 +5,11 @@ so the result is a single file you can open locally or host anywhere static.
 
     python export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl
     python export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
+    python export_dashboard.py --all_seasons   # also every other season's games for Game replay, in games/<season>.js
+
+The held-out season is always baked into the page. With --all_seasons the model also runs over every other season and
+writes each to games/<season>.js next to the page, which loads one when its season is picked in Game replay (a <script>
+tag, so it works from file:// as well as a server). Tempo trained on those games, so the page labels them in-sample.
 """
 import argparse
 import json
@@ -37,6 +42,50 @@ def run_game(model, g):
 
 def r(a, nd=3):
     return [round(float(v), nd) for v in a]
+
+
+def game_teams(raw, season, gid):
+    """Home and away tricodes and team IDs from the raw play-by-play, as they were that season (SEA, not OKC)."""
+    import pandas as pd
+    f = Path(raw) / season / f"{gid}.parquet"
+    if not f.exists():
+        return {}
+    df = pd.read_parquet(f, columns=["location", "teamTricode", "teamId"])
+    df = df[df["location"].isin(["h", "v"]) & (df["teamTricode"].astype(str).str.len() == 3)].drop_duplicates("location")
+    t = {row.location: (row.teamTricode, int(float(row.teamId))) for row in df.itertuples()}
+    return {"h": t["h"][0], "hid": t["h"][1], "a": t["v"][0], "aid": t["v"][1]} if len(t) == 2 else {}
+
+
+def write_replay_seasons(model, clf, d, split, out_dir, raw):
+    """Every season outside `split`, one games/<season>.js each: HOMERS_GAMES("2016-17", [packed games])."""
+    gdir = Path(out_dir) / "games"
+    gdir.mkdir(parents=True, exist_ok=True)
+    for old in gdir.glob("*.js"):  # a season dropped from the data shouldn't linger
+        old.unlink()
+    which = {i: name for name, idx in d["splits"].items() if name != split for i in idx}
+    by_season = {}
+    for i in sorted(which, key=lambda i: (d["games"][i]["season"], d["games"][i]["gameId"])):
+        by_season.setdefault(d["games"][i]["season"], []).append(i)
+    seasons = []
+    for season, idx in by_season.items():
+        packed = []
+        for i in idx:
+            g = d["games"][i]
+            wm, top_i, top_p, _, _ = run_game(model, g)
+            L = len(wm)
+            wb = clf.predict_proba(baseline_features(g["sec"][:L], g["diff"][:L]))[:, 1]
+            packed.append({**pack_game({
+                "id": g["gameId"], "season": season, "home_win": int(g["home_win"]),
+                "tok": g["tokens"][:L], "sec": g["sec"][:L], "diff": g["diff"][:L], "per": g["period"][:L],
+                "pm": wm, "pb": wb, "top_i": top_i, "top_p": top_p, "tot": g["total"][:L] if "total" in g else None}),
+                **game_teams(raw, season, g["gameId"]), "sp": which[i]})
+        f = gdir / f"{season}.js"
+        f.write_text(f"HOMERS_GAMES({json.dumps(season)},{json.dumps(packed, separators=(',', ':'))});\n")
+        splits = sorted({p["sp"] for p in packed})
+        seasons.append({"season": season, "n": len(packed), "split": splits[0] if len(splits) == 1 else "mixed",
+                        "file": f"games/{season}.js", "mb": round(f.stat().st_size / 1e6, 1)})
+        print(f"  replay {season}: {len(packed):,} games ({', '.join(splits)}), {seasons[-1]['mb']} MB")
+    return seasons
 
 
 B62 = np.frombuffer(b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", dtype=np.uint8)
@@ -73,6 +122,7 @@ def main():
     ap.add_argument("--profile_cache", default="data/processed/profiles_cache.pkl")
     ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch_bbref.py")
     ap.add_argument("--matchup_run", default="runs/matchups", help="man-to-man model from matchup_model.py; skipped if missing")
+    ap.add_argument("--all_seasons", action="store_true", help="also write every other season's replay games to games/<season>.js")
     args = ap.parse_args()
 
     ck = torch.load(args.ckpt, map_location="cpu")
@@ -168,6 +218,12 @@ def main():
         payload["matchups"] = build_matchups_payload(args.matchup_run, args.rosters)
         print(f"added man-to-man matchups: {len(payload['matchups']['players'])} players, "
               f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
+    payload["replay"] = None
+    if args.all_seasons and not payload["meta"]["synthetic"]:
+        print("writing replay games for the other seasons")
+        test = [{"season": out_games[0]["season"], "n": len(out_games), "split": args.split, "file": None}] if out_games else []
+        payload["replay"] = sorted(test + write_replay_seasons(model, clf, d, args.split, Path(args.out).parent, args.raw),
+                                   key=lambda x: x["season"])
     from export_assets import build_assets_payload
     payload["assets"] = build_assets_payload(ROOT / "assets")
     if payload["assets"] and payload["coaches"]:  # Wikipedia photos of coaches NBA.com and Basketball-Reference have none of

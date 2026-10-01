@@ -46,6 +46,13 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
     tot_off = df.groupby("personIdOff")["poss"].sum()
     tot_def = df.groupby("personIdDef")["poss"].sum()
 
+    # each player's tracked possessions per season, as scorer and as defender: who to list when a season is picked
+    by_season = {}
+    for (pid, season), v in df.groupby(["personIdOff", "season"])["poss"].sum().items():
+        by_season.setdefault(int(pid), {}).setdefault(season, [0, 0])[0] = int(round(v))
+    for (pid, season), v in df.groupby(["personIdDef", "season"])["poss"].sum().items():
+        by_season.setdefault(int(pid), {}).setdefault(season, [0, 0])[1] = int(round(v))
+
     W = lambda k: sd[k].numpy()
     players = []
     for pid in sorted(set(vo) | set(vd)):
@@ -54,6 +61,7 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
             "o": vo.get(pid, 0), "d": vd.get(pid, 0),  # row in the weight tables (0 = shared "other" row)
             "op": int(round(off_poss.get(pid, 0))), "dp": int(round(def_poss.get(pid, 0))),
             "top": int(round(tot_off.get(pid, 0))), "tdp": int(round(tot_def.get(pid, 0))),
+            "s": by_season.get(pid, {}),  # season -> [possessions as scorer, as defender]
         })
 
     # actual head-to-head totals for pairs that met often enough to be worth showing
@@ -64,6 +72,20 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
     for row in pair.itertuples(index=False):
         h2h += [int(row.personIdOff), int(row.personIdDef), round(float(row.poss), 1), int(row.pts), int(row.fgm), int(row.fga),
                 int(row.fg3m), int(row.fg3a), int(row.tov), int(seasons_met[(row.personIdOff, row.personIdDef)])]
+    # the same pairs season by season, in h2h's order: for each pair, k then k rows of h2h_s_cols
+    si_of = {s: i for i, s in enumerate(meta["seasons"])}
+    per = (df.merge(pair[["personIdOff", "personIdDef"]], on=["personIdOff", "personIdDef"])
+           .groupby(["personIdOff", "personIdDef", "season"])[["poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov"]].sum())
+    per_pair = {}
+    for (o, d_, season), v in per.iterrows():
+        per_pair.setdefault((o, d_), []).append([si_of[season], round(float(v.poss), 1), int(v.pts), int(v.fgm), int(v.fga),
+                                                 int(v.fg3m), int(v.fg3a), int(v.tov)])
+    h2h_s = []
+    for row in pair.itertuples(index=False):
+        rows = per_pair.get((row.personIdOff, row.personIdDef), [])
+        h2h_s.append(len(rows))
+        for x in rows:
+            h2h_s += x
 
     last_complete = meta["test_season"]
     si = meta["seasons"].index(last_complete)
@@ -73,6 +95,9 @@ def build_matchups_payload(run_dir="runs/matchups", rosters_path="data/context/b
         "b": r(W("b") + W("season.weight")[si]),  # league rates in the latest complete season
         "off": r(W("off.weight")), "def": r(W("dfn.weight")), "U": r(W("U.weight")), "V": r(W("V.weight")), "w": r(W("w")),
         "players": players, "h2h": h2h, "h2h_cols": ["off", "def", "poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov", "seasons"],
+        "h2h_s": h2h_s, "h2h_s_cols": ["si", "poss", "pts", "fgm", "fga", "fg3m", "fg3a", "tov"],
+        # league rates season by season, so predictions can be read in any season's scoring environment
+        "b_season": {s: r(W("b") + W("season.weight")[i]) for i, s in enumerate(meta["seasons"])},
         "held_out": meta["held_out"], "calibration": meta.get("calibration", []), "rows": meta["rows"], "games": meta["games"], "args": meta["args"], "epochs": meta["epochs"],
         "min_pair_poss": min_pair_poss,
     }

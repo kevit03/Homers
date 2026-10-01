@@ -4,8 +4,8 @@ Input at each position = event token embedding + position embedding
                          + projection of game-state features (time, score diff, period, pre-game Elo).
 Outputs: next-event logits and a home-win logit at every position.
 
-With wp_residual the win-probability head is a correction on top of the logistic baseline's logit
-(score diff + time left), zero-initialized, so training starts from the baseline and every learned
+With wp_residual the win-probability head is a correction on top of a logistic baseline's logit
+(score diff + time left, plus the pre-game Elo when the model has it), zero-initialized, so training starts from the baseline and every learned
 effect reads as a shift away from it. wp_temp is a temperature fitted on the validation season.
 """
 import math
@@ -72,7 +72,7 @@ class Config:
     dropout: float = 0.1
     n_feat: int = 4             # 4 = no Elo (older checkpoints), 6 = with pre-game Elo
     wp_residual: bool = False   # win-prob head adds to the baseline logit below
-    base_coef: tuple = None     # logistic baseline (b, w_diff, w_diff/sqrt(min+1), w_min)
+    base_coef: tuple = None     # logistic baseline (b, w_diff, w_diff/sqrt(min+1), w_min[, w_elo, w_elo_fading])
     wp_temp: float = 1.0        # win-prob logit is divided by this (temperature scaling)
 
 
@@ -139,8 +139,11 @@ class Tempo(nn.Module):
 
     def base_logit(self, feats):
         """The logistic baseline's logit, recovered from the features: diff = 20 f1, diff/sqrt(min+1) = 5 f3, min = 48 f0."""
-        b, w_diff, w_rel, w_min = self.config.base_coef
-        return b + w_diff * 20 * feats[..., 1] + w_rel * 5 * feats[..., 3] + w_min * 48 * feats[..., 0]
+        b, w_diff, w_rel, w_min, *w_elo = self.config.base_coef
+        z = b + w_diff * 20 * feats[..., 1] + w_rel * 5 * feats[..., 3] + w_min * 48 * feats[..., 0]
+        if w_elo:  # the baseline with Elo (baseline.fit_elo_baseline): + w_elo * elo + w_fade * elo * share of game left
+            z = z + w_elo[0] * feats[..., 4] + w_elo[1] * feats[..., 5]
+        return z
 
     def forward(self, tokens, feats):
         T = tokens.size(1)

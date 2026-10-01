@@ -67,7 +67,8 @@ cmd_demo() {
 }
 
 cmd_fetch() {
-  step "Play-by-play (resumable)";              py fetch_data.py "$@"
+  step "Play-by-play, 1996-97 on (resumable)";  py fetch_data.py "$@"
+  step "Results before play-by-play, 1946-47 to 1995-96 (box scores only*, resumable)"; py fetch_history.py
   step "Coaches, play types, matchups (resumable)"; py fetch_context.py
   step "Rosters";                               py fetch_rosters.py
   step "Current rosters (Basketball-Reference)"; py fetch_bbref.py --refresh
@@ -97,7 +98,7 @@ cmd_shots() {
 cmd_dashboard() {
   step "Building the dashboard"
   # shellcheck disable=SC2046
-  py export_dashboard.py $(dashboard_inputs) "$@"
+  py export_dashboard.py $(dashboard_inputs) --all_seasons "$@"  # every season in Game replay: games/<season>.js
   open dashboard.html 2>/dev/null || bold "Open dashboard.html in your browser."
 }
 
@@ -138,7 +139,7 @@ EOF
 
   bold "Running now"
   local any=0
-  for j in fetch_data fetch_context fetch_rosters fetch_accolades tokenize_pbp build_shots "train\\.py" evaluate shot_model export_dashboard; do
+  for j in fetch_data fetch_history fetch_context fetch_rosters fetch_accolades tokenize_pbp build_shots "train\\.py" evaluate shot_model export_dashboard; do
     if running "$j"; then jobs_matching "$j" | sed 's/^/  /'; any=1; fi
   done
   [ $any = 1 ] || echo "  nothing"
@@ -152,7 +153,7 @@ $(bold "HOMERs: ./run.sh <command> [extra args]")
   demo        try everything on fake games, about a minute, no downloads
   status      show downloads, models, and anything running
 
-  fetch       download NBA play-by-play + context (hours, resumable)
+  fetch       download NBA play-by-play (1996-97 on) + older results + context (hours, resumable)
   tokenize    turn play-by-play into model input
   train       fit the baseline and train the transformer into runs/base
   evaluate    score the model vs. the baseline -> results/

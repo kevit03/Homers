@@ -14,9 +14,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from sklearn.linear_model import LogisticRegression
 
-from baseline import baseline_features
+from baseline import baseline_features, elo_features, fit_elo_baseline
 from model import Config, GameDataset, Tempo, collate, load_data
 
 
@@ -48,25 +47,6 @@ def predict_games(model, games, block_size, device, bs=16):
         for i, L in enumerate(mask.sum(1).tolist()):
             wps.append(prob[i, :L])
     return wps, correct / n_tok, nll / n_tok
-
-
-def elo_features(g, L):
-    """Baseline features plus the pre-game Elo logit and its fading version, for the ablation below."""
-    X = baseline_features(g["sec"][:L], g["diff"][:L])
-    frac_left = np.clip(g["sec"][:L] / 2880, 0, 1) * (g["period"][:L] <= 4)
-    elo = g.get("elo", 0.0)
-    return np.column_stack([X, np.full(L, elo), elo * frac_left])
-
-
-def fit_elo_baseline(games, max_rows=2_000_000, seed=0):
-    """Ablation: the same logistic regression given the pre-game Elo too. Tempo has to beat this to show the
-    plays add something the team ratings don't."""
-    X = np.concatenate([elo_features(g, len(g["sec"])) for g in games])
-    y = np.concatenate([np.full(len(g["sec"]), g["home_win"]) for g in games])
-    if len(y) > max_rows:
-        idx = np.random.default_rng(seed).choice(len(y), max_rows, replace=False)
-        X, y = X[idx], y[idx]
-    return LogisticRegression(max_iter=1000).fit(X, y)
 
 
 def plot_game(g, p_model, p_base, path):

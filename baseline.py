@@ -28,6 +28,25 @@ def stack_games(games, max_rows=None, seed=0):
     return X, y
 
 
+def elo_features(g, L):
+    """Baseline features plus the pre-game Elo logit and that logit times the share of regulation left."""
+    X = baseline_features(g["sec"][:L], g["diff"][:L])
+    frac_left = np.clip(g["sec"][:L] / 2880, 0, 1) * (g["period"][:L] <= 4)
+    elo = g.get("elo", 0.0)
+    return np.column_stack([X, np.full(L, elo), elo * frac_left])
+
+
+def fit_elo_baseline(games, max_rows=2_000_000, seed=0):
+    """The same logistic regression given the pre-game Elo too: Tempo's win head starts from it, and evaluate.py
+    reports it, since Tempo has to beat it to show the plays add something the team ratings don't."""
+    X = np.concatenate([elo_features(g, len(g["sec"])) for g in games])
+    y = np.concatenate([np.full(len(g["sec"]), g["home_win"]) for g in games])
+    if len(y) > max_rows:
+        idx = np.random.default_rng(seed).choice(len(y), max_rows, replace=False)
+        X, y = X[idx], y[idx]
+    return LogisticRegression(max_iter=1000).fit(X, y)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data/processed/games.pkl")

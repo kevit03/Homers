@@ -13,7 +13,12 @@ Ratings follow the FiveThirtyEight NBA recipe:
   - between seasons each rating moves back toward the mean: R = carry * R + (1 - carry) * 1505
 K, HCA and carry are chosen by grid search on the pre-game log loss of the training games only.
 
+Opt-in: --history runs the ratings through every game since 1946-47 that has no play-by-play (fetch_history.py)
+before the first tokenized game, so 1996-97 doesn't start with every team at 1505. Those games only move ratings;
+they are never scored, in the grid search or the report. Off by default, so the default output never changes.
+
     python team_strength.py --data data/processed/games.pkl
+    python team_strength.py --history data/context/history_team_games.parquet
 """
 import argparse
 import itertools
@@ -93,6 +98,23 @@ def run_elo(games, order, teams, k, hca, carry):
     return edge
 
 
+def with_history(games, order, teams, path):
+    """Put the pre-play-by-play results (fetch_history.py) ahead of the tokenized games, as warm-up games.
+    Returns the longer games list, its order, the teams map, and how many warm-up games lead it."""
+    from fetch_history import load_games
+    h = load_games(path)
+    if h.empty:
+        raise SystemExit(f"no history games in {path}; run fetch_history.py")
+    first, last = min(g["season"] for g in games), h["season"].max()
+    if int(first[:4]) != int(last[:4]) + 1:  # one carry step per new season: a gap would leave stale ratings
+        raise SystemExit(f"history ends {last} but the play-by-play starts {first}; --history needs them back to back")
+    h = h[h["home_pts"] != h["away_pts"]]
+    pre = [{"season": r.season, "gameId": f"H{r.gameId}", "diff": [float(r.home_pts - r.away_pts)],
+            "home_win": int(r.home_pts > r.away_pts)} for r in h.itertuples()]
+    teams = {**teams, **{f"H{r.gameId}": (int(r.home), int(r.away)) for r in h.itertuples()}}
+    return pre + games, list(range(len(pre))) + [len(pre) + i for i in order], teams, len(pre)
+
+
 def log_loss(edge, y):
     p = np.clip(1 / (1 + 10 ** (-edge / 400)), 1e-6, 1 - 1e-6)
     return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
@@ -103,6 +125,8 @@ def main():
     ap.add_argument("--data", default="data/processed/games.pkl")
     ap.add_argument("--raw", default="data/raw")
     ap.add_argument("--warmup", type=int, default=400, help="skip this many earliest games when scoring the grid (ratings start flat)")
+    ap.add_argument("--history", help="opt-in: warm up the ratings on pre-1996-97 results first "
+                                      "(data/context/history_team_games.parquet from fetch_history.py)")
     args = ap.parse_args()
 
     with open(args.data, "rb") as fh:
@@ -119,19 +143,24 @@ def main():
         y = np.array([g["home_win"] for g in games], dtype=float)
         rank = np.empty(len(games), int); rank[order] = np.arange(len(games))
         fit = np.array([i for i in splits["train"] if rank[i] >= args.warmup and games[i]["gameId"] in teams])
+        elo = lambda *p: run_elo(games, order, teams, *p)
+        if args.history:
+            all_games, all_order, all_teams, n_pre = with_history(games, order, teams, args.history)
+            elo = lambda *p: run_elo(all_games, all_order, all_teams, *p)[n_pre:]
+            print(f"warming up on {n_pre:,} games before play-by-play ({all_games[0]['season']} to {all_games[n_pre - 1]['season']})")
         best = None
         for k, hca, carry in itertools.product(GRID["k"], GRID["hca"], GRID["carry"]):
-            ll = log_loss(run_elo(games, order, teams, k, hca, carry)[fit], y[fit])
+            ll = log_loss(elo(k, hca, carry)[fit], y[fit])
             if best is None or ll < best[0]:
                 best = (ll, k, hca, carry)
         ll, k, hca, carry = best
-        edge = run_elo(games, order, teams, k, hca, carry)
+        edge = elo(k, hca, carry)
         for g, e in zip(games, edge):
             g["elo"] = 0.0 if np.isnan(e) else float(e * math.log(10) / 400)
             if g["gameId"] in teams:
                 g["home"], g["away"] = teams[g["gameId"]]
 
-        report = {"k": k, "hca": hca, "carry": carry, "train_log_loss": ll}
+        report = {"k": k, "hca": hca, "carry": carry, "train_log_loss": ll, **({"history": args.history} if args.history else {})}
         for split in ("val", "test"):
             idx = np.array([i for i in splits[split] if not np.isnan(edge[i])])
             p = 1 / (1 + 10 ** (-edge[idx] / 400))

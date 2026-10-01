@@ -4,6 +4,7 @@ Each game is cached as its own parquet file, so the script can be stopped and
 re-run safely; finished games are skipped. Playoff games sit in the same season folder
 as the regular season; the game ID tells them apart (002... regular season, 004... playoffs).
 
+    python fetch_data.py                     # every season NBA.com has play-by-play for: 1996-97 on
     python fetch_data.py --seasons 2021-22 2022-23 2023-24 2024-25
     python fetch_data.py --season_types Playoffs
 """
@@ -13,17 +14,26 @@ from pathlib import Path
 
 from nba_api.stats.endpoints import leaguegamefinder, playbyplayv3
 
-SEASONS = [f"{y}-{str(y + 1)[2:]}" for y in range(2016, 2026)]  # 2016-17 to 2025-26
+SEASONS = [f"{y}-{str(y + 1)[2:]}" for y in range(2016, 2026)]  # 2016-17 to 2025-26: the context scripts' default
+# Play-by-play goes back further, to where NBA.com's starts. Older seasons are box scores only (fetch_history.py).
+PBP_SEASONS = [f"{y}-{str(y + 1)[2:]}" for y in range(1996, 2026)]  # 1996-97 to 2025-26
 SEASON_TYPES = ["Regular Season", "Playoffs"]
 
 
-def get_game_ids(season: str, season_type: str) -> list[str]:
-    df = leaguegamefinder.LeagueGameFinder(
-        season_nullable=season,
-        league_id_nullable="00",
-        season_type_nullable=season_type,
-    ).get_data_frames()[0]
-    return sorted(df["GAME_ID"].unique())
+def get_game_ids(season: str, season_type: str, retries: int = 4) -> list[str]:
+    for attempt in range(retries):
+        try:
+            df = leaguegamefinder.LeagueGameFinder(
+                season_nullable=season,
+                league_id_nullable="00",
+                season_type_nullable=season_type,
+            ).get_data_frames()[0]
+            return sorted(df["GAME_ID"].unique())
+        except Exception as e:  # a hiccup here would end a multi-hour run
+            if attempt == retries - 1:
+                raise
+            print(f"  {season} {season_type} game list attempt {attempt + 1} failed: {e}")
+            time.sleep(10 * (attempt + 1))
 
 
 def fetch_game(gid: str, season: str, path: Path, retries: int = 3) -> bool:
@@ -44,7 +54,7 @@ def fetch_game(gid: str, season: str, path: Path, retries: int = 3) -> bool:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seasons", nargs="+", default=SEASONS)
+    ap.add_argument("--seasons", nargs="+", default=PBP_SEASONS)
     ap.add_argument("--season_types", nargs="+", default=SEASON_TYPES, help='"Regular Season", "Playoffs" or "PlayIn"')
     ap.add_argument("--out", default="data/raw")
     ap.add_argument("--sleep", type=float, default=0.6, help="seconds between requests")

@@ -326,6 +326,7 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
 .ss-chip { all: unset; box-sizing: border-box; position: relative; grid-column: var(--c); display: grid; place-items: center; height: 36px; border-radius: 8px; cursor: pointer;
   font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); background: var(--bg); }
 .ss-chip.has { color: var(--ink); }
+.ss-chip.ss-any { display: flex; width: 100%; padding: 0 12px; margin-bottom: 10px; justify-content: flex-start; font-weight: 600; }
 .ss-chip.has::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--model); }
 .ss-chip:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
 .ss-chip:focus-visible { outline: 2px solid var(--model); outline-offset: 1px; }
@@ -656,6 +657,27 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
   color: rgb(255 255 255 / .8); font-family: var(--font-label); font-size: 12px; font-weight: 600; letter-spacing: .04em; transition: all .3s; }
 .orb-rels button:hover { background: rgb(255 255 255 / .1); color: #fff; border-color: rgb(255 255 255 / .2); }
 .orb-rels svg { width: 8px; height: 8px; color: rgb(255 255 255 / .6); }
+/* a crowded play-by-play ring: smaller dots, a label on every fifth season */
+.orb-stage.dense .orb-node:not(.hist) { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+.orb-stage.dense .orb-node:not(.hist) .orb-dot { width: 28px; height: 28px; }
+.orb-stage.dense .orb-dot svg { width: 12px; height: 12px; }
+.orb-stage.dense .orb-node:not(.hist) .orb-name { top: 34px; }
+.orb-node.quiet:not(.open) .orb-name { display: none; }
+/* box score only*: the outer ring of seasons before play-by-play */
+.orb-ring.outer { width: calc(var(--r2) * 2); height: calc(var(--r2) * 2); border-style: dashed; border-color: rgb(255 255 255 / .14); }
+.orb-node.hist { width: 14px; height: 14px; margin: -7px 0 0 -7px; }
+.orb-node.hist .orb-glow { display: none; }
+.orb-node.hist .orb-dot { width: 14px; height: 14px; border: 1.5px dashed rgb(255 255 255 / .45); background: #000; }
+.orb-node.hist.open .orb-dot { border-style: solid; transform: scale(1.4); }
+.orb-node.hist .orb-name { top: 18px; font-size: 10.5px; color: rgb(255 255 255 / .5); }
+.orb-node.hist .orb-card { top: 46px; }
+.orb-badge.box { color: rgb(255 255 255 / .8); background: transparent; border-color: rgb(255 255 255 / .35); border-style: dashed; }
+.orb-note { margin-top: 10px; font-size: 11.5px; color: rgb(255 255 255 / .6); }
+.orb-go { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-family: var(--font-label); font-size: 12px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; color: #fff; border-bottom: 1px solid rgb(255 255 255 / .4); }
+.orb-go svg { width: 12px; height: 12px; }
+.orb-go:hover, .orb-go:focus-visible { border-color: #fff; }
+.orb-pick { grid-auto-flow: column; align-items: center; gap: 8px; }
 @keyframes orb-pulse { 50% { opacity: .5; } }
 @keyframes orb-ping { 75%, 100% { transform: scale(2); opacity: 0; } }
 
@@ -750,6 +772,8 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .gp-seg button[aria-pressed="true"] { font-weight: 600; }
 .gp-seg button[aria-pressed="true"] small { color: var(--model); }
 .gp-sort { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.gp-season { grid-auto-flow: column; align-items: center; gap: 8px; }
+.gp-note { margin-top: 4px; max-width: 70ch; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .gp-team { display: flex; align-items: center; gap: 4px; }
 .gp-teambtn { display: inline-flex; align-items: center; gap: 9px; height: 41px; padding: 0 12px 0 6px; border-radius: 9px; background: var(--bg); border-color: var(--line);
               font-size: 14px; font-weight: 600; white-space: nowrap; }
@@ -944,6 +968,13 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .mu-head .x { color: var(--muted); font-weight: 500; font-size: 15px; }
 .mu-h2h { display: grid; gap: 6px; padding: 12px 14px; border-radius: var(--radius); background: var(--bg); font-size: 14px; }
 .mu-h2h b { font-variant-numeric: tabular-nums; }
+@media (min-width: 641px) { .mu-pick:has(#muSeasonF:not([hidden])) { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; } }
+.mu-season .dd { min-width: 150px; }
+.mu-seasons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.mu-seasons button { display: grid; justify-items: center; min-width: 40px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+  font-family: var(--font-label); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); cursor: pointer; }
+.mu-seasons button small { font-size: 10.5px; color: var(--muted); }
+.mu-seasons button[aria-pressed=true] { border-color: var(--model); background: color-mix(in srgb, var(--model) 14%, var(--surface)); }
 .mu-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 560px) { .mu-lists { grid-template-columns: minmax(0, 1fr); } }
 .mu-list { display: grid; gap: 2px; align-content: start; }
@@ -983,6 +1014,8 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 @media (max-width: 980px) { .co-wall { grid-template-columns: repeat(5, 44px); } .co-wall span { width: 44px; height: 44px; } .co-wall span:nth-child(n+16) { display: none; } }
 @media (max-width: 760px) { .co-hero-row { grid-template-columns: minmax(0, 1fr); } .co-wall { display: none; } }
 .co-bar { align-items: center !important; flex-direction: row !important; justify-content: space-between; }
+.co-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.co-season { grid-auto-flow: column; align-items: center; gap: 8px; }
 .co-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 12px; }
 @media (max-width: 520px) { .co-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 .co-pod { all: unset; box-sizing: border-box; cursor: pointer; position: relative; overflow: hidden; isolation: isolate; display: grid; align-content: space-between; min-height: 196px;
@@ -1146,8 +1179,7 @@ h3.co-side.def::before { background: var(--base); }
         <button type="button" class="nm-trigger" aria-expanded="false" aria-controls="nm-games">Games<svg class="nm-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="nm-content" id="nm-games" hidden>
           <ul class="nm-grid one">
-            <li><a class="nm-link" href="#/games" data-nav="games" data-kind=""><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Game replay</span><p>Watch any held-out game with Tempo's win chance after every play.</p></a></li>
-            <li><a class="nm-link" href="#/games" data-nav="games" data-kind="po"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Playoffs</span><p>The postseason, from the first round to the Finals, play by play.</p></a></li>
+            <li><a class="nm-link" href="#/games" data-nav="games"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Game replay</span><p>Watch any held-out game, regular season or playoffs, with Tempo's win chance after every play.</p></a></li>
             <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-quality"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>Model quality</span><p>Calibration, error by quarter, and the training curve.</p></a></li>
             <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-whatif"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>What-if</span><p>Pick a quarter, a clock and a lead, and see the win chance.</p></a></li>
           </ul>
@@ -1188,7 +1220,8 @@ h3.co-side.def::before { background: var(--base); }
   <div class="sec-head" id="hmGamesHead"><h2 class="cast">Featured games<span id="hmGamesCap"></span></h2></div>
   <div class="hm-games" id="hmGames"></div>
 
-  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2></div>
+  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2>
+    <div class="field orb-pick"><label class="label" for="hmOrbPick">Season</label><select id="hmOrbPick"></select></div></div>
   <div class="orb" id="hmOrbit" hidden></div>
 
   <div class="sec-head" id="hmLeadHead" hidden><h2 class="cast">Season leaders</h2><p class="caption" id="hmLeadCap"></p></div>
@@ -1265,6 +1298,7 @@ h3.co-side.def::before { background: var(--base); }
     <div class="field"><label class="label" for="muOff">Scorer</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="muOff" placeholder="Search scorers…" autocomplete="off" spellcheck="false"></div></div></div>
     <button type="button" id="muSwap" aria-label="Swap scorer and defender" title="Swap">⇄</button>
     <div class="field"><label class="label" for="muDef">Guarded by</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="muDef" placeholder="Search defenders…" autocomplete="off" spellcheck="false"></div></div></div>
+    <div class="field mu-season" id="muSeasonF" hidden><label class="label" for="muSeason">Season</label><select id="muSeason"></select></div>
   </div>
 
   <div class="mu-top">
@@ -1319,6 +1353,7 @@ h3.co-side.def::before { background: var(--base); }
     </div>
     <div class="panel gp" id="gp">
       <div class="gp-bar">
+        <div class="field gp-season" id="gpSeasonF" hidden><label class="label" for="gpSeason">Season</label><select id="gpSeason"></select></div>
         <div class="seg gp-seg" id="gpKind" role="group" aria-label="Game type" hidden></div>
         <div class="gp-team" id="gpTeam" hidden>
           <button type="button" class="gp-teambtn" id="gpTeamBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="gpTeamPop"></button>
@@ -1328,7 +1363,7 @@ h3.co-side.def::before { background: var(--base); }
         <div class="gp-sort"><span class="label" aria-hidden="true">Sort</span><div class="seg gp-seg" id="gpSort" role="group" aria-label="Sort games"></div></div>
       </div>
       <div class="gp-head">
-        <p class="gp-count" id="gpCount" aria-live="polite"></p>
+        <div><p class="gp-count" id="gpCount" aria-live="polite"></p><p class="gp-note" id="gpNote" hidden></p></div>
         <div class="gp-nav"><button type="button" id="prevG" aria-label="Previous game">‹ Prev</button><button type="button" id="nextG" aria-label="Next game">Next ›</button></div>
       </div>
       <div class="gp-railwrap" id="gpWrap">
@@ -1494,7 +1529,8 @@ h3.co-side.def::before { background: var(--base); }
 
     <div class="sec-head co-bar">
       <h2 class="cast">Head coaches</h2>
-      <div class="seg" role="group" aria-label="Which coaches"><button type="button" id="coNow" aria-pressed="true">Now</button><button type="button" id="coAll" aria-pressed="false">Since <span id="coSince"></span></button></div>
+      <div class="co-filters"><div class="seg" role="group" aria-label="Which coaches"><button type="button" id="coNow" aria-pressed="true">Now</button><button type="button" id="coAll" aria-pressed="false">Since <span id="coSince"></span></button></div>
+        <div class="field co-season"><label class="label" for="coSeason">Season</label><select id="coSeason"></select></div></div>
     </div>
     <div class="co-grid" id="coGrid"></div>
     </div>
@@ -1762,26 +1798,29 @@ function unpack(s, w, scale = 1, off = 0) {
   return out;
 }
 const fives = a => Array.from({ length: a.length / 5 }, (_, i) => a.slice(5 * i, 5 * i + 5));
-DATA.games.forEach(g => Object.assign(g, { tok: unpack(g.tok, 1), per: unpack(g.per, 1), sec: unpack(g.sec, 3, 10), diff: unpack(g.diff, 2, 1, 100),
-  pm: unpack(g.pm, 2, 1000), pb: unpack(g.pb, 2, 1000), tot: unpack(g.tot, 2) }));
+const unpackGame = g => Object.assign(g, { tok: unpack(g.tok, 1), per: unpack(g.per, 1), sec: unpack(g.sec, 3, 10), diff: unpack(g.diff, 2, 1, 100),
+  pm: unpack(g.pm, 2, 1000), pb: unpack(g.pb, 2, 1000), tot: unpack(g.tot, 2) });
+DATA.games.forEach(unpackGame);
 function withTop(g) {
   if (typeof g.top_i === "string") { g.top_i = fives(unpack(g.top_i, 1)); g.top_p = fives(unpack(g.top_p, 2, 1000)); }
   return g;
 }
-const games = DATA.games.map((g, idx) => {
+let gpSeq = 0;  // card ids stay unique across every season loaded
+const prepGames = list => list.map(g => {
   const lo = Math.min(...g.pm), hi = Math.max(...g.pm);
   const loserPeak = g.home_win ? Math.max(...g.pm.map(v => 1 - v)) : hi;
   let run = 0;  // time never runs backwards on the chart, even for data tokenized before tokenize_pbp.game_order
   const x = g.sec.map((s, i) => (run = Math.max(run, elapsed(s, g.per[i]))));
-  return { ...g, idx, x, swing: hi - lo, final: g.diff[g.diff.length - 1], loserPeak, ot: Math.max(...g.per) - 4 };
+  return { ...g, idx: gpSeq++, x, swing: hi - lo, final: g.diff[g.diff.length - 1], loserPeak, ot: Math.max(...g.per) - 4 };
 });
+let games = prepGames(DATA.games);  // the season on screen in Game replay
 let order = [], cur = null, step = 0, charts = {}, playTimer = null, playSpeed = 1;
 
 // Teams and colors for a replay game. Without play-by-play team data they read "home team" / "away team".
 const NICK = name => name.endsWith("Trail Blazers") ? "Trail Blazers" : name.split(" ").pop();
 function sides(g) {
   if (g._sides) return g._sides;
-  const G = PF && PF.games[g.id];
+  const G = (PF && PF.games[g.id]) || (g.h ? g : null);  // games from other seasons carry their own teams
   const one = (tri, tid, who) => {
     const [full, c1, c2] = pfTeam(tri);
     return tri ? { tri, full, nick: NICK(full), c1, c2, tid: (PF && PF.teams[tri]) || tid }
@@ -1911,25 +1950,26 @@ function gpBar() {
   $("gpTeamBtn").innerHTML = `${t ? gpLogo(PF.teams[t]) : GP_ALL}<span>${t ? esc(full) : "All teams"}</span>${GP_CHEV}`;
   $("gpTeamClear").hidden = !t;
   const n = order.length, what = `${gpKindWord(gf.kind)}game${n === 1 ? "" : "s"}`;
-  $("gpCount").innerHTML = `<b>${n.toLocaleString()}</b> ${t ? esc(NICK(full)) + " " : ""}${what}${n > 1 ? " · " + GP_FIRST[gf.sort] : ""}`;
+  $("gpCount").innerHTML = `<b>${n.toLocaleString()}</b> ${t ? esc(NICK(full)) + " " : ""}${what}${REPLAY ? ` in ${gpSeason}` : ""}${n > 1 ? " · " + GP_FIRST[gf.sort] : ""}`;
+  $("gpNote").textContent = gpInSample(); $("gpNote").hidden = !$("gpNote").textContent;
   $("prevG").disabled = $("nextG").disabled = n < 2;
 }
 function gpPop(open) {
   const pop = $("gpTeamPop"), btn = $("gpTeamBtn");
   if (open) {
-    const cnt = {}, placed = new Set();
-    games.forEach(g => { if (gpIsKind(g, gf.kind)) { const { H, A } = sides(g); cnt[H.tri] = (cnt[H.tri] || 0) + 1; cnt[A.tri] = (cnt[A.tri] || 0) + 1; } });
+    const cnt = {}, tid = {}, placed = new Set();
+    games.forEach(g => { if (gpIsKind(g, gf.kind)) { const { H, A } = sides(g); for (const S of [H, A]) { cnt[S.tri] = (cnt[S.tri] || 0) + 1; tid[S.tri] = S.tid; } } });
     const tile = t => {
       const n = cnt[t] || 0;
       placed.add(t);
       return `<button type="button" class="gp-tt${gf.team === t ? " on" : ""}" data-team="${t}" title="${esc(pfTeam(t)[0])}: ${n} ${gpKindWord(gf.kind)}game${n === 1 ? "" : "s"}"${n ? "" : " disabled"}>
-        ${gpLogo(PF.teams[t])}<b>${t}</b><small>${n}</small></button>`;
+        ${gpLogo(PF.teams[t] || tid[t])}<b>${t}</b><small>${n}</small></button>`;
     };
     const confs = Object.entries(GP_CONF).map(([name, list]) => {
       const ts = list.split(" ").filter(t => PF.teams[t]);
       return ts.length ? `<div class="gp-conf"><span class="label">${name}</span><div class="gp-tgrid">${ts.map(tile).join("")}</div></div>` : "";
     }).join("");
-    const rest = Object.keys(PF.teams).filter(t => !placed.has(t)).sort();
+    const rest = [...new Set([...Object.keys(PF.teams), ...Object.keys(cnt)])].filter(t => !placed.has(t)).sort();  // SEA, NJN, ...
     pop.innerHTML = `<div class="gp-pop-top"><button type="button" class="gp-all${gf.team ? "" : " on"}" data-team="">${GP_ALL}All teams</button>
       <span class="caption">${gf.kind ? capFirst(gpKindWord(gf.kind)) + "games" : "Games"} per team</span></div>
       <div class="gp-confs">${confs}</div>${rest.length ? `<div class="gp-tgrid">${rest.map(tile).join("")}</div>` : ""}`;
@@ -1938,7 +1978,59 @@ function gpPop(open) {
   btn.setAttribute("aria-expanded", open);
   if (open) (pop.querySelector(".gp-tt.on, .gp-all.on") || pop.querySelector("button")).focus();
 }
+/* season filter: the held-out season is baked into the page. With export_dashboard.py --all_seasons every other season
+   sits in games/<season>.js and loads the first time it's picked (a <script>, so file:// works too). Tempo trained on those. */
+const REPLAY = DATA.replay && DATA.replay.length > 1 ? DATA.replay : null;
+const GP_TEST = DATA.games.length ? DATA.games[0].season : "";
+const gpStore = { [GP_TEST]: games }, gpArrived = {};
+let gpSeason = GP_TEST;
+window.HOMERS_GAMES = (season, list) => { gpArrived[season] = list; };
+const gpIdSeason = id => { const yy = +String(id).slice(3, 5), y = yy >= 46 ? 1900 + yy : 2000 + yy; return `${y}-${String(y + 1).slice(2)}`; };
+function gpLoad(season) {
+  if (gpStore[season]) return Promise.resolve(gpStore[season]);
+  const r = REPLAY && REPLAY.find(x => x.season === season);
+  if (!r || !r.file) return Promise.reject(new Error(`No replay games for ${season}.`));
+  return new Promise((resolve, reject) => {
+    const tag = document.createElement("script");
+    tag.src = r.file;
+    tag.onload = () => {
+      const list = gpArrived[season];
+      delete gpArrived[season]; tag.remove();
+      if (!list) return reject(new Error(`${r.file} had no games in it.`));
+      list.forEach(unpackGame);
+      resolve(gpStore[season] = prepGames(list));
+    };
+    tag.onerror = () => { tag.remove(); reject(new Error(`Couldn't load ${r.file}: it has to sit in a games folder next to this page.`)); };
+    document.head.append(tag);
+  });
+}
+async function gpSetSeason(season, keepId) {
+  if (season === gpSeason) return true;
+  $("gpCount").textContent = `Loading ${season}…`;
+  try { games = await gpLoad(season); }
+  catch (e) { $("gpSeason").value = gpSeason; gpBar(); $("gpNote").textContent = e.message; $("gpNote").hidden = false; return false; }
+  gpSeason = season;
+  if ($("gpSeason").value !== season) $("gpSeason").value = season;
+  gf.team = "";  // the teams change with the era
+  $("gpKind").hidden = !games.some(g => isPlayoffId(g.id));
+  if (!games.some(g => gpIsKind(g, gf.kind))) gf.kind = "";
+  $("h-board").textContent = season === GP_TEST ? "Scoreboard · held-out games" : "Scoreboard · games Tempo trained on";
+  sortGames(keepId);
+  return true;
+}
+function gpInSample() {  // the note under the count: win chances on games the model trained on look better than they are
+  if (gpSeason === GP_TEST) return "";
+  const val = games.filter(g => g.sp === "val").length, n = games.length;
+  return `Tempo trained on ${val ? `${(n - val).toLocaleString()} of these games and used the other ${val.toLocaleString()} to decide when to stop` : "these games"}, `
+    + `so its win chances here are in-sample and look sharper than they would on new games. ${GP_TEST} is the season it never saw.`;
+}
 function gpInit() {
+  if (REPLAY) {
+    $("gpSeasonF").hidden = false;
+    $("gpSeason").innerHTML = REPLAY.map(r => `<option value="${r.season}"${r.season === gpSeason ? " selected" : ""}>${r.season}</option>`).join("");
+    selSeason($("gpSeason"));
+    $("gpSeason").addEventListener("change", () => gpSetSeason($("gpSeason").value));
+  }
   $("gpKind").innerHTML = GP_KINDS.map(([k, name]) => `<button type="button" data-kind="${k}" aria-pressed="false">${name} <small></small></button>`).join("");
   $("gpSort").innerHTML = GP_SORTS.map(([k, name, tip]) => `<button type="button" data-sort="${k}" title="${tip}" aria-pressed="false">${name}</button>`).join("");
   $("gpKind").hidden = !games.some(g => isPlayoffId(g.id));
@@ -2259,9 +2351,12 @@ function replayInit() {
   $("scrub").addEventListener("pointerdown", () => setPlaying(false));
   ["stepBack", "stepFwd", "prevG", "nextG"].forEach(id => $(id).addEventListener("click", () => setPlaying(false)));
 }
-function replayFromHash() {  // #games/<gameId> or #games/<gameId>/<play>
+function replayFromHash() {  // #games/<gameId> or #games/<gameId>/<play>, loading the game's season first if it isn't on screen
   const m = START_HASH.match(/^#\/?games\/(\d+)(?:\/(\d+))?/);
-  if (m && openGame(m[1]) && m[2] != null) setStep(+m[2]);
+  if (!m) return;
+  const go = () => { if (openGame(m[1]) && m[2] != null) setStep(+m[2]); }, season = gpIdSeason(m[1]);
+  if (REPLAY && season !== gpSeason && REPLAY.some(r => r.season === season)) gpSetSeason(season, m[1]).then(ok => ok && go());
+  else go();
 }
 
 function renderSwings() {
@@ -2779,7 +2874,7 @@ function coActCards(u, L) {  // tracking actions per game against an average tea
 
 /* ---------- coaches tab ---------- */
 const CO = DATA.coaches || null;
-const co = { all: false, sel: null, stint: null, side: "off", pushed: false };  // pushed: this coach page added a history entry over the list
+const co = { all: false, season: "", sel: null, stint: null, side: "off", pushed: false };  // season: only the coaches of that season  // pushed: this coach page added a history entry over the list
 const coById = id => CO.coaches.find(c => c.id === id);
 const coTeamId = tri => (PF && PF.teams[tri]) || 0;
 const coSmall = u => u.replace("/1040x760/", "/260x190/");
@@ -2799,16 +2894,19 @@ window.coImgNext = img => {
 const coRec = r => r && r.g ? `${r.w}-${r.l}` : "–";
 const coPct = r => r && r.g ? (r.w / r.g).toFixed(3).replace(/^0/, "") : "";
 const coRings = n => n ? `<span class="rings" title="${n} NBA title${n > 1 ? "s" : ""}">${TROPHY}${n > 1 ? "×" + n : ""}</span>` : "";
+const coSeasonStint = c => co.season ? c.stints.filter(s => s.season === co.season).pop() : null;  // the last team, if he moved mid-season
 function coList() {
+  if (co.season) return CO.coaches.filter(coSeasonStint).sort((a, b) => coSeasonStint(b).w - coSeasonStint(a).w || a.name.localeCompare(b.name));
   return CO.coaches.filter(c => co.all || c.now).sort((a, b) => (b.career.w || 0) - (a.career.w || 0) || a.name.localeCompare(b.name));
 }
 function coGrid() {
   $("coGrid").innerHTML = coList().map(c => {
-    const tri = c.now || c.last, [tname, c1, c2] = pfTeam(tri);
-    return `<button type="button" class="co-pod" data-co="${c.id}" style="--tc:${c1};--ta:${c2}" aria-pressed="${c.id === co.sel}" aria-label="${esc(c.name)}, ${esc(tname)}">
+    const st = coSeasonStint(c), tri = st ? st.team : c.now || c.last, [tname, c1, c2] = pfTeam(tri);
+    const rec = st ? `${st.w}-${st.l}${st.pw + st.pl ? ` · playoffs ${st.pw}-${st.pl}` : ""}` : `${coRec(c.career)}${c.career.g ? ` · ${coPct(c.career)}` : ""} ${coRings(c.titles)}`;
+    return `<button type="button" class="co-pod" data-co="${c.id}" style="--tc:${c1};--ta:${c2}" aria-pressed="${c.id === co.sel}" aria-label="${esc(c.name)}, ${esc(tname)}${st ? `, ${co.season}` : ""}">
       <span class="ini" aria-hidden="true">${esc(pfInitials(c.name))}</span>${coImg(c, "", true)}
-      <span class="tm">${pfLogo(coTeamId(tri))}${esc(tri)}${c.now ? "" : " · former"}</span>
-      <span class="who"><b>${esc(c.name)}</b><span>${coRec(c.career)}${c.career.g ? ` · ${coPct(c.career)}` : ""} ${coRings(c.titles)}</span></span></button>`;
+      <span class="tm">${pfLogo(coTeamId(tri))}${esc(tri)}${st ? ` · ${co.season}` : c.now ? "" : " · former"}</span>
+      <span class="who"><b>${esc(c.name)}</b><span>${rec}</span></span></button>`;
   }).join("");
 }
 function coPick(id, side, push) {  // a coach's own page; `side` ("off" / "def") picks the game plan, otherwise the last one shown stays
@@ -2994,10 +3092,20 @@ function initCoaches() {
   $("coJumbo").innerHTML = [[now.length, "On the bench now"], [CO.coaches.length, `Head coaches since ${CO.seasons[0] || ""}`],
     [now.reduce((a, c) => a + c.titles, 0), "Titles among them"], [now.reduce((a, c) => a + c.coy, 0), "Coach of the Year awards"]]
     .map(([v, l]) => `<div><b>${n(v)}</b><span>${esc(l)}</span></div>`).join("");
-  const setAll = all => { co.all = all; $("coNow").setAttribute("aria-pressed", !all); $("coAll").setAttribute("aria-pressed", all); coGrid(); };
+  const coPress = () => { $("coNow").setAttribute("aria-pressed", !co.season && !co.all); $("coAll").setAttribute("aria-pressed", !co.season && co.all); };
+  const setAll = all => { co.all = all; co.season = ""; $("coSeason").value = ""; coPress(); coGrid(); };
   $("coNow").addEventListener("click", () => setAll(false));
   $("coAll").addEventListener("click", () => setAll(true));
-  $("coGrid").addEventListener("click", e => { const b = e.target.closest("[data-co]"); if (b) coPick(b.dataset.co, null, true); });
+  $("coSeason").innerHTML = `<option value="">Any season</option>` + [...CO.seasons].reverse().map(s => `<option>${s}</option>`).join("");
+  selSeason($("coSeason"), { any: "Any season" });
+  $("coSeason").addEventListener("change", () => { co.season = $("coSeason").value; coPress(); coGrid(); });
+  $("coGrid").addEventListener("click", e => {  // with a season picked, the coach's page opens on that season's team
+    const b = e.target.closest("[data-co]");
+    if (!b) return;
+    const st = co.season && coSeasonStint(coById(b.dataset.co));
+    coPick(b.dataset.co, null, true);
+    if (st && st.data) { co.stint = st.season + st.team; coRender(); }
+  });
   $("coStints").addEventListener("click", e => { const b = e.target.closest("[data-stint]"); if (b) { co.stint = b.dataset.stint; coRender(); } });
   // back to the list: the browser's own back when we came from it, so its history stays in step
   $("coBack").addEventListener("click", () => {
@@ -3761,15 +3869,16 @@ function selTeam(sel) {  // a list of teams: the game picker's logo grid, East a
     },
   });
 }
-function selSeason(sel) {  // a list of seasons ("2024-25", "2024-25 Playoffs"): the season picker's grid, a row per decade
+function selSeason(sel, { any } = {}) {  // a list of seasons ("2024-25", "2024-25 Playoffs"): the season picker's grid, a row per decade
   let k = null;  // the panel's regular season / playoffs switch, until a season is picked
   const hasPO = () => [...sel.options].some(o => isPO(o.value));
-  selPanel(sel, {
-    face: () => [DD_CAL, sel.value.replace(PO_SFX, ""), hasPO() ? (isPO(sel.value) ? "Playoffs" : "Regular season") : ""],
+  selPanel(sel, {  // with `any`, an option of value "" means no season filter and gets its own chip
+    face: () => [DD_CAL, sel.value === "" && any ? any : sel.value.replace(PO_SFX, ""), hasPO() && sel.value ? (isPO(sel.value) ? "Playoffs" : "Regular season") : ""],
     body: () => {
-      const vals = [...sel.options].map(o => o.value), kind = k || (isPO(sel.value) ? "po" : "rs"), key = s => s + (kind === "po" ? PO_SFX : "");
+      const vals = [...sel.options].map(o => o.value).filter(Boolean), kind = k || (isPO(sel.value) ? "po" : "rs"), key = s => s + (kind === "po" ? PO_SFX : "");
       const bases = [...new Set(vals.map(v => v.replace(PO_SFX, "")))].sort(), yr = s => +s.slice(0, 4), dec = s => Math.floor(yr(s) / 10) * 10;
-      return (hasPO() ? `<div class="seg ss-kind" role="group" aria-label="Games">${[["rs", "Regular season"], ["po", "Playoffs"]]
+      return (any ? `<button type="button" class="ss-chip ss-any${sel.value === "" ? " on end" : ""}" data-v="" aria-pressed="${sel.value === ""}">${esc(any)}</button>` : "") +
+        (hasPO() ? `<div class="seg ss-kind" role="group" aria-label="Games">${[["rs", "Regular season"], ["po", "Playoffs"]]
           .map(([v, l]) => `<button type="button" data-k="${v}" aria-pressed="${kind === v}">${l}</button>`).join("")}</div>` : "") +
         `<div class="ss-dec">${[...new Set(bases.map(dec))].sort((x, y) => y - x).map(d => `<span class="ss-dl">${d}s</span><div class="ss-row">${bases.filter(s => dec(s) === d).map(s => {
           const c = yr(s) % 10, v = key(s), on = v === sel.value;
@@ -4445,12 +4554,12 @@ function srcInit() {
 
 /* ---------- man-to-man matchups ---------- */
 const MU = DATA.matchups || null;
-const mu = { off: null, def: null, avgO: new Map(), avgD: new Map() };
-let MU_BY_ID = new Map(), MU_H2H = new Map(), MU_DEFS = [], MU_OFFS = [];
-function muEta(o, d) {
-  const out = [];
-  for (let t = 0; t < MU.b.length; t++) {
-    let s = MU.b[t] + MU.off[o][t] + MU.def[d][t];
+const mu = { off: null, def: null, season: "", avgO: new Map(), avgD: new Map() };  // season "": every season together
+let MU_BY_ID = new Map(), MU_H2H = new Map(), MU_H2H_S = new Map(), MU_DEFS = [], MU_OFFS = [];
+function muEta(o, d) {  // with a season picked, that season's league rates: the same pair scores differently in 2018 and 2025
+  const out = [], B = (mu.season && MU.b_season && MU.b_season[mu.season]) || MU.b;
+  for (let t = 0; t < B.length; t++) {
+    let s = B[t] + MU.off[o][t] + MU.def[d][t];
     const w = MU.w[t], U = MU.U[o], V = MU.V[d];
     for (let k = 0; k < w.length; k++) s += w[k] * U[k] * V[k];
     out.push(s);
@@ -4499,26 +4608,33 @@ function muRender(initial) {
     tile("Shots / 100", pr.fga.toFixed(1), `${hotCold(pr.fga, av.fga)} avg ${av.fga.toFixed(1)}`),
     tile("TOV / 100", pr.tov.toFixed(1), `${hotCold(pr.tov, av.tov, "", 1, true)} avg ${av.tov.toFixed(1)}`),
   ].join("");
-  const h = MU_H2H.get(p.id + "-" + q.id);
+  const all = MU_H2H.get(p.id + "-" + q.id), per = MU_H2H_S.get(p.id + "-" + q.id) || [];
+  const h = mu.season ? per.find(r => r.season === mu.season) : all;
+  const line = r => `<b>${r.poss ? (r.pts / r.poss * 100).toFixed(1) : "–"}</b> pts / 100 · <b>${r.fgm}–${r.fga}</b> FG${r.fga ? ` (${fmtP(r.fgm / r.fga)})` : ""} · <b>${r.tov}</b> TOV · ${r.poss.toFixed(0)} poss`;
+  const chips = per.length > 1 || (mu.season && per.length) ? `<div class="mu-seasons">${per.map(r => `<button type="button" data-mu-season="${r.season}" aria-pressed="${r.season === mu.season}"
+      title="${r.season}: ${r.poss ? (r.pts / r.poss * 100).toFixed(1) : "–"} pts / 100 on ${r.poss.toFixed(0)} possessions">${r.season.slice(2)}<small>${r.poss ? (r.pts / r.poss * 100).toFixed(0) : "–"}</small></button>`).join("")}</div>` : "";
   $("muH2H").innerHTML = h
-    ? `<span class="label">Actual head-to-head · ${h.seasons} season${h.seasons > 1 ? "s" : ""}</span>
-       <div><b>${(h.pts / h.poss * 100).toFixed(1)}</b> pts / 100 · <b>${h.fgm}–${h.fga}</b> FG${h.fga ? ` (${fmtP(h.fgm / h.fga)})` : ""} · <b>${h.tov}</b> TOV · ${h.poss.toFixed(0)} poss</div>`
+    ? `<span class="label">Actual head-to-head · ${mu.season ? mu.season : `${h.seasons} season${h.seasons > 1 ? "s" : ""}`}</span><div>${line(h)}</div>${chips}`
+    : all && mu.season
+    ? `<span class="label">Actual head-to-head · ${mu.season}</span><div style="color:var(--ink-2)">They didn't meet in ${mu.season}${per.length ? "; they did in the seasons below" : ""}.</div>${chips}`
     : `<span class="label">Actual head-to-head${tip(`Fewer than ${MU.min_pair_poss} tracked possessions together, so the numbers above come only from how each of them plays everyone else.`)}</span><div style="color:var(--ink-2)">Too few meetings</div>`;
 
   // a bar instead of a badge: length is how far from the scorer's average (full at ±50%), blue colder, red hotter
   const row = (x, v, ref, attr) => { const d = v / ref - 1;
     return `<button type="button" class="mu-row" ${attr}="${x.id}" title="${esc(x.n)}: ${v.toFixed(1)} pts / 100 (scorer's avg ${ref.toFixed(1)})"><span class="nm">${teamTag(x.now)}${esc(x.n)}</span><span class="num">${v.toFixed(1)}</span>` +
       `<span class="mu-d ${d < 0 ? "cold" : "hot"}" style="--w:${(Math.min(1, Math.abs(d) / .5) * 100).toFixed(0)}%"></span></button>`; };
-  const defs = MU_DEFS.filter(x => x.now && x.dp >= 400 && x.id !== p.id && !muSwitch(p, x)).map(x => [x, muPred(p, x).pts]);
+  const muIn = (x, k) => mu.season ? ((x.s || {})[mu.season] || [0, 0])[k] >= 150 : x.now && (k ? x.dp : x.op) >= 400;  // k: 0 scorer, 1 defender
+  const defs = MU_DEFS.filter(x => muIn(x, 1) && x.id !== p.id && !muSwitch(p, x)).map(x => [x, muPred(p, x).pts]);
   defs.sort((a, b) => a[1] - b[1]);
-  $("muToughT").textContent = "Toughest defenders";
-  $("muEasyT").textContent = "Easiest defenders";
+  const inS = mu.season ? ` · ${mu.season}` : "";
+  $("muToughT").textContent = "Toughest defenders" + inS;
+  $("muEasyT").textContent = "Easiest defenders" + inS;
   $("muTough").innerHTML = defs.slice(0, 5).map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
   $("muEasy").innerHTML = defs.slice(-5).reverse().map(([x, v]) => row(x, v, av.pts, "data-def")).join("");
-  const offs = MU_OFFS.filter(x => x.now && x.op >= 400 && x.id !== q.id && !muSwitch(x, q)).map(x => [x, muPred(x, q).pts, muAvgOff(x).pts]);
+  const offs = MU_OFFS.filter(x => muIn(x, 0) && x.id !== q.id && !muSwitch(x, q)).map(x => [x, muPred(x, q).pts, muAvgOff(x).pts]);
   offs.sort((a, b) => (a[1] / a[2]) - (b[1] / b[2]));
-  $("muStopsT").textContent = "He slows down";
-  $("muBeatsT").textContent = "Scores on him";
+  $("muStopsT").textContent = "He slows down" + inS;
+  $("muBeatsT").textContent = "Scores on him" + inS;
   $("muStops").innerHTML = offs.slice(0, 5).map(([x, v, a]) => row(x, v, a, "data-off")).join("");
   $("muBeats").innerHTML = offs.slice(-5).reverse().map(([x, v, a]) => row(x, v, a, "data-off")).join("");
   if (!initial) try { history.replaceState(null, "", `#matchups/${p.id}-${q.id}`); } catch (e) {}  // only on a user's pick, so page load keeps its own hash
@@ -4559,6 +4675,14 @@ function muInit() {
   for (let i = 0; i < MU.h2h.length; i += C) {
     const r = Object.fromEntries(MU.h2h_cols.map((c, k) => [c, MU.h2h[i + k]]));
     MU_H2H.set(r.off + "-" + r.def, r);
+  }
+  if (MU.h2h_s) {  // per pair, in h2h's order: k, then k rows of h2h_s_cols
+    const S = MU.h2h_s, SC_ = MU.h2h_s_cols, W = SC_.length;
+    for (let i = 0, j = 0; i < MU.h2h.length; i += C) {
+      const k = S[j++], rows = [];
+      for (let m = 0; m < k; m++, j += W) { const r = Object.fromEntries(SC_.map((c, x) => [c, S[j + x]])); r.season = MU.seasons[r.si]; rows.push(r); }
+      MU_H2H_S.set(MU.h2h[i] + "-" + MU.h2h[i + 1], rows);
+    }
   }
   const H = MU.held_out, full = H["Scorer + defender + interaction"], lg = H["League average"];
   $("muCaption").innerHTML = `Any scorer vs any defender · ${MU.games.toLocaleString()} games of tracking` + tip(`What happens when one player guards another. A model trained on ${MU.games.toLocaleString()} games of NBA matchup tracking (${MU.seasons[0]} to ${MU.seasons.at(-1)}) predicts any pairing, even ones that never happened; on the unseen ${MU.test_season} season it cut points-prediction error ${((1 - full.pts / lg.pts) * 100).toFixed(0)}% versus league averages. Current teams: ${MU.roster_season} rosters.`);
@@ -4602,6 +4726,14 @@ function muInit() {
     muRender();
   });
   ["muTeamO", "muTeamD"].forEach(id => { selTeam($(id)); $(id).addEventListener("change", muTeam); });
+  if (MU.b_season) {  // the season picker: league rates, lists and head-to-head of one season
+    $("muSeasonF").hidden = false;
+    $("muSeason").innerHTML = `<option value="">Every season</option>` + [...MU.seasons].reverse().map(s => `<option>${s}</option>`).join("");
+    selSeason($("muSeason"), { any: "Every season" });
+    const setSeason = v => { mu.season = v; mu.avgO.clear(); mu.avgD.clear(); if ($("muSeason").value !== v) $("muSeason").value = v; muRender(); muTeam(); };
+    $("muSeason").addEventListener("change", () => setSeason($("muSeason").value));
+    $("muH2H").addEventListener("click", e => { const b = e.target.closest("[data-mu-season]"); if (b) setSeason(b.dataset.muSeason === mu.season ? "" : b.dataset.muSeason); });
+  }
   const cal = MU.calibration || [];
   if (!cal.length) $("muCalPanel").hidden = true;
   const cmax = Math.max(...cal.map(c => Math.max(c.pred, c.actual)), 1);
@@ -4625,7 +4757,9 @@ function setPhotos(root = document) {
 /* ---------- seasons in orbit: a port of the radial orbital timeline ----------
    One node per season. The stage turns slowly; clicking a node stops it, turns that season to the top and opens its card.
    Status is how Tempo used the season (trained / validated / held out), the bar is how much of a normal 1,230-game regular
-   season was played, and "connected" seasons are the ones that shared a Finals team. */
+   season was played, and "connected" seasons are the ones that shared a Finals team (matched by franchise).
+   Seasons from before NBA.com's play-by-play (pbp: false, fetch_history.py) ride a second, outer ring as small dashed
+   dots marked *: results and team box scores only, never seen by Tempo. */
 const ORB_ICON = {  // lucide: trophy, zap, link, arrow-right
   trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
   zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
@@ -4633,39 +4767,61 @@ const ORB_ICON = {  // lucide: trophy, zap, link, arrow-right
   arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
 };
 const orbSvg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ORB_ICON[k]}</svg>`;
-const ORB_STATUS = { completed: "Trained on", "in-progress": "Validation", pending: "Held out" };
+const ORB_STATUS = { completed: "Trained on", "in-progress": "Validation", pending: "Held out", box: "Box score only*" };
+const ORB_STAT_NAMES = { FGM: "field goals", FG3M: "threes", FTM: "free throws", REB: "rebounds", OREB: "offensive rebounds", AST: "assists",
+  STL: "steals", BLK: "blocks", TOV: "turnovers", PF: "fouls" };
 const NUM_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
 const orb = { items: [], nodes: [], el: null, angle: 0, auto: true, still: false, open: null, r: 200 };
 function orbItems(S) {
   const n = v => Number(v).toLocaleString(), full = Math.max(1, ...S.map(s => s.rs));
+  const ring = s => (s.pbp === false ? "hist" : "pbp"), size = { pbp: 0, hist: 0 };
+  const team = (f, side) => f[`${side}_name`] || pfTeam(f[side])[0];  // era names for old seasons: Minneapolis Lakers
+  const fr = (f, side) => f[`${side}_id`] || f[side];  // franchise ID when known, so the Lakers in 1950 and 2020 connect
   return S.map((s, i) => {
-    const f = s.finals, sp = s.split || {}, champ = f ? pfTeam(f.champ)[0] : "";
-    const status = sp.test ? "pending" : sp.val ? "in-progress" : "completed";
-    const use = sp.test ? `Tempo never saw it: these are the ${n(sp.test)} games in Game replay.`
+    const f = s.finals, sp = s.split || {}, champ = f ? team(f, "champ") : "", r = ring(s);
+    const status = r === "hist" ? "box" : sp.test ? "pending" : sp.val ? "in-progress" : "completed";
+    const kept = (s.tracked || []).filter(k => ORB_STAT_NAMES[k]).map(k => ORB_STAT_NAMES[k]);
+    const use = r === "hist" ? `* NBA.com's play-by-play starts in 1996-97, so Tempo never saw this season. All that survives is each game's result and team box score.`
+      : sp.test ? `Tempo never saw it: these are the ${n(sp.test)} games in Game replay.`
       : sp.val ? `Tempo trained on ${n(sp.train)} of its games and used the other ${n(sp.val)} to decide when to stop training.`
       : `Tempo trained on all ${n(sp.train || s.rs + s.po)} of its games.`;
+    const mine = f ? [fr(f, "champ"), fr(f, "opp")] : [];
+    const related = f ? S.map((o, j) => (j !== i && o.finals && [fr(o.finals, "champ"), fr(o.finals, "opp")].some(t => mine.includes(t)) ? j : -1))
+      .filter(j => j >= 0).sort((a, b) => Math.abs(a - i) - Math.abs(b - i)).slice(0, 6).sort((a, b) => a - b) : [];  // the 6 nearest
     return {
-      id: i, title: s.season, f, status, date: f ? `Finals ${f.w}–${f.l}` : "", head: champ || s.season,
-      content: `${f ? `Beat the ${esc(pfTeam(f.opp)[0])} ${f.w}–${f.l}<br>` : ""}${n(s.rs + s.po)} games · ${n(s.shots)} shots`, use,
-      energy: Math.round(s.rs / full * 100),
-      related: f ? S.map((o, j) => (j !== i && o.finals && [o.finals.champ, o.finals.opp].some(t => t === f.champ || t === f.opp) ? j : -1)).filter(j => j >= 0) : [],
+      id: i, ring: r, k: size[r]++, season: s.season, title: s.season + (r === "hist" ? "*" : ""), f, status, date: f ? `Finals ${f.w}–${f.l}` : "", head: champ || s.season,
+      content: `${f ? `Beat the ${esc(team(f, "opp"))} ${f.w}–${f.l}<br>` : ""}${n(s.rs + s.po)} games` + (r === "hist" ? "" : ` · ${n(s.shots)} shots`), use,
+      energy: Math.round(s.rs / full * 100), kept, year: +s.season.slice(0, 4),
+      related, shared: o => [fr(o.f, "champ"), fr(o.f, "opp")].find(t => mine.includes(t)) === fr(o.f, "champ") ? team(o.f, "champ") : team(o.f, "opp"),
     };
-  });
+  }).map((it, _, all) => Object.assign(it, { of: all.filter(o => o.ring === it.ring).length }));
 }
 function orbInit() {
   const S = DATA.seasons, el = $("hmOrbit");
   if (!S || S.length < 2) return;
   orb.el = el; orb.items = orbItems(S);
+  const pbp = orb.items.filter(it => it.ring === "pbp"), hist = orb.items.filter(it => it.ring === "hist");
+  // a crowded ring keeps a label on every fifth (play-by-play) or tenth (history) season; the open one always shows
+  const labelled = it => it.ring === "hist" ? it.year % 10 === 0 || it.k === 0 : pbp.length <= 16 || it.year % 5 === 0 || it.k === 0;
   $("hmOrbTitle").textContent = `${NUM_WORDS[S.length] || S.length} seasons in orbit`;
-  $("hmOrbCap").innerHTML = tip(`${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how Tempo used its games; seasons that shared a Finals team light up.`);
+  $("hmOrbCap").innerHTML = tip(`${S[0].season} to ${S[S.length - 1].season}, each with its champion. Click a season for its Finals and how Tempo used its games; seasons that shared a Finals team light up.`
+    + (hist.length && pbp.length ? ` The outer ring (*) is ${hist[0].title.slice(0, -1)} to ${hist.at(-1).title.slice(0, -1)}: box scores only, since NBA.com's play-by-play starts in ${pbp[0].title}.` : ""));
   $("hmOrbHead").hidden = el.hidden = false;
-  el.innerHTML = `<div class="orb-stage"><div class="orb-core" aria-hidden="true"><i></i><i></i><b></b></div><div class="orb-ring" aria-hidden="true"></div>
-    ${orb.items.map(it => `<div class="orb-node" data-i="${it.id}"><span class="orb-glow" style="--e:${it.energy}"></span>
-      <button type="button" class="orb-dot" aria-expanded="false" aria-label="${esc(it.title)}${it.f ? `, won by ${esc(it.head)}` : ""}">${orbSvg("trophy")}</button>
+  el.innerHTML = `<div class="orb-stage${pbp.length > 16 ? " dense" : ""}"><div class="orb-core" aria-hidden="true"><i></i><i></i><b></b></div><div class="orb-ring" aria-hidden="true"></div>
+    ${hist.length ? '<div class="orb-ring outer" aria-hidden="true"></div>' : ""}
+    ${orb.items.map(it => `<div class="orb-node${it.ring === "hist" ? " hist" : ""}${labelled(it) ? "" : " quiet"}" data-i="${it.id}"><span class="orb-glow" style="--e:${it.energy}"></span>
+      <button type="button" class="orb-dot" aria-expanded="false" aria-label="${esc(it.title.replace("*", ""))}${it.f ? `, won by ${esc(it.head)}` : ""}${it.ring === "hist" ? ", box score only" : ""}">${it.ring === "hist" ? "" : orbSvg("trophy")}</button>
       <span class="orb-name" aria-hidden="true">${esc(it.title)}</span><div class="orb-card" hidden></div></div>`).join("")}</div>`;
   orb.nodes = [...el.querySelectorAll(".orb-node")];
+  const pick = $("hmOrbPick");  // 80 seasons are too many to find by eye: pick one and it turns to the top
+  if (!pick.options.length) {
+    pick.innerHTML = `<option value="">Every season</option>` + orb.items.map(it => `<option value="${it.season}">${it.season}</option>`).join("");
+    selSeason(pick, { any: "Every season" });
+    pick.addEventListener("change", () => { const i = orb.items.findIndex(it => it.season === pick.value); if (i < 0) orbCollapse(); else if (orb.open !== i) orbToggle(i); });
+  }
   el.addEventListener("click", e => {
-    const rel = e.target.closest("[data-rel]"), node = e.target.closest(".orb-dot, .orb-name");
+    const rel = e.target.closest("[data-rel]"), node = e.target.closest(".orb-dot, .orb-name"), go = e.target.closest("[data-replay]");
+    if (go) { const season = go.dataset.replay; showTab("games", true); (REPLAY ? gpSetSeason(season) : Promise.resolve()).then(() => $("gp").scrollIntoView({ behavior: "smooth" })); return; }
     if (rel) orbToggle(+rel.dataset.rel);
     else if (node) orbToggle(+node.closest(".orb-node").dataset.i);
     else if (!e.target.closest(".orb-card")) orbCollapse();  // a click on empty space lets it spin again
@@ -4687,24 +4843,30 @@ function orbInit() {
 function orbPlace() {
   const W = orb.el.clientWidth, H = orb.el.clientHeight, n = orb.nodes.length;
   if (!W) return;
-  orb.r = Math.max(90, Math.min(200, W / 2 - 60, H / 2 - 110));
-  orb.el.style.setProperty("--r", orb.r + "px");
+  const hist = orb.items.some(it => it.ring === "hist");
+  orb.r = Math.max(90, Math.min(200, W / 2 - (hist ? 100 : 60), H / 2 - (hist ? 150 : 110)));
+  orb.r2 = orb.r + (hist ? Math.min(70, Math.max(36, W / 2 - orb.r - 30)) : 0);  // the box-score-only ring, outside
+  orb.el.style.setProperty("--r", orb.r + "px"); orb.el.style.setProperty("--r2", orb.r2 + "px");
   orb.nodes.forEach((node, i) => {
-    const rad = (((i / n) * 360 + orb.angle) % 360) * Math.PI / 180, open = orb.open === i;
-    node.style.transform = `translate(${(orb.r * Math.cos(rad)).toFixed(1)}px, ${(orb.r * Math.sin(rad)).toFixed(1)}px)`;
+    const it = orb.items[i], r = it.ring === "hist" ? orb.r2 : orb.r;
+    const rad = (((it.k / it.of) * 360 + orb.angle) % 360) * Math.PI / 180, open = orb.open === i;
+    node.style.transform = `translate(${(r * Math.cos(rad)).toFixed(1)}px, ${(r * Math.sin(rad)).toFixed(1)}px)`;
     node.style.zIndex = open ? 200 : Math.round(100 + 50 * Math.cos(rad));
     node.style.opacity = open ? 1 : Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(rad)) / 2))).toFixed(3);
   });
 }
 function orbCard(it) {
   const f = it.f, logo = f && f.champ_id ? `<img src="https://cdn.nba.com/logos/nba/${f.champ_id}/global/L/logo.svg" alt="" onerror="this.remove()">` : "";
-  const shared = o => [o.f.champ, o.f.opp].find(t => t === f.champ || t === f.opp);
+  const shared = it.shared;
   return `<span class="orb-stem" aria-hidden="true"></span>
     <div class="orb-ch"><div class="orb-row"><span class="orb-badge ${it.status}" title="${esc(it.use)}">${ORB_STATUS[it.status]}</span><span class="orb-date">${esc(it.date)}</span></div>
       <h3 class="orb-title">${logo}<span>${esc(it.title)} · ${esc(it.head)}</span></h3></div>
     <div class="orb-cc"><p>${it.content}</p>
-      <div class="orb-sec"><div class="orb-row"><span class="orb-k">${orbSvg("zap")}Regular season played</span><span class="orb-v">${it.energy}%</span></div>
-        <div class="orb-bar"><i style="width:${it.energy}%"></i></div></div>
+      ${typeof REPLAY !== "undefined" && (it.season === GP_TEST || (REPLAY && REPLAY.some(r => r.season === it.season)))
+        ? `<button type="button" class="orb-go" data-replay="${it.season}">Replay its games ${orbSvg("arrow")}</button>` : ""}
+      ${it.ring === "hist" ? `<p class="orb-note">${esc(it.use)}${it.kept.length ? ` Team totals kept: ${it.kept.length >= 9 ? "the full box score" : esc(it.kept.join(", "))}.` : ""}</p>`
+      : `<div class="orb-sec"><div class="orb-row"><span class="orb-k">${orbSvg("zap")}Regular season played</span><span class="orb-v">${it.energy}%</span></div>
+        <div class="orb-bar"><i style="width:${it.energy}%"></i></div></div>`}
       ${it.related.length ? `<div class="orb-sec"><span class="orb-k">${orbSvg("link")}Shared a Finals team</span><div class="orb-rels">${it.related.map(j => {
         const o = orb.items[j];
         return `<button type="button" data-rel="${j}">${esc(o.title)} · ${esc(shared(o))}${orbSvg("arrow")}</button>`;
@@ -4714,6 +4876,7 @@ function orbToggle(i) {
   if (orb.open === i) { orbCollapse(); return; }
   const it = orb.items[i], rel = new Set(it.related);
   orb.open = i; orb.auto = false;
+  if ($("hmOrbPick").value !== it.season) $("hmOrbPick").value = it.season;
   orb.nodes.forEach((node, j) => {
     const card = node.querySelector(".orb-card");
     node.classList.toggle("open", j === i); node.classList.toggle("related", rel.has(j));
@@ -4721,11 +4884,12 @@ function orbToggle(i) {
     card.hidden = j !== i;
     if (j === i) card.innerHTML = orbCard(it);
   });
-  orb.angle = 270 - (i / orb.items.length) * 360;  // turn the chosen season to the top
+  orb.angle = 270 - (it.k / it.of) * 360;  // turn the chosen season to the top of its ring
   orbPlace();
 }
 function orbCollapse() {
   orb.open = null; orb.auto = !orb.still;
+  if ($("hmOrbPick").value) $("hmOrbPick").value = "";
   orb.nodes.forEach(node => {
     node.classList.remove("open", "related");
     node.querySelector(".orb-dot").setAttribute("aria-expanded", false);
@@ -4873,7 +5037,6 @@ function nmClose(refocus) {
 }
 function nmGo(a) {
   nmClose(false);
-  if (a.dataset.kind != null && !$("gpKind").hidden) { gf.team = ""; gf.kind = a.dataset.kind; sortGames(cur && cur.id); }
   showTab(a.dataset.nav, true);
   const to = a.dataset.to && $(a.dataset.to);
   if (to && !to.hidden) requestAnimationFrame(() => to.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -4883,7 +5046,7 @@ function nmInit() {
   // only offer places that have something to show in this build
   nav.querySelectorAll("[data-nav]").forEach(a => {
     const to = a.dataset.to && $(a.dataset.to);
-    a.closest("li").hidden = !tabHasContent(a.dataset.nav) || (to && to.hidden) || (a.dataset.kind === "po" && $("gpKind").hidden);
+    a.closest("li").hidden = !tabHasContent(a.dataset.nav) || (to && to.hidden);
   });
   nav.querySelectorAll(".nm-item").forEach(li => { if (li.querySelector(".nm-content")) li.hidden = !li.querySelector(".nm-grid > li:not([hidden])"); });
   setPhotos(nav);

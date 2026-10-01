@@ -66,8 +66,24 @@ def _finals(season_dir):
     return {"champ": champ, "champ_id": int(ids.get(champ, 0)), "opp": opp, "opp_id": int(ids.get(opp, 0)), "w": w, "l": l}
 
 
-def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", data=None):
-    """One record per season for the Home tab's orbit: games by type, shots, the Finals, and how Tempo used its games."""
+def _history_seasons(history, before):
+    """Seasons before `before` from fetch_history.py, flagged pbp=False: results and box scores only, no play-by-play.
+    The dashboard marks them with an asterisk."""
+    from fetch_history import finals, load_games, tracked
+    g = load_games(history)
+    if g.empty:
+        return []
+    g = g[g["season"] < before] if before else g
+    stats = tracked(history)
+    return [{"season": s, "rs": int((d["season_type"] == "Regular Season").sum()), "po": int((d["season_type"] == "Playoffs").sum()),
+             "shots": 0, "split": {}, "finals": finals(d), "pbp": False, "tracked": stats.get(s, [])}
+            for s, d in g.groupby("season")]
+
+
+def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", data=None,
+                          history="data/context/history_team_games.parquet"):
+    """One record per season for the Home tab's orbit: games by type, shots, the Finals, and how Tempo used its games.
+    Seasons from before the play-by-play (fetch_history.py) come first, with pbp=False."""
     root = Path(raw)
     if not root.exists():
         return None
@@ -84,14 +100,18 @@ def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", 
         if not len(kinds):
             continue
         out.append({"season": d.name, "rs": int(kinds.get("Regular Season", 0)), "po": int(kinds.get("Playoffs", 0)),
-                    "shots": int(shots_per.get(d.name, 0)), "split": split_per.get(d.name, {}), "finals": _finals(d)})
-    return out
+                    "shots": int(shots_per.get(d.name, 0)), "split": split_per.get(d.name, {}), "finals": _finals(d), "pbp": True})
+    return _history_seasons(history, out[0]["season"] if out else None) + out
 
 
 def build_sources_payload(raw="data/raw", context="data/context", shots="data/processed/shots.parquet",
                           ckpt=None, shot_run="runs/shots", baseline="runs/baseline.joblib", synthetic=False):
     ctx = Path(context)
     pbp = _season_counts(raw)
+    from fetch_history import load_games
+    hist = load_games(ctx / "history_team_games.parquet")
+    hist = hist[hist["season"] < min(pbp)] if len(hist) and pbp else hist
+    hist_counts = hist.groupby("season").size().astype(int).to_dict() if len(hist) else {}
     matchups = _season_counts(ctx / "matchups")
     seasons_of = lambda path, col="season": (sorted(pd.read_parquet(path, columns=[col])[col].unique())
                                              if Path(path).exists() else [])
@@ -116,6 +136,14 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
         {"name": "NBA.com Stats: LeagueGameFinder", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "The list of regular-season and playoff game IDs to download for each season.",
          "coverage": ", ".join(pbp) or "not fetched yet", "updated": _mtime(raw), "script": "fetch_data.py", "file": "(not stored)"},
+        {"name": "NBA.com Stats: LeagueGameLog (before play-by-play)*", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
+         "used": "* Box scores only. NBA.com has no play-by-play before 1996-97, so these seasons are never tokenized, trained on "
+                 "or replayed: each game's date, teams, final score and team totals, which thin out with age (before 1982-83 mostly "
+                 "points, field goals and free throws; the full team box score from 1985-86). Used for champions in the seasons orbit "
+                 "and, opt-in, to warm up the pre-game Elo ratings.",
+         "coverage": (f"{min(hist_counts)} to {max(hist_counts)}: {sum(hist_counts.values()):,} games, "
+                      f"{int((hist['season_type'] == 'Playoffs').sum()):,} of them playoffs") if hist_counts else "not fetched yet",
+         "updated": _mtime(ctx / "history_team_games.parquet"), "script": "fetch_history.py", "file": f"{context}/history_team_games.parquet"},
         {"name": "NBA.com Stats: BoxScoreMatchupsV3", "org": "NBA.com via nba_api", "url": "https://www.nba.com/stats",
          "used": "Who guarded whom in each game: partial possessions, points, shots, turnovers. Used to estimate each shot's primary defender and to train the man-to-man matchup model. NBA.com has it from 2017-18 on.",
          "coverage": _cov_by_type(ctx / "matchups"), "updated": _mtime(ctx / "matchups"), "script": "fetch_context.py", "file": f"{context}/matchups/<season>/<gameId>.parquet"},
@@ -164,6 +192,7 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     extras = {
         "NBA.com Stats: PlayByPlayV3": (pbp, [], ["games", "shots", "players", "model"]),
         "NBA.com Stats: LeagueGameFinder": ({}, list(pbp), ["games", "shots"]),
+        "NBA.com Stats: LeagueGameLog (before play-by-play)*": (hist_counts, [], ["home"]),
         "NBA.com Stats: BoxScoreMatchupsV3": (matchups, [], ["matchups", "players"]),
         "NBA.com Stats: CommonTeamRoster": ({}, sorted(set(coach_seasons) | set(roster_seasons)), ["players"]),
         "NBA.com Stats: SynergyPlayTypes": ({}, pt_seasons, ["players", "coaches"]),

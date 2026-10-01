@@ -4,11 +4,12 @@
 set -e
 cd "$(dirname "$0")"
 if [ -f runs/base/best.pt ] && [ -f data/processed/games.pkl ]; then
-  python3 export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl
+  python3 export_dashboard.py --ckpt runs/base/best.pt --data data/processed/games.pkl --all_seasons
 else
   python3 export_dashboard.py --ckpt runs/syn/best.pt --data data/processed/synthetic.pkl
 fi
 mkdir -p site
 cp dashboard.html site/index.html
+rm -rf site/games; [ -d games ] && cp -R games site/games  # other seasons for Game replay, loaded on demand
 [ -d site/.vercel ] || npx -y vercel@latest link --yes --project homers --cwd site
 npx -y vercel@latest deploy --prod --yes --cwd site

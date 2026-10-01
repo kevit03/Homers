@@ -1,7 +1,7 @@
 """Train Tempo on next-event prediction + win probability.
 
-The win-prob head is a residual on the logistic baseline (fit it first: python baseline.py), the input
-carries the pre-game Elo edge (python team_strength.py), and after training a temperature is fitted
+The win-prob head is a residual on a logistic baseline (python baseline.py; with Elo in the data,
+the baseline refit with the pre-game Elo edge from python team_strength.py), and after training a temperature is fitted
 on the validation season and saved in the checkpoint's config.
 
     python train.py --out runs/base
@@ -19,6 +19,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from baseline import fit_elo_baseline
 from model import Config, GameDataset, Tempo, collate, compute_losses, load_data
 
 
@@ -108,13 +109,15 @@ def main(argv=None):
         batch_size=args.batch_size, shuffle=shuffle, collate_fn=collate)
     train_dl, val_dl = mk("train", True), mk("val", False)
 
-    base_coef = None
-    if not args.no_residual:
-        clf = joblib.load(args.baseline)
-        base_coef = (float(clf.intercept_[0]), *map(float, clf.coef_[0]))
     has_elo = any(g.get("elo") for g in games)
     if not has_elo and not args.no_elo:
         print("no pre-game Elo in the data (run team_strength.py); training without it")
+    base_coef = None
+    if not args.no_residual:
+        # with Elo, start from the logistic baseline that also sees Elo, so the plays have to add something on top of it
+        clf = (fit_elo_baseline([games[i] for i in splits["train"]]) if has_elo and not args.no_elo
+               else joblib.load(args.baseline))
+        base_coef = (float(clf.intercept_[0]), *map(float, clf.coef_[0]))
     cfg = Config(vocab_size=len(d["vocab"]), block_size=args.block_size, n_layer=args.n_layer,
                  n_head=args.n_head, n_embd=args.n_embd, dropout=args.dropout,
                  n_feat=6 if has_elo and not args.no_elo else 4, wp_residual=not args.no_residual, base_coef=base_coef)
