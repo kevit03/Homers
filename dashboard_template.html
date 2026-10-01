@@ -5838,7 +5838,7 @@ const DZ_AX = [  // crest order, clockwise from the top
   { k: "rim", name: "Rim", w: 1, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking). Bigs see far more of these shots than guards" },
   { k: "blk", name: "Blocks", w: 1, low: false, tip: "Blocks per 36 minutes. Rewards bigs and shot-blocking gambles; can't see shots that never happen" },
   { k: "stl", name: "Steals", w: 1, low: false, tip: "Steals per 36 minutes. Rewards gambling; players asked to stay home in the paint get fewer chances" },
-  { k: "det", name: "Deter", w: .5, low: true, tip: "Change in the share of shots taken at the rim against him, from the shot model. Can't see drives that never start because he's there" },
+  { k: "det", name: "Deter", long: "Deterrence", w: .5, low: true, tip: "Change in the share of shots taken at the rim against him, from the shot model. Can't see drives that never start because he's there" },
 ];
 const DZ_RANK = [["score", "Wall rating"], ["lock", "Lockdown"], ["con", "Contest"], ["rim", "Rim"], ["blk", "Blocks"], ["stl", "Steals"], ["hw", "Hardware"]];
 const DZ_POS = [["", "All"], ["G", "Guards"], ["F", "Wings"], ["C", "Bigs"]];
@@ -5856,9 +5856,10 @@ function dzBuild() {
   const seasons = new Set();
   for (const [k, P] of Object.entries(PF.players)) {
     const id = +k; let min = 0, blk = 0, stl = 0, gp = 0;
-    for (const [s, r] of Object.entries(P.seasons || {})) if (!isPO(s)) { min += r.min || 0; blk += r.blk || 0; stl += r.stl || 0; gp += r.gp || 0; seasons.add(s); }
+    let first = "";
+    for (const [s, r] of Object.entries(P.seasons || {})) if (!isPO(s)) { min += r.min || 0; blk += r.blk || 0; stl += r.stl || 0; gp += r.gp || 0; seasons.add(s); if (!first || s < first) first = s; }
     if (min < DZ_MIN) continue;
-    const x = { id, name: P.name, team: P.team || playerTeam(id), pos: dzPosOf((P.bio && P.bio.pos) || ""), bio: P.bio || {}, min, gp, v: { blk: blk / min * 36, stl: stl / min * 36 }, p: {},
+    const x = { id, name: P.name, team: P.team || playerTeam(id), pos: dzPosOf((P.bio && P.bio.pos) || ""), bio: P.bio || {}, min, gp, first, v: { blk: blk / min * 36, stl: stl / min * 36 }, p: {},
       g: { blk: blk / Math.max(gp, 1), stl: stl / Math.max(gp, 1), stk: (blk + stl) / Math.max(gp, 1) } };  // per game, for the Stocks tile
     const i = mi.get(id);
     if (i != null && MU.players[i].dp >= 2000) { const e = MU.def[i]; x.v.lock = Math.exp(e[0]) - 1; x.v.con = sig(MU.b[3] + e[3]) - fg0; x.dp = MU.players[i].dp; }
@@ -5978,18 +5979,18 @@ function dzReport(x) {
   ].filter(Boolean).join("");
   // why the rating lands where it does: his best and worst parts, and what the weak ones can't see
   const parts = DZ_AX.filter(a => x.p[a.k] != null).map(a => ({ ...a, p: x.p[a.k] })).sort((a, c) => c.p - a.p);
-  const top = parts.filter(a => a.p >= .9), low = parts.filter(a => a.p < .6), list = as => as.map(a => `${a.name} (${dzPct(a.p)})`).join(", ");
+  const top = parts.filter(a => a.p >= .9), low = parts.filter(a => a.p < .6), list = as => as.map(a => `${a.long || a.name} (${dzPct(a.p)})`).join(", ");
   const matchupLow = low.filter(a => a.k === "lock" || a.k === "con" || a.k === "det");
   const why = [`<b>Wall rating ${x.score}.</b>`,
     top.length ? `Elite in ${list(top)}.` : "",
     low.length ? `Held down by ${list(low)}${low.some(a => a.k === "lock") ? "; Lockdown counts double in the rating" : ""}.` : "No weak spots: every part is above the 60th percentile.",
-    matchupLow.length && big ? `${matchupLow.map(a => a.name).join(" and ")} only see the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
-    x.dpoy || x.alld ? `Voters saw ${x.score >= 85 ? "it the same way" : "more"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
+    matchupLow.length && big ? `${matchupLow.map(a => a.long || a.name).join(" and ")} only see the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
+    x.dpoy || x.alld ? `${x.score >= 85 ? "Voters agreed" : "Voters rated him higher"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
   const rank = [...dz.pool].sort((a, c) => c.score - a.score).findIndex(y => y.id === x.id) + 1;
   const canSim = SH && SH.defenders.some(d => d.id === x.id);
   $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
       <div><p class="kicker" style="color:var(--model)">${nth(rank)} of ${dz.pool.length} defenders</p><h3 class="cast">${esc(x.name)}</h3>
-      <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes since ${dz.span.slice(0, 4)}`].filter(Boolean).map(esc).join(" · ")}</p>
+      <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes since ${x.first || dz.span.slice(0, 4)}`].filter(Boolean).map(esc).join(" · ")}</p>
       ${hw ? `<div class="dz-hw">${hw}</div>` : ""}</div></div>
     <p class="dz-why">${why}</p>
     <div class="dz-tiles">${tiles}</div>

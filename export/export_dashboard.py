@@ -222,6 +222,12 @@ def main():
         payload["matchups"] = build_matchups_payload(args.matchup_run, args.rosters)
         print(f"added man-to-man matchups: {len(payload['matchups']['players'])} players, "
               f"{len(payload['matchups']['h2h']) // len(payload['matchups']['h2h_cols']):,} head-to-head pairs")
+    payload["defSeasons"] = None
+    if not payload["meta"]["synthetic"] and (Path(args.context) / "matchups").exists():
+        from export.export_defense_seasons import build_defense_seasons_payload
+        payload["defSeasons"] = build_defense_seasons_payload(f"{args.context}/matchups", f"{args.context}/tracking.parquet")
+        if payload["defSeasons"]:
+            print(f"added season-by-season defense for {len(payload['defSeasons']['players'])} players")
     payload["replay"] = None
     if args.all_seasons and not payload["meta"]["synthetic"]:
         print("writing replay games for the other seasons")
