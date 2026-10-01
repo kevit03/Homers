@@ -106,7 +106,8 @@ Input at position t:
 ```
 
 - **Game-state features.** The input includes $\frac{\Delta\text{score}}{\sqrt{t+1}}$, which scales the lead by the time remaining. It gives the network a direct estimate of how secure a lead is instead of requiring it to be inferred from the token history.
-- **Architecture.** Causal self-attention via PyTorch's `scaled_dot_product_attention`, with pre-layer normalization, dropout and scaled residual initialization ($d_{\text{model}} = 128$, $n_{\text{layers}} = 4$, $n_{\text{heads}} = 4$).
+- **Architecture.** Causal self-attention via PyTorch's `scaled_dot_product_attention`, with pre-layer normalization, dropout and scaled residual initialization 
+- **Objective.** The token embedding and output projection share weights  The loss combines next-token cross-entropy with a binary cross-entropy term on the final outcome:
   $$\mathcal{L} = \mathcal{L}_{\text{CE}}(\text{next play}) + \lambda \, \mathcal{L}_{\text{BCE}}(\text{home win})$$
 - **Event ordering.** Scorekeepers frequently log plays after the fact, so raw feed order does not always match game-clock order. Sorting events by period, then clock, then original feed order moved 17,890 events across 4,235 games and reduced test perplexity from 4.90 to 4.44.
 
