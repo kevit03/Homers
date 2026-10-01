@@ -1265,6 +1265,7 @@ h3.co-side.def::before { background: var(--base); }
 .aw-row .aw { margin: 0; font-size: 11.5px; line-height: 20px; padding: 0 8px; }
 .aw-row .aw.lo { background: var(--surface); border-color: var(--line-strong); color: var(--ink-2); }
 .hm-card.faces::before { background: linear-gradient(150deg, #2b313a, #0b0d11); }
+.hm-card[data-photo="card-defense"]::before { background-position: 50% 12%; }  /* keep LeBron's and Kobe's faces in frame */
 .hm-faces { position: absolute; z-index: -1; right: 6px; top: 12px; display: flex; }
 .hm-faces img { height: 118px; width: auto; margin-left: -46px; filter: drop-shadow(0 6px 12px rgb(0 0 0 / .45)); }
 </style>
@@ -1305,6 +1306,10 @@ h3.co-side.def::before { background: var(--base); }
 .h2h-mid .label { max-width: 12ch; }
 .h2h-verdict { text-align: center; font-size: 15px; color: var(--ink-2); }
 .h2h-verdict b { color: var(--ink); }
+.h2h-met { max-width: none; margin-top: -8px; text-align: center; }
+.h2h-mid .rec { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-family: var(--font-display); font-size: 30px; font-weight: 800; line-height: .9; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.h2h-mid .rec i { font-style: normal; color: var(--line-strong); margin: 0 3px; }
+.h2h-mid .rec .lead { color: var(--ink); } .h2h-mid .rec .trail { color: var(--muted); }
 .h2h-board { display: grid; gap: 4px; }
 .h2h-grp { font-family: var(--font-label); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
            text-align: center; padding: 14px 0 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
@@ -1395,6 +1400,7 @@ h3.co-side.def::before { background: var(--base); }
 .dz-foot .g { background: linear-gradient(180deg, #fbe39d, #d6a23c); }
 .dz-foot .s { background: #2b3b55; box-shadow: inset 0 0 0 1.5px rgb(226 233 242 / .78); }
 .dz-foot .r { width: 54px; background: linear-gradient(90deg, #1a1f28, var(--dz-steel)); }
+.dz-foot .dz-posnote { font-family: var(--font-label); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 11.5px; color: #9cc3ff; padding: 2px 9px; border: 1px solid rgb(156 195 255 / .45); border-radius: 999px; }
 .dz-foot .tip { color: var(--dz-mute); border-color: rgb(255 255 255 / .3); }
 .dz-card { display: grid; gap: 18px; }
 .dz-card .ps { max-width: 420px; }
@@ -1814,7 +1820,7 @@ h3.co-side.def::before { background: var(--base); }
         <div class="dz-title">
           <p class="kicker" id="dzKicker">Defense</p>
           <h2 id="h-defenders" class="cast">The <em>Wall</em></h2>
-          <p class="dz-lede">Every brick is a defender, lit by how hard he is to score on. Gold bricks won Defensive Player of the Year; a silver edge means All-Defense. Pick one to see his crest.</p>
+          <p class="dz-lede">Every brick is a defender, lit by how hard he is to score on. Each is rated against his own position: guards against guards, wings against wings, bigs against bigs. Gold bricks won Defensive Player of the Year; a silver edge means All-Defense. Pick one to see his crest.</p>
         </div>
         <div class="dz-ctl">
           <div><span class="label" id="dzRankL">Build the wall by</span><div class="dz-chips" id="dzRank" role="group" aria-labelledby="dzRankL"></div></div>
@@ -1962,7 +1968,7 @@ h3.co-side.def::before { background: var(--base); }
   <section id="h2h" aria-labelledby="h-h2h" data-tab="h2h" hidden>
     <div class="sec-head">
       <h2 id="h-h2h" class="cast">Head to head</h2>
-      <p class="caption" id="h2hCap">Pick any two players. The chip by a number shows who's ahead in that category and by how much. Minutes, games and fouls are shown for context and don't count toward the score.</p>
+      <p class="caption" id="h2hCap">Pick any two players. The chip by a number shows who's ahead in that category and by how much. Minutes, games and fouls are shown for context and don't count toward the score. Under the score: how their teams did in the games they played against each other.</p>
     </div>
     <div class="panel h2h-pick">
       <div class="field"><label class="label" for="h2hA">Player 1</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="h2hA" placeholder="Search players…" autocomplete="off" spellcheck="false"></div></div></div>
@@ -1975,6 +1981,7 @@ h3.co-side.def::before { background: var(--base); }
     </div>
     <div class="h2h-face" id="h2hFace"></div>
     <p class="h2h-verdict" id="h2hVerdict"></p>
+    <p class="caption h2h-met" id="h2hMet" hidden></p>
     <div class="panel h2h-board" id="h2hBoard"></div>
     <div class="h2h-share">
       <button type="button" class="go" id="h2hSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Save image</button>
@@ -5493,7 +5500,7 @@ function homeInit() {
     shots: ["Every shot, hot and cold, against the league.", "card-shots"],
     matchups: ["Who guards whom, and what it does to the scorer.", "card-matchups"],
     players: ["Tendencies and the matchup simulator.", "card-players"],
-    defense: ["The league's best defenders, built into a wall.", null, () => dz.pool.length ? [...dz.pool].sort((a, b) => b.score - a.score).slice(0, 3).map(x => pfHead(x.id, "260x190")) : []],
+    defense: ["The league's best defenders, built into a wall.", "card-defense"],
     coaches: ["Every head coach: rings, awards, and how his teams play.", null, () => CO ? CO.coaches.filter(c => c.now && c.photos[0] && c.photos[0].includes("cdn.nba.com"))
       .sort((a, b) => b.titles - a.titles || (b.career.w || 0) - (a.career.w || 0)).slice(0, 3).map(c => coSmall(c.photos[0])) : []],
     fantasy: ["Fantasy points per game, by season and team.", null, () => {
@@ -5571,6 +5578,31 @@ const H2H_ROWS = [
   [null, "Minutes", s => h2hDiv(s.min, s.gp), f1, 0, null, "per game"],
   [null, "Games played", s => s.gp, v => String(v), 0],
 ];
+// head-to-head games: PF.meet lists each player's games as (gap since his last one) * 2 + won, in season-key order.
+// Two players were opponents in a game exactly when one of them won it.
+const h2hGamesOf = new Map();
+function h2hGames(pid) {  // game index -> 1 if his team won
+  if (!h2hGamesOf.has(pid)) {
+    const m = new Map();
+    let i = -1;
+    for (const v of (PF.meet && PF.meet.res[pid]) || []) { i += v >> 1; m.set(i, v & 1); }
+    h2hGamesOf.set(pid, m);
+  }
+  return h2hGamesOf.get(pid);
+}
+function h2hMeet() {  // {season key: [a's wins, b's wins]} over the games they played against each other
+  const M = PF.meet, B = h2hGames(h2h.b), out = {};
+  if (!M) return out;
+  let k = 0;
+  for (const [i, w] of h2hGames(h2h.a)) {  // Map order is game order, so the season pointer only moves forward
+    const v = B.get(i);
+    if (v == null || v === w) continue;
+    while (k + 1 < M.start.length && M.start[k + 1] <= i) k++;
+    (out[M.keys[k]] ||= [0, 0])[w ? 0 : 1]++;
+  }
+  return out;
+}
+const h2hRec = (by, keep) => Object.entries(by).filter(([k]) => keep(k)).reduce((t, [, r]) => [t[0] + r[0], t[1] + r[1]], [0, 0]);
 function h2hSeasonOpts() {
   const A = PF.players[h2h.a].seasons, B = PF.players[h2h.b].seasons, la = h2hLast(h2h.a), lb = h2hLast(h2h.b);
   const keys = [...new Set([...Object.keys(A), ...Object.keys(B)])].sort(pfKeyOrder);
@@ -5635,7 +5667,17 @@ function h2hModel() {  // everything both the page and the saved image draw: the
   const when = h2hIsCar(key) ? (key === H2H_CAR ? "over their regular-season careers" : "over their playoff careers") : `in ${key}`;
   const verdict = !sa || !sb ? null : wa === wb ? `Dead even ${when}: ${wa} categories each${n - wa - wb ? `, ${n - wa - wb} tied` : ""}.`
     : `${wa > wb ? pfName(h2h.a) : pfName(h2h.b)} leads ${Math.max(wa, wb)}–${Math.min(wa, wb)} ${when}${n - wa - wb ? ` (${n - wa - wb} tied)` : ""}.`;
-  return { key, sa, sb, ca, cb, wa, wb, n, rows, when, verdict, per36 };
+  // their games against each other: the record in this span, plus the all-time ones when the span is one season
+  const by = h2hMeet(), rec = h2hRec(by, h2hIsCar(key) ? k => isPO(k) === (key === H2H_CAR_PO) : k => k === key);
+  const reg = h2hRec(by, k => !isPO(k)), po = h2hRec(by, isPO), la = h2hLast(h2h.a), lb = h2hLast(h2h.b), since = PF.meet ? PF.meet.keys[0] : "";
+  const span = key === H2H_CAR ? `in the regular season since ${since}` : key === H2H_CAR_PO ? `in the playoffs since ${since}` : `in ${key}`;
+  const g = rec[0] + rec[1], lead = rec[0] > rec[1] ? la : lb;
+  let meet = !PF.meet ? "" : !g ? `They never played each other ${span}.`
+    : rec[0] === rec[1] ? `They split their ${g} games against each other ${span}, ${rec[0]}–${rec[1]}.`
+    : `${lead}'s team won ${Math.max(...rec)} of their ${g} ${g === 1 ? "game" : "games"} against each other ${span}.`;
+  if (PF.meet && !h2hIsCar(key) && reg[0] + reg[1] + po[0] + po[1] > g)
+    meet += ` All-time: ${la} ${reg[0]}–${reg[1]} ${lb} in the regular season${po[0] + po[1] ? `, ${po[0]}–${po[1]} in the playoffs` : ""}.`;
+  return { key, sa, sb, ca, cb, wa, wb, n, rows, when, verdict, per36, rec, meet };
 }
 function h2hRender() {
   const M = h2hModel(), { sa, sb, ca, cb, wa, wb } = M;
@@ -5646,7 +5688,9 @@ function h2hRender() {
   $("h2hBoard").innerHTML = M.rows.map(r => (r.grp ? `<div class="h2h-grp">${r.grp}</div>` : "") +
     `<div class="h2h-row${r.better ? "" : " ctx"}">${side(r, "a", ca)}<div class="h2h-lab"><b>${r.label}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ""}${r.diff && !r.diff.side ? `<span class="h2h-diff even">Even</span>` : ""}</div>${side(r, "b", cb)}</div>`).join("");
   $("h2hFace").innerHTML = h2hCard(h2h.a, sa, ca) + `<div class="h2h-mid"><span class="vs">VS</span>
-      ${sa && sb ? `<span class="score" aria-label="${wa} categories to ${wb}"><span class="${wa >= wb ? "lead" : "trail"}">${wa}</span><i>–</i><span class="${wb >= wa ? "lead" : "trail"}">${wb}</span></span><span class="label">categories won</span>` : ""}</div>` + h2hCard(h2h.b, sb, cb);
+      ${sa && sb ? `<span class="score" aria-label="${wa} categories to ${wb}"><span class="${wa >= wb ? "lead" : "trail"}">${wa}</span><i>–</i><span class="${wb >= wa ? "lead" : "trail"}">${wb}</span></span><span class="label">categories won</span>` : ""}
+      ${M.rec[0] + M.rec[1] ? `<span class="rec" aria-label="${M.rec[0]} wins to ${M.rec[1]} against each other"><span class="${M.rec[0] >= M.rec[1] ? "lead" : "trail"}">${M.rec[0]}</span><i>–</i><span class="${M.rec[1] >= M.rec[0] ? "lead" : "trail"}">${M.rec[1]}</span></span><span class="label">games vs each other</span>` : ""}</div>` + h2hCard(h2h.b, sb, cb);
+  $("h2hMet").textContent = M.meet; $("h2hMet").hidden = !M.meet;
   $("h2hVerdict").innerHTML = M.verdict ? esc(M.verdict).replace(esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b)), s => wa === wb ? s : `<b>${s}</b>`)
     : `<b>${esc(!sa ? pfName(h2h.a) : pfName(h2h.b))}</b> has no games ${esc(M.when)}. Pick a season they both played.`;
   $("h2hSave").disabled = $("h2hCopy").disabled = !(sa && sb);
@@ -5718,6 +5762,14 @@ async function h2hImage() {
   text(dash, cx, cardY + 182, g.font, C.line, "center");
   text(wB, cx + dw / 2, cardY + 182, g.font, M.wb >= M.wa ? C.ink : C.muted, "left");
   text("CATEGORIES WON", cx, cardY + 208, `600 13px ${LAB}`, C.muted, "center");
+  if (M.rec[0] + M.rec[1]) {  // their record against each other, smaller, under a rule
+    g.fillStyle = C.line; g.fillRect(cx - 50, cardY + 232, 100, 1);
+    g.font = `800 40px ${DISP}`; const rA = String(M.rec[0]), rB = String(M.rec[1]), rw = g.measureText(dash).width + 8;
+    text(rA, cx - rw / 2, cardY + 278, g.font, M.rec[0] >= M.rec[1] ? C.ink : C.muted, "right");
+    text(dash, cx, cardY + 278, g.font, C.line, "center");
+    text(rB, cx + rw / 2, cardY + 278, g.font, M.rec[1] >= M.rec[0] ? C.ink : C.muted, "left");
+    text("GAMES VS EACH OTHER", cx, cardY + 300, `600 13px ${LAB}`, C.muted, "center", mid - 16);
+  }
   if (M.verdict) text(M.verdict, cx, cardY + cardH + 40, `600 18px ${BODY}`, C.ink2, "center", W - 2 * pad);
 
   // the board: value, differential chip by the leader, a bar toward the middle, the category in the middle
@@ -5866,6 +5918,8 @@ function dzSpanText(period = dz.period) {  // "since 2016-17", "in 2022-23", "ov
 const dzSg = (v, d = 1) => (v > 0.00001 ? "+" : v < -0.00001 ? "−" : "") + Math.abs(v).toFixed(d);
 const dzPosOf = pos => /C/.test(pos) ? "C" : pos.startsWith("G") ? "G" : pos ? "F" : "";
 const dzPct = p => nth(Math.max(1, Math.round(p * 100)));
+// the Wall rates each defender against his own position, so a center's Lockdown or steals are judged next to other centers'
+const DZ_GRP = { G: ["guard", "guards"], F: ["wing", "wings"], C: ["big", "bigs"], "": ["defender", "defenders"] }, DZ_GRP_MIN = 20;
 
 function dzBuild() {
   const only = dzSeasons(), inP = s => !only || only.includes(s), one = only && only.length === 1;
@@ -5915,12 +5969,20 @@ function dzBuild() {
     Object.assign(x, { dpoy, alld, best, hw: dpoy * 5 + alld });
     dz.pool.push(x);
   }
-  for (const { k, low } of DZ_AX) {  // worst first, so the index over the count is the percentile
-    const has = dz.pool.filter(x => x.v[k] != null).sort((a, b) => low ? b.v[k] - a.v[k] : a.v[k] - b.v[k]);
-    has.forEach((x, j) => { x.p[k] = has.length > 1 ? j / (has.length - 1) : .5; });
+  dz.pool = dz.pool.filter(x => DZ_AX.filter(a => x.v[a.k] != null).length >= 4);
+  // percentiles, worst first so the index over the count is the percentile: x.p within his position (what the rating uses), x.pl across everyone
+  const pctile = (xs, val, set) => xs.filter(x => val(x) != null).sort((a, b) => val(a) - val(b)).forEach((x, j, has) => set(x, has.length > 1 ? j / (has.length - 1) : .5));
+  const groups = { "": dz.pool };
+  for (const x of dz.pool) (groups[x.pos] ||= []).push(x);
+  for (const x of dz.pool) { x.grp = x.pos && groups[x.pos].length >= DZ_GRP_MIN ? x.pos : ""; x.pl = {}; }  // a thin position falls back to everyone
+  for (const [g, xs] of Object.entries(groups)) {
+    const mine = g ? xs.filter(x => x.grp === g) : dz.pool;
+    for (const { k, low } of DZ_AX) {
+      const val = x => x.v[k] == null ? null : low ? -x.v[k] : x.v[k];
+      pctile(mine, val, g ? (x, q) => { x.p[k] = q; } : (x, q) => { x.pl[k] = q; if (!x.grp) x.p[k] = q; });
+    }
+    pctile(mine, x => x.g.stk, g ? (x, q) => { x.pStk = q; } : (x, q) => { x.pStkL = q; if (!x.grp) x.pStk = q; });
   }
-  [...dz.pool].sort((a, b) => a.g.stk - b.g.stk).forEach((x, j, all) => { x.pStk = all.length > 1 ? j / (all.length - 1) : .5; });
-  dz.pool = dz.pool.filter(x => Object.keys(x.p).length >= 4);
   for (const x of dz.pool) {
     let s = 0, w = 0;
     for (const a of DZ_AX) if (x.p[a.k] != null) { s += a.w * x.p[a.k]; w += a.w; }
@@ -5931,13 +5993,18 @@ function dzBuild() {
   if (!only) dz.span = ss.length ? `${ss[0].slice(0, 4)}–${ss.at(-1).slice(-2)}` : "";
 }
 
-function dzKey(x, k = dz.rank) { return k === "score" ? x.score : k === "hw" ? x.hw + x.score / 1000 : x.p[k]; }
+function dzKey(x, k = dz.rank) {  // the rating is within position; a single stat ranks everyone on the stat itself
+  if (k === "score") return x.score;
+  if (k === "hw") return x.hw + x.score / 1000;
+  const a = DZ_AX.find(a => a.k === k);
+  return x.v[k] == null ? null : a.low ? -x.v[k] : x.v[k];
+}
 function dzList() {
   return dz.pool.filter(x => (!dz.pos || x.pos === dz.pos) && dzKey(x) != null && (dz.rank !== "hw" || x.hw > 0)).sort((a, b) => dzKey(b) - dzKey(a));
 }
 function dzVal(x, k = dz.rank) {  // [value, unit] shown on a brick
   const v = x.v;
-  return k === "score" ? [x.score, "Rating"] : k === "lock" ? [dzSg(v.lock * 100) + "%", "Pts allowed"] : k === "con" ? [dzSg(v.con * 100), "Opp. FG%"]
+  return k === "score" ? [x.score, `vs ${DZ_GRP[x.grp][1]}`] : k === "lock" ? [dzSg(v.lock * 100) + "%", "Pts allowed"] : k === "con" ? [dzSg(v.con * 100), "Opp. FG%"]
     : k === "rim" ? [dzSg(v.rim * 100), "Rim FG%"] : k === "blk" ? [v.blk.toFixed(1), "Blk / 36"] : k === "stl" ? [v.stl.toFixed(1), "Stl / 36"]
     : [x.dpoy ? `${x.dpoy}★ ${x.alld}` : x.alld, x.dpoy ? "DPOY · All-D" : "All-Defense"];
 }
@@ -5955,7 +6022,7 @@ function dzWall(animate) {
     const bricks = part.map((x, j) => {
       const [first, last] = pfSplitName(x.name), [val, unit] = dzVal(x), r = i + j + 1;
       const cls = x.dpoy ? " gold" : x.alld ? " silver" : "";
-      const lab = `${r}. ${x.name}${x.team ? ", " + x.team : ""}: ${val} ${unit}${x.dpoy ? `, ${x.dpoy}× Defensive Player of the Year` : ""}${x.alld ? `, ${x.alld}× All-Defense` : ""}`;
+      const lab = `${r}. ${x.name}${x.team ? ", " + x.team : ""}: ${dz.rank === "score" ? `Wall rating ${val} against other ${DZ_GRP[x.grp][1]}` : `${val} ${unit}`}${x.dpoy ? `, ${x.dpoy}× Defensive Player of the Year` : ""}${x.alld ? `, ${x.alld}× All-Defense` : ""}`;
       return `<button type="button" class="dz-brick${cls}" data-id="${x.id}" style="--v:${lit(x).toFixed(2)};--i:${i + j}" aria-label="${esc(lab)}" title="${esc(x.name)}"${dz.sel === x.id ? ` aria-current="true"` : ""}>`
         + `<span class="dz-b-t"><b>${esc(last)}</b><small>${r} · ${esc(first ? first[0] + "." : "")}${x.team ? " " + x.team : ""}</small></span><span class="dz-b-v">${val}<small>${unit}</small></span></button>`;
     }).join("");
@@ -5980,11 +6047,12 @@ function dzCrest(x) {
   }).join("");
   const labs = DZ_AX.map((a, j) => {
     const [lx, ly] = at(j, R + 32), has = x.p[a.k] != null;
-    return `<text class="dz-c-lab${has ? "" : " na"}" x="${lx.toFixed(1)}" y="${(ly - 2).toFixed(1)}" text-anchor="middle"><title>${esc(a.tip)}</title>${a.name}<tspan class="pv" x="${lx.toFixed(1)}" dy="14">${has ? dzPct(x.p[a.k]) : "no data"}</tspan></text>`;
+    const t = has ? `${dzPct(x.p[a.k])} percentile among ${DZ_GRP[x.grp][1]}${x.grp ? `, ${dzPct(x.pl[a.k])} among all defenders` : ""}. ${a.tip}` : a.tip;
+    return `<text class="dz-c-lab${has ? "" : " na"}" x="${lx.toFixed(1)}" y="${(ly - 2).toFixed(1)}" text-anchor="middle"><title>${esc(t)}</title>${a.name}<tspan class="pv" x="${lx.toFixed(1)}" dy="14">${has ? dzPct(x.p[a.k]) : "no data"}</tspan></text>`;
   }).join("");
-  $("dzCrest").innerHTML = `<svg viewBox="0 0 320 422" role="img" aria-label="${esc(`${x.name}'s defensive crest: Wall rating ${x.score}. ` + DZ_AX.map(a => `${a.name} ${x.p[a.k] != null ? dzPct(x.p[a.k]) + " percentile" : "no data"}`).join(", "))}">
+  $("dzCrest").innerHTML = `<svg viewBox="0 0 320 422" role="img" aria-label="${esc(`${x.name}'s defensive crest: Wall rating ${x.score} against other ${DZ_GRP[x.grp][1]}. ` + DZ_AX.map(a => `${a.name} ${x.p[a.k] != null ? dzPct(x.p[a.k]) + " percentile" : "no data"}`).join(", "))}">
     <path class="dz-c-shield${tier}" d="${shield}"/><path class="dz-c-inner" d="${shield}" transform="translate(160 211) scale(.93) translate(-160 -211)"/>
-    <text class="dz-c-k" x="160" y="38" text-anchor="middle">WALL RATING</text>
+    <text class="dz-c-k" x="160" y="38" text-anchor="middle">WALL RATING · VS ${DZ_GRP[x.grp][1].toUpperCase()}</text>
     <text class="dz-c-score" x="160" y="84" text-anchor="middle">${x.score}</text>${stars}
     ${[.25, .5, .75, 1].map(f => `<polygon class="dz-c-ring${f === .5 ? " mid" : ""}" points="${poly(() => R * (.08 + .92 * f))}"/>`).join("")}
     ${DZ_AX.map((_, j) => { const [x2, y2] = at(j, R); return `<line class="dz-c-ring" x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join("")}
@@ -5997,38 +6065,40 @@ function dzReport(x) {
   const T = pfTeam(x.team), b = x.bio, P = PF.players[x.id] || {};
   const hw = [x.dpoy ? `<span class="gold">${x.dpoy}× Defensive POY</span>` : x.best ? `<span>DPOY voting: best ${nth(x.best)}</span>` : "",
     x.alld ? `<span class="silver">${x.alld}× All-Defense</span>` : ""].join("");
-  const bar = p => `<div class="dz-pbar${p >= .9 ? " elite" : ""}"><span><i style="width:${(p * 100).toFixed(0)}%"></i></span>${dzPct(p)} percentile</div>`;
-  const tile = (k, val, text, p, cav) => `<div class="dz-tile"><span class="k">${k}</span><b>${val}</b><p>${text}</p>${p == null ? "" : bar(p)}${cav ? `<p class="cav"><span>Caveat</span> ${cav}</p>` : ""}</div>`;
+  const grp = DZ_GRP[x.grp][1];
+  const bar = (p, pl) => `<div class="dz-pbar${p >= .9 ? " elite" : ""}"><span><i style="width:${(p * 100).toFixed(0)}%"></i></span>${dzPct(p)} among ${grp}${x.grp && pl != null ? ` · ${dzPct(pl)} overall` : ""}</div>`;
+  const tile = (k, val, text, key, cav) => { const p = key === "stk" ? x.pStk : key && x.p[key], pl = key === "stk" ? x.pStkL : key && x.pl[key]; return `<div class="dz-tile"><span class="k">${k}</span><b>${val}</b><p>${text}</p>${p == null ? "" : bar(p, pl)}${cav ? `<p class="cav"><span>Caveat</span> ${cav}</p>` : ""}</div>`; };
   const v = x.v, big = x.pos === "C", g = x.g, him = pfSplitName(x.name)[1];
   // a note only where his role likely moves the number: bigs anchor the paint, so matchup stats miss their help defense
   const role = (k, why) => (x.p[k] != null && x.p[k] < .6 && big ? ` ${why}` : "");
   const tiles = [
-    v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", dzSeasons() ? `points for the scorers he guarded ${dzSpanText()}, against what the same scorers put up on everyone else.` : "points per possession for the scorers he guards, after accounting for who they are.", x.p.lock,
+    v.lock != null && tile("Lockdown", dzSg(v.lock * 100) + "%", dzSeasons() ? `points for the scorers he guarded ${dzSpanText()}, against what the same scorers put up on everyone else.` : "points per possession for the scorers he guards, after accounting for who they are.", "lock",
       "It only credits the man he's matched up with. Help defense, like rotating over to stop someone else's drive, isn't counted, and bigs are usually matched with centers and roll men who score close to the basket." +
       role("lock", `That likely undersells ${him}: as a rim protector, most of his value comes as the help defender.`)),
-    v.con != null && tile("Contest", dzSg(v.con * 100), dzSeasons() ? `FG% points for the scorers he guarded ${dzSpanText()}, against what they shot on everyone else.` : "FG% points for the scorers he guards, against an average defender.", x.p.con,
+    v.con != null && tile("Contest", dzSg(v.con * 100), dzSeasons() ? `FG% points for the scorers he guarded ${dzSpanText()}, against what they shot on everyone else.` : "FG% points for the scorers he guards, against an average defender.", "con",
       "Same matchup tracking as Lockdown, so a shot he challenges as the helper counts against a teammate. Shooting percentages are also noisy: one hot or cold stretch moves this." + role("con", "A paint-bound big is rarely the assigned defender on the shots he changes most.")),
-    v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, x.p.rim,
+    v.rim != null && tile("At the rim", pct(x.rimFg), `opponents' FG% on ${x.rimA.toLocaleString()} rim shots he defended. Those shooters usually make ${pct(x.rimX)}.`, "rim",
       big ? "Only shots where he was the nearest defender at the rim. Bigs see far more of these than anyone, and a feared shot-blocker faces fewer drives, so the attempts that remain come from players confident enough to challenge him."
         : `Only shots where he was the nearest defender at the rim. ${x.pos === "G" ? "Guards" : "Wings"} defend far fewer of these than bigs, so a few makes or misses swing it more.`),
-    tile("Stocks", g.stk.toFixed(1), `steals plus blocks per game: ${g.blk.toFixed(1)} blocks, ${g.stl.toFixed(1)} steals over ${x.gp.toLocaleString()} games${x.defl ? `, plus ${x.defl.toFixed(1)} deflections per 36` : ""}.`, x.pStk,
+    tile("Stocks", g.stk.toFixed(1), `steals plus blocks per game: ${g.blk.toFixed(1)} blocks, ${g.stl.toFixed(1)} steals over ${x.gp.toLocaleString()} games${x.defl ? `, plus ${x.defl.toFixed(1)} deflections per 36` : ""}.`, "stk",
       `Only counts plays that end a possession. ${big ? "A big told to stay home in the paint, or to sit back in drop coverage, gets few chances to jump passing lanes, so his steals stay low no matter how good he is; blocks carry this number." : "Gambling for steals can pile these up while giving up easy baskets, and staying disciplined can keep them low."} Per game, so heavy minutes also push it up.`),
-    v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", x.p.det,
+    v.det != null && tile("Deterrence", dzSg(v.det * 100), "points of rim-shot share against him: below zero means shooters stay away from the basket.", "det",
       "Measured only on shots where he was the closest defender. It can't see drives that never start because he's waiting at the rim." + role("det", `A big who lives in the paint is the closest defender on most rim attempts, so even a feared protector like ${him} can read near zero.`)),
   ].filter(Boolean).join("");
   // why the rating lands where it does: his best and worst parts, and what the weak ones can't see
   const parts = DZ_AX.filter(a => x.p[a.k] != null).map(a => ({ ...a, p: x.p[a.k] })).sort((a, c) => c.p - a.p);
   const top = parts.filter(a => a.p >= .9), low = parts.filter(a => a.p < .6), list = as => as.map(a => `${a.long || a.name} (${dzPct(a.p)})`).join(", ");
   const matchupLow = low.filter(a => a.k === "lock" || a.k === "con" || a.k === "det");
-  const why = [`<b>Wall rating ${x.score}.</b>`,
+  const why = [`<b>Wall rating ${x.score} against other ${grp}.</b>`,
     top.length ? `Elite in ${list(top)}.` : "",
-    low.length ? `Held down by ${list(low)}${low.some(a => a.k === "lock") ? "; Lockdown counts double in the rating" : ""}.` : "No weak spots: every part is above the 60th percentile.",
-    matchupLow.length && big ? `${matchupLow.map(a => a.long || a.name).join(" and ")} only see the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
+    low.length ? `Held down by ${list(low)}${low.some(a => a.k === "lock") ? "; Lockdown counts double in the rating" : ""}.` : `No weak spots: every part is above the 60th percentile for ${grp}.`,
+    matchupLow.length && big ? `${matchupLow.map(a => a.long || a.name).join(" and ")} only ${matchupLow.length > 1 ? "see" : "sees"} the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
     x.dpoy || x.alld ? `${x.score >= 85 ? "Voters agreed" : "Voters rated him higher"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
-  const rank = [...dz.pool].sort((a, c) => c.score - a.score).findIndex(y => y.id === x.id) + 1;
+  const byScore = [...dz.pool].sort((a, c) => c.score - a.score), rank = byScore.findIndex(y => y.id === x.id) + 1;
+  const peers = byScore.filter(y => y.grp === x.grp), prank = peers.findIndex(y => y.id === x.id) + 1;
   const canSim = SH && SH.defenders.some(d => d.id === x.id);
   $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
-      <div><p class="kicker" style="color:var(--model)">${nth(rank)} of ${dz.pool.length} defenders</p><h3 class="cast">${esc(x.name)}</h3>
+      <div><p class="kicker" style="color:var(--model)">${x.grp ? `${nth(prank)} of ${peers.length} ${grp} · ${nth(rank)} on the wall` : `${nth(rank)} of ${dz.pool.length} defenders`}</p><h3 class="cast">${esc(x.name)}</h3>
       <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes ${dzSeasons() ? dzSpanText() : `since ${x.first || dz.span.slice(0, 4)}`}`].filter(Boolean).map(esc).join(" · ")}</p>
       ${hw ? `<div class="dz-hw">${hw}</div>` : ""}</div></div>
     <p class="dz-why">${why}</p>
@@ -6116,14 +6186,14 @@ function initDefense() {
   });
   dzPick(dzItems()[0].id, false);
 }
-function dzItems() { return [...dz.pool].sort((a, b) => b.score - a.score).map(x => ({ key: x.id, id: x.id, name: x.name, team: x.team, meta: `Wall rating ${x.score}` })); }
+function dzItems() { return [...dz.pool].sort((a, b) => b.score - a.score).map(x => ({ key: x.id, id: x.id, name: x.name, team: x.team, meta: `Wall rating ${x.score} among ${DZ_GRP[x.grp][1]}` })); }
 function dzLabels() {
   const only = dzSeasons(), min = !only ? DZ_MIN : only.length === 1 ? 1000 : 2500;
   $("dzKicker").textContent = `Defense · ${dz.pool.length} defenders · ${only ? (only.length === 1 ? only[0] : `${only[0]} to ${only.at(-1)}`) : dz.span}`;
-  $("dzFoot").innerHTML = `<span><i class="g"></i>Defensive Player of the Year</span><span><i class="s"></i>All-Defense team</span><span><i class="r"></i>dim to lit: rank on the wall</span>`
+  $("dzFoot").innerHTML = `<span><i class="g"></i>Defensive Player of the Year</span><span><i class="s"></i>All-Defense team</span><span><i class="r"></i>dim to lit: rank on the wall</span><span class="dz-posnote">Rated within position</span>`
     + tip(only
-      ? `Top ${DZ_N} of ${dz.pool.length} players with ${min.toLocaleString()}+ regular-season minutes ${dzSpanText()}. The Wall rating averages five percentiles among them: Lockdown (×2) and Contest (×1.5), rim protection, blocks and steals per 36. Here Lockdown and Contest are raw matchup results: what the scorers a player guarded did against him, against what the same scorers did against everyone else that season, shrunk toward average for small samples. That's not the career matchup model, so a season's ranks can differ from Career's. Deterrence is a career-wide shot-model number, so it's left out. All of these only see the man a player is assigned to, so help-side rim protectors tend to rate lower than their real impact. Awards from those seasons, from Basketball-Reference.`
-      : `Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles among them: Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Lockdown, Contest and Deterrence only see the man a player is assigned to, so help-side rim protectors tend to rate lower than their real impact. Awards from Basketball-Reference.`);
+      ? `Top ${DZ_N} of ${dz.pool.length} players with ${min.toLocaleString()}+ regular-season minutes ${dzSpanText()}. The Wall rating averages five percentiles, each ranked against players at his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone): Lockdown (×2) and Contest (×1.5), rim protection, blocks and steals per 36. Here Lockdown and Contest are raw matchup results: what the scorers a player guarded did against him, against what the same scorers did against everyone else that season, shrunk toward average for small samples. That's not the career matchup model, so a season's ranks can differ from Career's. Deterrence is a career-wide shot-model number, so it's left out. All of these only see the man a player is assigned to, so help-side rim protectors would rate lower than their real impact if ranked against everyone; comparing bigs only with bigs offsets most of that. The Lockdown, Contest, Rim, Blocks and Steals buttons rank everyone together on the stat itself. Awards from those seasons, from Basketball-Reference.`
+      : `Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating averages six percentiles, each ranked against players at his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone): Lockdown (×2) and Contest (×1.5) from the matchup model, Rim protection and Deterrence, blocks and steals per 36. Lockdown, Contest and Deterrence only see the man a player is assigned to, so help-side rim protectors would rate lower than their real impact if ranked against everyone; comparing bigs only with bigs offsets most of that. The Lockdown, Contest, Rim, Blocks and Steals buttons rank everyone together on the stat itself. Awards from Basketball-Reference.`);
 }
 function dzSpanDraw() {
   $("dzSpan").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === dz.period));

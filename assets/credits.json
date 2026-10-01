@@ -7,8 +7,8 @@
   "license_url": "https://creativecommons.org/licenses/by-sa/2.0/", "source": "https://commons.wikimedia.org/wiki/File:Washington_Wizards,_Toronto_Raptors_(41708749222).jpg"},
  {"file": "card-shots.jpg", "use": "Home", "title": "Basketball net", "author": "J.smith", "license": "CC BY-SA 4.0",
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "source": "https://commons.wikimedia.org/wiki/File:Basketball_net.jpg"},
- {"file": "card-players.jpg", "use": "Home", "title": "MSG from floor level", "author": "Dennis Crowley", "license": "CC BY 2.0",
-  "license_url": "https://creativecommons.org/licenses/by/2.0/", "source": "https://commons.wikimedia.org/wiki/File:MSG_from_floor_level.jpg"},
+ {"file": "card-players.jpg", "use": "Home", "title": "The NBA 75th Anniversary Team at the 2022 All-Star Game (crop)", "author": "Erik Drost", "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/", "source": "https://commons.wikimedia.org/wiki/File:NBA_75th_Anniversary_Team_(cropped).jpg"},
  {"file": "card-games.jpg", "use": "Home", "title": "Crypto.com Arena interior 2024", "author": "Troutfarm27", "license": "CC BY 4.0",
   "license_url": "https://creativecommons.org/licenses/by/4.0/", "source": "https://commons.wikimedia.org/wiki/File:Crypto.com_Arena_interior_2024.jpg"},
  {"file": "card-model.jpg", "use": "Home", "title": "Open net", "author": "Håkan Dahlström", "license": "CC BY 2.0",
@@ -18,5 +18,7 @@
  {"file": "homer.jpg", "use": "Sources", "title": "Bust of Homer, British Museum (Roman copy of a Hellenistic original)", "author": "Unknown", "license": "Public domain",
   "license_url": null, "source": "https://commons.wikimedia.org/wiki/File:Bust_Homer_BM_1825.jpg"},
  {"file": "runners.jpg", "use": "Sources", "title": "Black-figure amphora with runners at the Panathenaic Games, c. 530 BC, Staatliche Antikensammlungen, Munich", "author": "Following Hadrian", "license": "CC BY-SA 2.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/2.0/", "source": "https://commons.wikimedia.org/wiki/File:Black-figured_amphora_depicting_runners_at_the_panathenaic_games,_ca._530_BC,_Staatliche_Antikensammlungen,_Munich_(8958638572).jpg"}
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0/", "source": "https://commons.wikimedia.org/wiki/File:Black-figured_amphora_depicting_runners_at_the_panathenaic_games,_ca._530_BC,_Staatliche_Antikensammlungen,_Munich_(8958638572).jpg"},
+ {"file": "card-defense.jpg", "use": "Home", "title": "LeBron James guarding Kobe Bryant, Cavaliers vs Lakers, February 10, 2016", "author": "Erik Drost", "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/", "source": "https://commons.wikimedia.org/wiki/File:LeBron_James_vs._Kobe_Bryant_-_24335901074.jpg"}
 ]

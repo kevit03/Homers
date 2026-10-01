@@ -327,6 +327,29 @@ def build_profiles_payload(raw="data/raw", games=(), context="data/context", cac
             "log": logs[(pid, last_season)],
         }
 
+    # every game's result for everyone who played in it, for head-to-head records. Games run in season-key order
+    # (key k owns games start[k] to start[k+1]); a player's list holds (game index gap) * 2 + won, so two players
+    # were opponents in a game exactly when one of them won it. The winner is the side whose box scores add up to more.
+    order = sorted(per_game, key=lambda k: (season_key(per_game[k]["season"], k), k))
+    keys = sorted({season_key(per_game[k]["season"], k) for k in order})
+    start, res, last = [], defaultdict(list), {}
+    for i, gid in enumerate(order):
+        g = per_game[gid]
+        sk = season_key(g["season"], gid)
+        if len(start) < len(keys) and keys[len(start)] == sk:
+            start.append(i)
+        pts = defaultdict(float)
+        for pid, b in g["box"].items():
+            pts[g["team"].get(pid, "")] += b["pts"]
+        won = pts[g["home"][1]] > pts[g["away"][1]]
+        for pid in g["box"]:
+            side = g["team"].get(pid, "")
+            if side not in (g["home"][1], g["away"][1]):
+                continue
+            res[pid].append((i - last.get(pid, -1)) * 2 + int(won == (side == g["home"][1])))
+            last[pid] = i
+    meet = {"keys": keys, "start": start, "res": {str(p): v for p, v in res.items() if str(p) in players}}
+
     # per-play actors, extras and lineups for the replayed games
     out_games = {}
     for dg in games:
@@ -351,7 +374,7 @@ def build_profiles_payload(raw="data/raw", games=(), context="data/context", cac
 
     return {"stats": STATS, "fp": FP_WEIGHTS, "seasons": seasons, "league": league,
             "log_cols": ["gameId", "opp", "home", "min", "pts", "reb"] + LOG_STATS + ["fp"],
-            "teams": {t: i for t, i in team_ids.items()}, "players": players, "games": out_games}
+            "teams": {t: i for t, i in team_ids.items()}, "players": players, "games": out_games, "meet": meet}
 
 
 def main():
