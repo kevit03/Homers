@@ -1,0 +1,22 @@
+/Users/kevintang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+added 250 players, 955 defenders, 67 coaches
+added 1476 player profiles, play-by-play actors for 1315/1315 games
+added 75 coaches, 300 team seasons of play data
+added opponents' shooting by shot type, style and zone for 300 team seasons
+added estimated coverage schemes for 270 team seasons
+added play-type results (scored, FG, turnovers) for 300 team seasons
+added shot charts for 1468 players (2016-17, 2016-17 Playoffs, 2017-18, 2017-18 Playoffs, 2018-19, 2018-19 Playoffs, 2019-20, 2019-20 Playoffs, 2020-21, 2020-21 Playoffs, 2021-22, 2021-22 Playoffs, 2022-23, 2022-23 Playoffs, 2023-24, 2023-24 Playoffs, 2024-25, 2024-25 Playoffs, 2025-26, 2025-26 Playoffs), current teams: 2026-27
+added man-to-man matchups: 1110 players, 119,178 head-to-head pairs
+added season-by-season defense for 1438 players
+writing replay games for the other seasons
+  replay 2016-17: 1,309 games (train), 15.4 MB
+  replay 2017-18: 1,312 games (train), 15.4 MB
+  replay 2018-19: 1,312 games (train), 15.9 MB
+  replay 2019-20: 1,142 games (train), 13.9 MB
+  replay 2020-21: 1,165 games (train), 13.8 MB
+  replay 2021-22: 1,317 games (train), 15.6 MB
+  replay 2022-23: 1,314 games (train), 15.7 MB
+  replay 2023-24: 1,312 games (train), 15.4 MB
+  replay 2024-25: 1,314 games (train, val), 15.6 MB
+wrote dashboard.html (49.2 MB, 1315 games)

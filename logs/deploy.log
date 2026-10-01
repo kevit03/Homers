@@ -1,0 +1,62 @@
+/Users/kevintang/Downloads/nba-gpt/site: page 16.8 MB + 9 seasons of games = 80.1 MB gzipped (from 186 MB)
+<claude-code-hint v="1" type="plugin" value="vercel@claude-plugins-official" />
+Vercel CLI 62.1.0
+Deploying homers
+Uploading [--------------------] (0.0B/16MB)
+Uploading [=====---------------] (4.0MB/16MB)
+Uploading [==========----------] (8.0MB/16MB)
+Uploading [===============-----] (12.0MB/16MB)
+Uploading [====================] (16.0MB/16MB)
+  Inspect         https://vercel.com/kevin-tangs-projects-7b84bab0/homers/5a85bHkuHVajyiUVXcpR6LFtgC8k
+  Production      https://homers-olim2k1jk-kevin-tangs-projects-7b84bab0.vercel.app
+Building…
+Building…
+Running build in Washington, D.C., USA (East) – iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Previous build caches not available.
+Downloading 12 deployment files...
+[2K[1A[2K[G  Production      https://homers-olim2k1jk-kevin-tangs-projects-7b84bab0.vercel.app
+Completing…
+▲ Aliased         https://homers-nu.vercel.app
+{
+  "status": "ok",
+  "deployment": {
+    "id": "dpl_5a85bHkuHVajyiUVXcpR6LFtgC8k",
+    "url": "https://homers-olim2k1jk-kevin-tangs-projects-7b84bab0.vercel.app",
+    "productionUrl": "https://homers-nu.vercel.app",
+    "inspectorUrl": "https://vercel.com/kevin-tangs-projects-7b84bab0/homers/5a85bHkuHVajyiUVXcpR6LFtgC8k",
+    "readyState": "READY",
+    "target": "production",
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_5a85bHkuHVajyiUVXcpR6LFtgC8k",
+    "buildMachine": {
+      "cores": 2,
+      "memory": 8192,
+      "machine": "basic",
+      "selectionType": "fixed",
+      "selectionSource": "plan-default"
+    },
+    "deploymentProtection": [
+      "vercel_authentication"
+    ]
+  },
+  "message": "Deployment homers-olim2k1jk-kevin-tangs-projects-7b84bab0.vercel.app ready. Production URL: https://homers-nu.vercel.app",
+  "next": [
+    {
+      "command": "vercel git connect --cwd site",
+      "when": "Automatically deploy changes on every push"
+    },
+    {
+      "command": "vercel curl https://homers-nu.vercel.app",
+      "when": "Verify deployment, including when Deployment Protection is enabled"
+    },
+    {
+      "command": "vercel inspect homers-olim2k1jk-kevin-tangs-projects-7b84bab0.vercel.app --cwd site",
+      "when": "Inspect deployment"
+    },
+    {
+      "command": "vercel deploy --prod --cwd site",
+      "when": "Promote to production"
+    }
+  ]
+}
