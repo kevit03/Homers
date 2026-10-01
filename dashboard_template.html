@@ -399,6 +399,68 @@ input[type=search] { font: inherit; color: var(--ink); background: var(--surface
 .pf-table .who { display: flex; align-items: center; gap: 10px; }
 .pf-table .pf-av { width: 30px; height: 30px; font-size: 12px; }
 .pf-table td.fp { font-weight: 700; color: var(--model); }
+/* fantasy leaderboard as a bar board: one row per player, the chosen stat as a bar in his team's colors (secondary color
+   as the trim at the end), whiskers for his game-to-game spread, the cost (games, minutes, shots, efficiency, turnovers) on the
+   right. Re-ranking slides rows to their new spot; bars tip off from the baseline when the board scrolls into view. */
+.fb-ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.fb-meta { margin: 0 0 0 auto; }
+.fb { --fb-cols: 28px minmax(210px, 260px) minmax(160px, 1fr) 92px repeat(5, 52px); --fb-ease: cubic-bezier(.22, 1, .36, 1);
+      min-width: 840px; font-variant-numeric: tabular-nums; }
+.fb-head, .fb-row, .fb-guide, .fb-axis { display: grid; grid-template-columns: var(--fb-cols); column-gap: 12px; align-items: center; padding: 0 10px; }
+.fb-head { padding-bottom: 8px; border-bottom: 2px solid var(--line-strong); font-family: var(--font-display); font-size: 12.5px; font-weight: 700;
+           letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.fb-head .r, .fb-val, .fb-c, .fb-rk { text-align: right; }
+.fb-head [data-k] { cursor: pointer; user-select: none; text-align: right; }
+.fb-head [data-k]:hover, .fb-head [data-k].on { color: var(--model); }
+.fb-head [data-k].on::after { content: "\25BE"; margin-left: 2px; }
+.fb-head [data-k][aria-sort="ascending"]::after { content: "\25B4"; }
+.fb-hbar { position: relative; align-self: stretch; display: flex; align-items: end; }
+.fb-hbar em { position: absolute; bottom: -1px; transform: translateX(-50%); font-style: normal; color: var(--model); white-space: nowrap;
+              transition: left .55s var(--fb-ease); }
+.fb-rows { position: relative; transition: height .5s var(--fb-ease); }
+.fb-row { position: absolute; top: 0; left: 0; right: 0; width: 100%; height: 52px; margin: 0; padding: 0 10px; border: 0; border-bottom: 1px solid var(--line);
+          border-radius: 0; background: transparent; color: var(--ink); font: inherit; text-align: left;
+          transition: transform .55s var(--fb-ease), opacity .25s ease, background-color .15s ease; }
+.fb-row:hover { background: var(--bg); border-color: var(--line); }
+.fb-rows:hover .fb-row:not(:hover) { opacity: .4; }
+.fb-row:focus-visible { outline: 2px solid var(--model); outline-offset: -2px; }
+.fb-rk { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--muted); }
+.fb-row.t1 .fb-rk { color: #dcaa3f; } .fb-row.t2 .fb-rk { color: #aab4c0; } .fb-row.t3 .fb-rk { color: #c9814a; }
+.fb-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fb-who .pf-av { width: 34px; height: 34px; font-size: 12px; box-shadow: 0 0 0 2px var(--tc); border-color: transparent; }
+.fb-nm { display: grid; min-width: 0; line-height: 1.2; }
+.fb-nm b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fb-nm small { display: flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--muted); }
+.fb-nm .pf-logo { width: 15px; height: 15px; }
+/* the track is the floor: faint plank seams; the bar is the jersey: team primary with the secondary as trim */
+.fb-track { position: relative; height: 16px; border-radius: 0 4px 4px 0; transition: height .18s ease;
+            background: repeating-linear-gradient(90deg, transparent 0 23px, rgb(128 128 128 / .08) 23px 24px), var(--bg); }
+.fb-row:hover .fb-track { height: 22px; }
+.fb-bar { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; transform-origin: left center;
+          background: linear-gradient(180deg, rgb(255 255 255 / .18), transparent 60%), var(--tc);
+          box-shadow: inset -4px 0 0 var(--ta), inset 0 0 0 1px rgb(255 255 255 / .1); transition: width .55s var(--fb-ease); }
+.fb-wh { position: absolute; top: 50%; height: 10px; transform: translateY(-50%); border: solid var(--ink); border-width: 0 1.5px;
+         transition: left .55s var(--fb-ease), width .55s var(--fb-ease); }
+.fb-wh::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1.5px solid var(--ink); }
+.fb-val b { font-family: var(--font-display); font-size: 21px; font-weight: 700; }
+.fb-val small { display: block; margin-top: -3px; font-size: 10.5px; color: var(--muted); }
+.fb-c { font-size: 13.5px; color: var(--ink-2); transition: color .15s ease; }
+.fb-row:hover .fb-c { color: var(--ink); }
+.fb-guide { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.fb-guide > span { align-self: stretch; position: relative; }
+.fb-guide i { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgb(128 128 128 / .14); transition: left .55s var(--fb-ease); }
+.fb-guide i.avg { border-left: 1.5px dashed var(--model); opacity: .8; }
+.fb-axis { height: 26px; }
+.fb-axis > span { position: relative; align-self: stretch; }
+.fb-axis b { position: absolute; top: 6px; transform: translateX(-50%); font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.fb-row.fb-new { animation: fb-fade .35s ease backwards; }
+.fb:not(.fb-enter) .fb-bar { transform: scaleX(0); }
+.fb:not(.fb-enter) .fb-wh, .fb:not(.fb-enter) .fb-val { opacity: 0; }
+.fb-enter .fb-bar { animation: fb-grow .8s var(--fb-ease) backwards; animation-delay: var(--d, 0ms); }
+.fb-enter .fb-wh, .fb-enter .fb-val { animation: fb-fade .45s ease backwards; animation-delay: calc(var(--d, 0ms) + 260ms); }
+@keyframes fb-grow { from { transform: scaleX(0); } }
+@keyframes fb-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .fb-rows:hover .fb-row:not(:hover) { opacity: 1; } .fb:not(.fb-enter) .fb-bar { transform: none; } }
 
 .pf-modal { width: min(960px, calc(100vw - 24px)); max-height: calc(100vh - 24px); padding: 0; border: 0; border-radius: 10px; overflow: auto;
             background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px rgba(0, 0, 0, .4); }
@@ -1156,6 +1218,75 @@ h3.co-side.def::before { background: var(--base); }
 .hm-faces img { height: 118px; width: auto; margin-left: -46px; filter: drop-shadow(0 6px 12px rgb(0 0 0 / .45)); }
 </style>
 
+<style>
+/* head to head: two players side by side, each in his own team's colors, so neither side is the "home" side */
+.h2h-pick { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(150px, 210px) auto; gap: 10px; align-items: end; }
+.h2h-pick #h2hSwap { height: 42px; padding: 0 12px; }
+.h2h-pick .seg { height: 42px; align-items: stretch; }
+@media (max-width: 860px) { .h2h-pick { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); } .h2h-pick .h2h-opt { grid-column: span 3; display: flex; gap: 10px; align-items: end; flex-wrap: wrap; } }
+@media (min-width: 861px) { .h2h-pick .h2h-opt { display: contents; } }
+@media (max-width: 640px) {  /* the search boxes need ~170px each: stack them, the swap button beside the pair */
+  .h2h-pick { grid-template-columns: minmax(0, 1fr) auto; }
+  .h2h-pick > .field:first-child { grid-area: 1 / 1; } .h2h-pick #h2hSwap { grid-area: 1 / 2 / 3 / 3; align-self: center; }
+  .h2h-pick > .field:nth-child(3) { grid-area: 2 / 1; } .h2h-pick .h2h-opt { grid-column: 1 / -1; }
+}
+.h2h-face { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.h2h-card { position: relative; overflow: hidden; display: grid; grid-template-rows: auto 1fr; border-radius: var(--radius); color: #fff; text-align: center;
+            background: linear-gradient(160deg, var(--tc), color-mix(in srgb, var(--tc) 55%, #000)); }
+.h2h-card::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--ta); }
+.h2h-shot { position: relative; display: grid; place-items: end center; aspect-ratio: 1040 / 760; overflow: hidden;
+            background: radial-gradient(70% 80% at 50% 100%, color-mix(in srgb, var(--ta) 38%, transparent), transparent 70%); }
+.h2h-shot img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 8px 16px rgb(0 0 0 / .4)); }
+.h2h-shot .ini { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 64px; font-weight: 800; opacity: .45; }
+.h2h-shot .lg { position: absolute; left: 12px; top: 12px; width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 2px 6px rgb(0 0 0 / .4)); }
+.h2h-who { display: grid; gap: 4px; align-content: start; padding: 12px 14px 18px; text-shadow: 0 1px 10px rgb(0 0 0 / .4); }
+.h2h-who .pf-link { all: unset; cursor: pointer; font-family: var(--font-display); font-size: clamp(22px, 3vw, 32px); font-weight: 800; font-style: italic; text-transform: uppercase; line-height: .95; }
+.h2h-who .pf-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.h2h-who .pf-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 3px; }
+.h2h-who .meta { font-family: var(--font-label); font-size: 13px; font-weight: 600; letter-spacing: .04em; opacity: .9; }
+.h2h-acc { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 4px; }
+.h2h-acc span { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; line-height: 20px; padding: 0 8px; border-radius: 999px; background: rgb(255 255 255 / .16); text-shadow: none; }
+.h2h-mid { display: grid; align-content: center; justify-items: center; gap: 6px; min-width: 92px; text-align: center; }
+.h2h-mid .vs { font-family: var(--font-display); font-size: 22px; font-weight: 800; font-style: italic; color: var(--muted); }
+.h2h-mid .score { font-family: var(--font-display); font-size: 54px; font-weight: 800; line-height: .9; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.h2h-mid .score i { font-style: normal; color: var(--line-strong); margin: 0 4px; }
+.h2h-mid .score .lead { color: var(--ink); } .h2h-mid .score .trail { color: var(--muted); }
+.h2h-mid .label { max-width: 12ch; }
+.h2h-verdict { text-align: center; font-size: 15px; color: var(--ink-2); }
+.h2h-verdict b { color: var(--ink); }
+.h2h-board { display: grid; gap: 4px; }
+.h2h-grp { font-family: var(--font-label); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+           text-align: center; padding: 14px 0 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.h2h-grp:first-child { padding-top: 0; }
+.h2h-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 180px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 5px 0; }
+.h2h-side { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.h2h-side.b { flex-direction: row-reverse; }
+.h2h-v { display: grid; min-width: 64px; line-height: 1.1; }
+.h2h-side.a .h2h-v { text-align: left; } .h2h-side.b .h2h-v { text-align: right; }
+.h2h-v b { font-family: var(--font-display); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.h2h-v small { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.h2h-bar { flex: 1; height: 10px; border-radius: 999px; background: var(--accent-soft); display: flex; overflow: hidden; }
+.h2h-side.a .h2h-bar { justify-content: flex-end; }
+.h2h-bar i { display: block; height: 100%; border-radius: 999px; background: var(--c); opacity: .35; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent); }
+.h2h-row.ctx .h2h-bar i { background: var(--muted); }
+.h2h-side.win .h2h-v b { color: var(--ink); font-weight: 800; }
+.h2h-side.win .h2h-bar i { opacity: 1; }
+.h2h-side.win .h2h-v b::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--c); margin: 0 0 4px 6px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
+.h2h-side.b.win .h2h-v b::after { display: none; }
+.h2h-side.b.win .h2h-v b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--c); margin: 0 6px 4px 0; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); }
+.h2h-lab { display: grid; text-align: center; line-height: 1.15; }
+.h2h-lab b { font-family: var(--font-label); font-size: 14px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+.h2h-lab small { font-size: 11.5px; color: var(--muted); }
+.h2h-dnp { font-size: 13px; color: var(--muted); font-style: italic; }
+@media (max-width: 640px) {
+  .h2h-face { gap: 8px; } .h2h-mid { min-width: 64px; } .h2h-mid .score { font-size: 38px; }
+  .h2h-who { padding: 10px 8px 16px; } .h2h-who .meta { font-size: 11.5px; } .h2h-acc { display: none; }
+  .h2h-row { grid-template-columns: minmax(0, 1fr) minmax(84px, auto) minmax(0, 1fr); gap: 6px; }
+  .h2h-bar { display: none; } .h2h-side.b { flex-direction: row; justify-content: flex-end; } .h2h-v { min-width: 0; }
+  .h2h-v b { font-size: 21px; } .h2h-lab b { font-size: 12.5px; }
+}
+</style>
+
 <div class="wrap">
   <header>
     <div class="brand">
@@ -1198,6 +1329,7 @@ h3.co-side.def::before { background: var(--base); }
       </li>
       <li class="nm-item"><a class="nm-plain" href="#/coaches" data-nav="coaches">Coaches</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/fantasy" data-nav="fantasy">Fantasy</a></li>
+      <li class="nm-item"><a class="nm-plain" href="#/h2h" data-nav="h2h">H2H</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/sources" data-nav="sources">Sources</a></li>
     </ul>
     <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch colour theme">◐ <span>Theme</span></button>
@@ -1609,12 +1741,37 @@ h3.co-side.def::before { background: var(--base); }
         <div class="field grow"><label class="label" for="pfSearch">Find a player</label><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="pfSearch" placeholder="Name or team" autocomplete="off" spellcheck="false"></div></div>
         <label style="display:flex;gap:6px;align-items:center;font-size:14px;padding-bottom:8px"><input type="checkbox" id="pfQual" checked>Qualified only</label>
       </div>
-      <div class="table-wrap"><table class="pf-table">
-        <thead><tr id="pfHeadRow"></tr></thead>
-        <tbody id="pfRows"></tbody>
-      </table></div>
+      <div class="fb-ctrl">
+        <div class="seg" id="fbCat" role="group" aria-label="Rank by"></div>
+        <div class="seg" id="fbPer" role="group" aria-label="Rate"><button type="button" data-per="g" aria-pressed="true">Per game</button><button type="button" data-per="36" aria-pressed="false">Per 36 min</button></div>
+        <p class="caption fb-meta" id="fbMeta"></p>
+      </div>
+      <div class="table-wrap"><div class="fb" id="fbBoard">
+        <div class="fb-head" id="pfHeadRow"></div>
+        <div class="fb-rows" id="pfRows"><div class="fb-guide" id="fbGuide" aria-hidden="true"></div></div>
+        <div class="fb-axis" id="fbAxis" aria-hidden="true"></div>
+      </div></div>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" id="pfMore">Show more</button><span class="caption" id="pfCount"></span></div>
     </div>
+  </section>
+
+  <section id="h2h" aria-labelledby="h-h2h" data-tab="h2h" hidden>
+    <div class="sec-head">
+      <h2 id="h-h2h" class="cast">Head to head</h2>
+      <p class="caption" id="h2hCap">Pick any two players. A dot marks who's ahead in each category. Minutes and games played are shown for context and don't count toward the score.</p>
+    </div>
+    <div class="panel h2h-pick">
+      <div class="field"><label class="label" for="h2hA">Player 1</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="h2hA" placeholder="Search players…" autocomplete="off" spellcheck="false"></div></div></div>
+      <button type="button" id="h2hSwap" aria-label="Swap the two players" title="Swap">⇄</button>
+      <div class="field"><label class="label" for="h2hB">Player 2</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="h2hB" placeholder="Search players…" autocomplete="off" spellcheck="false"></div></div></div>
+      <div class="h2h-opt">
+        <div class="field"><label class="label" for="h2hSeason">Season</label><select id="h2hSeason"></select></div>
+        <div class="field"><span class="label">Rates</span><div class="seg" id="h2hMode" role="group" aria-label="Rates"><button type="button" data-m="g" aria-pressed="true">Per game</button><button type="button" data-m="36" aria-pressed="false">Per 36</button></div></div>
+      </div>
+    </div>
+    <div class="h2h-face" id="h2hFace"></div>
+    <p class="h2h-verdict" id="h2hVerdict"></p>
+    <div class="panel h2h-board" id="h2hBoard"></div>
   </section>
 
   <section aria-labelledby="h-quality" data-tab="model">
@@ -3195,7 +3352,7 @@ const PF_POS = { G: "Guard", F: "Forward", C: "Center", "G-F": "Guard-forward", 
 const PF_K = 60;  // minutes of league-average play blended into every player's rates, so a 20-minute sample doesn't swing wildly
 const PF_LC = PF ? Object.fromEntries(PF.log_cols.map((c, i) => [c, i])) : {};
 const PF_IN_REPLAY = new Set(DATA.games.map(g => g.id));
-let pfCurPid = null, pfSeasonSel = null, pfSort = { k: "fpg", dir: -1 }, pfShowN = 25;
+let pfCurPid = null, pfSeasonSel = null, pfSort = { k: "score", dir: -1 }, pfShowN = 25;
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const f1 = v => (Math.round(v * 10) / 10).toFixed(1);
@@ -3537,40 +3694,113 @@ function pfJumpToGame(gid) {
   $("h-replay").scrollIntoView({ behavior: "smooth" });
 }
 
-/* ----- fantasy leaderboard ----- */
-const PF_COLS = [["gp", "GP"], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fg", "FG%"], ["tp", "3P%"], ["fpg", "FP/G"]];
-function pfBoardRows() {
-  const season = $("pfBoardSeason").value, team = $("pfTeam").value, m = nameOrTeam($("pfSearch").value);
+/* ----- fantasy leaderboard: a bar board ranked by one stat, per game or per 36 minutes ----- */
+const FB_CATS = [["fp", "Fantasy", "FP"], ["pts", "Points", "PTS"], ["reb", "Rebounds", "REB"], ["ast", "Assists", "AST"], ["stk", "Stocks", "STL+BLK"], ["tpm", "Threes", "3PM"]];
+const FB_COLS = [["gp", "GP", "Games played"], ["min", "MIN", "Minutes per game"], ["fga", "FGA", "Shots"], ["ts", "TS%", "True shooting: points per shot, free throws included"], ["tov", "TOV", "Turnovers"]];
+const FB_ROW = 52, FB_MIN36 = 12;  // per 36 leaves out anyone under 12 minutes a game, whose rates are mostly noise
+const fb = { cat: "fp", per36: false, rows: new Map() };
+const fbTot = (s, k) => k === "fp" ? pfFP(s) : k === "reb" ? pfReb(s) : k === "stk" ? s.stl + s.blk : s[k];
+const fbGame = (r, k) => k === "stk" ? r[PF_LC.stl] + r[PF_LC.blk] : r[PF_LC[k]];
+function fbSpread(P, season, k) {  // his game-to-game standard deviation; logs exist only for each player's latest season
+  const po = isPO(season), y = season.replace(PO_SFX, "");
+  const v = P.log.filter(r => r[PF_LC.min] > 0 && gidSeason(r[0]) === y && isPlayoffId(r[0]) === po).map(r => fbGame(r, k));
+  if (v.length < 5) return null;
+  const m = v.reduce((a, b) => a + b, 0) / v.length;
+  return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (v.length - 1));
+}
+function fbStep(max, ticks = 5) {  // a clean tick step from {1, 2, 2.5, 5} x 10^k
+  if (max <= 0) return 1;
+  for (let e = -2; e <= 6; e++) for (const b of [1, 2, 2.5, 5]) if (max / (b * 10 ** e) <= ticks) return b * 10 ** e;
+  return max;
+}
+function pfBoardRows() {  // pool: every qualified player that season (sets the axis and the average); rows: after team and name filters
+  const season = $("pfBoardSeason").value, team = $("pfTeam").value, m = nameOrTeam($("pfSearch").value), k = fb.cat;
   const min = $("pfQual").checked ? pfMinGp(season) : 1;
-  return Object.entries(PF.players).filter(([, P]) => P.seasons[season] && P.seasons[season].gp >= min)
+  const pool = Object.entries(PF.players).filter(([, P]) => { const s = P.seasons[season]; return s && s.gp >= min && (!fb.per36 || s.min / s.gp >= FB_MIN36); })
     .map(([id, P]) => {
-      const s = P.seasons[season], n = s.gp;
-      return { id: +id, name: P.name, team: s.team, gp: n, min: s.min / n, pts: s.pts / n, reb: pfReb(s) / n, ast: s.ast / n, stl: s.stl / n,
-               blk: s.blk / n, tov: s.tov / n, fg: s.fga ? s.fgm / s.fga : 0, tp: s.tpa ? s.tpm / s.tpa : 0, fpg: pfFP(s) / n };
-    })
-    .filter(r => (!team || r.team === team) && m(r.name, r.team));
+      const s = P.seasons[season], n = s.gp, mpg = s.min / n, rate = fb.per36 ? 36 / s.min : 1 / n, sd = fbSpread(P, season, k), tsa = s.fga + 0.44 * s.fta;
+      return { id: +id, name: P.name, team: s.team, gp: n, min: mpg, fga: s.fga * rate, ts: tsa ? s.pts / (2 * tsa) : 0, tov: s.tov * rate,
+               score: fbTot(s, k) * rate, sd: sd == null ? null : fb.per36 ? sd * 36 / mpg : sd,
+               pts: s.pts / n, reb: pfReb(s) / n, ast: s.ast / n };
+    });
+  return { pool, rows: pool.filter(r => (!team || r.team === team) && m(r.name, r.team)) };
+}
+function fbRow(r, y, w) {
+  const el = document.createElement("button");
+  el.type = "button"; el.className = "fb-row pf-open fb-new"; el.dataset.pid = r.id;
+  el.style.transform = `translateY(${y}px)`;
+  el.innerHTML = `<span class="fb-rk"></span><span class="fb-who">${pfAvatar(r.id, r.name)}<span class="fb-nm"><b>${esc(r.name)}<span class="fb-aw"></span></b><small></small></span></span>
+    <span class="fb-track"><span class="fb-bar" style="width:${w}"></span><span class="fb-wh" hidden></span></span><span class="fb-val"><b></b><small></small></span>${FB_COLS.map(() => `<span class="fb-c"></span>`).join("")}`;
+  return el;
 }
 function pfRenderBoard() {
-  const rows = pfBoardRows(), top = [...rows].sort((a, b) => b.fpg - a.fpg).slice(0, 5);
+  const season = $("pfBoardSeason").value, { pool, rows } = pfBoardRows();
+  const [, cat, ab] = FB_CATS.find(c => c[0] === fb.cat), unit = `${ab} ${fb.per36 ? "per 36" : "per game"}`;
+  const top = [...rows].sort((a, b) => b.score - a.score).slice(0, 5);
   $("pfPodium").innerHTML = top.map((r, i) => {
     const [, c1, c2] = pfTeam(r.team);
     return `<button type="button" class="pf-pod pf-open" data-pid="${r.id}" style="--tc:${c1};--ta:${c2}" aria-label="${esc(r.name)}: open profile">
       <img src="${pfHead(r.id)}" alt="" loading="lazy" onerror="this.remove()"><span class="rk">${i + 1}</span>
-      <span class="who"><b>${esc(r.name)}</b><span>${esc(r.team)} · ${f1(r.pts)} pts · ${f1(r.reb)} reb · ${f1(r.ast)} ast</span><strong>${f1(r.fpg)} <small style="font-size:14px">FP/G</small></strong></span></button>`;
+      <span class="who"><b>${esc(r.name)}</b><span>${esc(r.team)} · ${f1(r.pts)} pts · ${f1(r.reb)} reb · ${f1(r.ast)} ast</span><strong>${f1(r.score)} <small style="font-size:14px">${esc(ab)}${fb.per36 ? "/36" : "/G"}</small></strong></span></button>`;
   }).join("");
-  rows.sort((a, b) => pfSort.dir * ((a[pfSort.k] > b[pfSort.k]) - (a[pfSort.k] < b[pfSort.k])) || b.fpg - a.fpg);
-  const pctf = v => (v * 100).toFixed(1);
-  $("pfRows").innerHTML = rows.slice(0, pfShowN).map((r, i) => `<tr class="pf-open" data-pid="${r.id}" tabindex="0">
-    <td class="r">${i + 1}</td><td><span class="who">${pfAvatar(r.id, r.name)}<b>${esc(r.name)}</b>${awardMarks(PF.players[r.id], $("pfBoardSeason").value)}</span></td><td>${esc(r.team)}</td>
-    <td class="r">${r.gp}</td><td class="r">${f1(r.min)}</td><td class="r">${f1(r.pts)}</td><td class="r">${f1(r.reb)}</td><td class="r">${f1(r.ast)}</td>
-    <td class="r">${f1(r.stl)}</td><td class="r">${f1(r.blk)}</td><td class="r">${f1(r.tov)}</td><td class="r">${pctf(r.fg)}</td><td class="r">${pctf(r.tp)}</td>
-    <td class="r fp">${f1(r.fpg)}</td></tr>`).join("");
-  document.querySelectorAll("#pfHeadRow th[data-k]").forEach(th => {
-    th.classList.toggle("on", th.dataset.k === pfSort.k);
-    th.setAttribute("aria-sort", th.dataset.k === pfSort.k ? (pfSort.dir < 0 ? "descending" : "ascending") : "none");
+
+  rows.sort((a, b) => pfSort.dir * ((a[pfSort.k] > b[pfSort.k]) - (a[pfSort.k] < b[pfSort.k])) || b.score - a.score);
+  const shown = rows.slice(0, pfShowN);
+  // the scale spans the whole qualified pool, not the filtered rows, so filtering a team doesn't stretch every bar
+  const hi = Math.max(1, ...pool.map(r => r.score + (r.sd || 0))) * 1.02, step = fbStep(hi), max = step * Math.ceil(hi / step);
+  const pct = v => `${(Math.max(0, Math.min(v, max)) / max * 100).toFixed(2)}%`;
+  const avg = pool.length ? pool.reduce((a, r) => a + r.score, 0) / pool.length : 0;
+  const ticks = []; for (let t = 0; t <= max + 1e-9; t += step) ticks.push(+t.toFixed(2));
+  const gap = "<span></span><span></span>", tail = "<span></span>".repeat(1 + FB_COLS.length);
+
+  $("pfHeadRow").innerHTML = `<span class="r">#</span><span>Player</span><span class="fb-hbar">${esc(cat)}${pool.length ? `<em style="left:${pct(avg)}">Avg ${f1(avg)}</em>` : ""}</span>
+    <span data-k="score" role="columnheader" tabindex="0" title="${esc(unit)}">${esc(ab)}${fb.per36 ? "/36" : "/G"}</span>` +
+    FB_COLS.map(([k, l, t]) => `<span data-k="${k}" role="columnheader" tabindex="0" title="${esc(t)}${k === "fga" || k === "tov" ? (fb.per36 ? " per 36 minutes" : " per game") : ""}">${l}</span>`).join("");
+  document.querySelectorAll("#pfHeadRow [data-k]").forEach(h => {
+    h.classList.toggle("on", h.dataset.k === pfSort.k);
+    h.setAttribute("aria-sort", h.dataset.k === pfSort.k ? (pfSort.dir < 0 ? "descending" : "ascending") : "none");
   });
+  $("fbGuide").innerHTML = `${gap}<span>${ticks.slice(1).map(t => `<i style="left:${pct(t)}"></i>`).join("")}${pool.length ? `<i class="avg" style="left:${pct(avg)}"></i>` : ""}</span>${tail}`;
+  $("fbAxis").innerHTML = `${gap}<span>${ticks.map(t => `<b style="left:${pct(t)}">${t}</b>`).join("")}</span>${tail}`;
+
+  // rows are reused per player, so a re-rank slides each one from its old spot and its bar re-stretches:
+  // reorder the DOM (keeps tab order = rank), let the old inline positions lay out, then set the new ones
+  const box = $("pfRows"), keep = new Set(shown.map(r => r.id));
+  for (const [id, el] of fb.rows) if (!keep.has(id)) { el.remove(); fb.rows.delete(id); }
+  const els = shown.map((r, i) => {
+    let el = fb.rows.get(r.id);
+    if (!el) fb.rows.set(r.id, el = fbRow(r, i * FB_ROW, pct(r.score)));
+    box.append(el);
+    return el;
+  });
+  void box.offsetHeight;
+  shown.forEach((r, i) => {
+    const el = els[i], [, c1, c2] = pfTeam(r.team), q = sel => el.querySelector(sel);
+    el.style.transform = `translateY(${i * FB_ROW}px)`;
+    el.style.setProperty("--d", `${Math.min(i, 15) * 45}ms`);
+    el.style.setProperty("--tc", c1); el.style.setProperty("--ta", c2);
+    el.classList.toggle("t1", i === 0); el.classList.toggle("t2", i === 1); el.classList.toggle("t3", i === 2);
+    q(".fb-rk").textContent = i + 1;
+    if (el.dataset.team !== r.team) { el.dataset.team = r.team; q(".fb-nm small").innerHTML = `${pfLogo(PF.teams[r.team])}${esc(r.team)}`; }
+    q(".fb-aw").innerHTML = awardMarks(PF.players[r.id], season);
+    q(".fb-bar").style.width = pct(r.score);
+    const wh = q(".fb-wh");
+    wh.hidden = r.sd == null;
+    if (r.sd != null) { wh.style.left = pct(r.score - r.sd); wh.style.width = `calc(${pct(r.score + r.sd)} - ${pct(r.score - r.sd)})`; }
+    q(".fb-val b").textContent = f1(r.score);
+    q(".fb-val small").textContent = r.sd != null ? `±${f1(r.sd)}` : "";
+    el.querySelectorAll(".fb-c").forEach((c, j) => {
+      const k = FB_COLS[j][0], v = r[k];
+      c.textContent = k === "gp" ? v : k === "ts" ? (v * 100).toFixed(1) : f1(v);
+    });
+    el.setAttribute("aria-label", `${i + 1}. ${r.name}, ${r.team}: ${f1(r.score)} ${unit}. Open profile`);
+  });
+  box.style.height = `${shown.length * FB_ROW}px`;
+
+  const spread = shown.some(r => r.sd != null);
+  $("fbMeta").textContent = `${pool.length} ${$("pfQual").checked ? "qualified " : ""}players${fb.per36 ? ` with ${FB_MIN36}+ minutes a game` : ""} · dashed line: their average${spread ? " · whiskers: ±1 SD game to game" : ""}`;
   $("pfMore").hidden = rows.length <= pfShowN;
-  $("pfCount").textContent = `Showing ${Math.min(pfShowN, rows.length)} of ${rows.length} players${$("pfQual").checked ? ` with ${pfMinGp($("pfBoardSeason").value)}+ games` : ""}.`;
+  $("pfCount").textContent = `Showing ${Math.min(pfShowN, rows.length)} of ${rows.length} players${$("pfQual").checked ? ` with ${pfMinGp(season)}+ games` : ""}.`;
 }
 
 function initProfiles() {
@@ -3581,14 +3811,34 @@ function initProfiles() {
   const seasons = [...PF.seasons].sort(pfKeyOrder);
   $("pfBoardSeason").innerHTML = seasons.map(s => `<option${s === (PF.seasons.includes(replaySeason) ? replaySeason : seasons[0]) ? " selected" : ""}>${s}</option>`).join("");
   $("pfTeam").innerHTML = `<option value="">All teams</option>` + Object.keys(PF.teams).sort().map(t => `<option value="${t}">${esc(pfTeam(t)[0])}</option>`).join("");
-  $("pfHeadRow").innerHTML = `<th class="r">#</th><th>Player</th><th>Team</th>` + PF_COLS.map(([k, l]) => `<th class="r sort" data-k="${k}" tabindex="0">${l}</th>`).join("");
+  $("fbCat").innerHTML = FB_CATS.map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === fb.cat}">${l}</button>`).join("");
+  $("fbCat").addEventListener("click", e => {
+    const b = e.target.closest("button[data-cat]");
+    if (!b || b.dataset.cat === fb.cat) return;
+    fb.cat = b.dataset.cat; pfSort = { k: "score", dir: -1 };
+    $("fbCat").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    pfRenderBoard();
+  });
+  $("fbPer").addEventListener("click", e => {
+    const b = e.target.closest("button[data-per]");
+    if (!b || (b.dataset.per === "36") === fb.per36) return;
+    fb.per36 = b.dataset.per === "36";
+    $("fbPer").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    pfRenderBoard();
+  });
+  const board = $("fbBoard");  // bars tip off the first time the board scrolls into view
+  if (typeof IntersectionObserver === "undefined") board.classList.add("fb-enter");
+  else {
+    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { board.classList.add("fb-enter"); io.disconnect(); } }, { threshold: 0.15 });
+    io.observe(board);
+  }
   selSeason($("pfBoardSeason")); selTeam($("pfTeam"));
   ["pfBoardSeason", "pfTeam", "pfQual"].forEach(id => $(id).addEventListener("change", () => { pfShowN = 25; pfRenderBoard(); }));
   $("pfSearch").addEventListener("input", () => { pfShowN = 25; pfRenderBoard(); });
   $("pfMore").addEventListener("click", () => { pfShowN += 50; pfRenderBoard(); });
   const sortBy = th => { const k = th.dataset.k; pfSort = { k, dir: pfSort.k === k ? -pfSort.dir : -1 }; pfRenderBoard(); };
-  $("pfHeadRow").addEventListener("click", e => { const th = e.target.closest("th[data-k]"); if (th) sortBy(th); });
-  $("pfHeadRow").addEventListener("keydown", e => { const th = e.target.closest("th[data-k]"); if (th && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); sortBy(th); } });
+  $("pfHeadRow").addEventListener("click", e => { const th = e.target.closest("[data-k]"); if (th) sortBy(th); });
+  $("pfHeadRow").addEventListener("keydown", e => { const th = e.target.closest("[data-k]"); if (th && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); sortBy(th); } });
   pfRenderBoard();
 
   const d = $("pfModal");
@@ -3617,10 +3867,6 @@ function initProfiles() {
   document.addEventListener("click", e => {
     const el = e.target.closest(".pf-open");
     if (el && !(d.open && d.contains(el) && !el.classList.contains("pf-link"))) openProfile(+el.dataset.pid);
-  });
-  $("pfRows").addEventListener("keydown", e => {
-    const tr = e.target.closest("tr[data-pid]");
-    if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openProfile(+tr.dataset.pid); }
   });
   const m = location.hash.match(/^#player-(\d+)$/);
   if (m) openProfile(+m[1]);
@@ -4966,6 +5212,7 @@ function homeInit() {
       const s = PF.seasons.filter(k => !isPO(k)).pop() || PF.seasons[PF.seasons.length - 1];
       return pfRanks(s).slice(0, 3).map(id => pfHead(id, "260x190"));
     }],
+    h2h: ["Any two players, every major stat, side by side.", null, () => (h2h.a ? [pfHead(h2h.a, "260x190"), pfHead(h2h.b, "260x190")] : [])],
     games: ["Scrub any game and watch the odds swing.", "card-games"],
     model: ["How good the predictions are, plus a what-if.", "card-model"],
     sources: ["Where the numbers come from, and the name.", "card-sources"],
@@ -4986,11 +5233,171 @@ function homeInit() {
   document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) showTab(b.dataset.go, true); });
 }
 
+/* ---------- head to head ----------
+   Two players' lines for one season (or a whole career) side by side. Each category goes to whoever is ahead at the
+   precision shown (lower wins for turnovers); the score is the number of categories won. Minutes, games and fouls are
+   context and never count. Each side wears the colors of the team he played for that season, so neither is the home side. */
+const h2h = { a: null, b: null, season: "", mode: "g" };
+const H2H_CAR = "career", H2H_CAR_PO = "career-po";
+const h2hIsCar = k => k === H2H_CAR || k === H2H_CAR_PO;
+const h2hLast = pid => pfSplitName(pfName(pid))[1];
+function h2hSum(seasons, keys) {
+  const s = { ...pfZero(), gp: 0 };
+  keys.forEach(k => { for (const f in s) s[f] += seasons[k][f] || 0; });
+  return s;
+}
+function h2hLine(pid, key) {  // the stat line for a season, or every regular season (or playoff run) added up
+  const P = PF.players[pid];
+  if (!P) return null;
+  if (!h2hIsCar(key)) return P.seasons[key] || null;
+  const ks = Object.keys(P.seasons).filter(k => isPO(k) === (key === H2H_CAR_PO)).sort();
+  return ks.length ? { ...h2hSum(P.seasons, ks), team: P.seasons[ks[ks.length - 1]].team, n: ks.length } : null;
+}
+function h2hLeague(key) {
+  if (!h2hIsCar(key)) return PF.league[key] || null;
+  const ks = Object.keys(PF.league).filter(k => isPO(k) === (key === H2H_CAR_PO));
+  return ks.length ? h2hSum(PF.league, ks) : null;
+}
+const h2hDiv = (n, d) => (d > 0 ? n / d : null);
+const h2hPct = v => (v * 100).toFixed(1) + "%";
+// [group, label, value(line, rate), format, better: 1 higher, -1 lower, 0 context; detail(line) under the number; note under the label]
+const H2H_ROWS = [
+  ["Scoring", "Points", (s, r) => r(s.pts), f1, 1],
+  [null, "Field goal %", s => h2hDiv(s.fgm, s.fga), h2hPct, 1, s => `${s.fgm}/${s.fga}`],
+  [null, "Threes made", (s, r) => r(s.tpm), f1, 1],
+  [null, "Three-point %", s => h2hDiv(s.tpm, s.tpa), h2hPct, 1, s => `${s.tpm}/${s.tpa}`],
+  [null, "Free throw %", s => h2hDiv(s.ftm, s.fta), h2hPct, 1, s => `${s.ftm}/${s.fta}`],
+  [null, "Effective FG %", s => h2hDiv(s.fgm + 0.5 * s.tpm, s.fga), h2hPct, 1, null, "3s worth 1.5×"],
+  [null, "True shooting %", s => h2hDiv(s.pts, 2 * (s.fga + 0.44 * s.fta)), h2hPct, 1, null, "with free throws"],
+  ["Playmaking", "Assists", (s, r) => r(s.ast), f1, 1],
+  [null, "Turnovers", (s, r) => r(s.tov), f1, -1],
+  [null, "Assist / turnover", s => h2hDiv(s.ast, s.tov), v => v.toFixed(2), 1],
+  ["Rebounding", "Rebounds", (s, r) => r(s.oreb + s.dreb), f1, 1],
+  [null, "Offensive", (s, r) => r(s.oreb), f1, 1],
+  [null, "Defensive", (s, r) => r(s.dreb), f1, 1],
+  ["Defense", "Steals", (s, r) => r(s.stl), f1, 1],
+  [null, "Blocks", (s, r) => r(s.blk), f1, 1],
+  [null, "Fouls", (s, r) => r(s.pf), f1, 0],
+  ["Overall", "Fantasy points", (s, r) => r(pfFP(s)), f1, 1, null, "NBA.com scoring"],
+  [null, "Minutes", s => h2hDiv(s.min, s.gp), f1, 0, null, "per game"],
+  [null, "Games played", s => s.gp, v => String(v), 0],
+];
+function h2hSeasonOpts() {
+  const A = PF.players[h2h.a].seasons, B = PF.players[h2h.b].seasons, la = h2hLast(h2h.a), lb = h2hLast(h2h.b);
+  const keys = [...new Set([...Object.keys(A), ...Object.keys(B)])].sort(pfKeyOrder);
+  const po = keys.some(isPO);
+  const opt = (k, t) => `<option value="${k}">${esc(t)}</option>`;
+  $("h2hSeason").innerHTML = opt(H2H_CAR, "Career, regular season") + (po ? opt(H2H_CAR_PO, "Career, playoffs") : "") +
+    keys.map(k => opt(k, k + (A[k] && B[k] ? "" : ` · ${A[k] ? la : lb} only`))).join("");
+}
+function h2hDefaultSeason() {  // keep the chosen season while both have it; else the latest regular season they share
+  const A = PF.players[h2h.a].seasons, B = PF.players[h2h.b].seasons, both = k => h2hIsCar(k) || (A[k] && B[k]);
+  if (h2h.season && both(h2h.season)) return h2h.season;
+  const shared = Object.keys(A).filter(k => B[k]).sort(pfKeyOrder);
+  return shared.find(k => !isPO(k)) || shared[0] || H2H_CAR;
+}
+const h2hRgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+const h2hLum = rgb => { const [r, g, b] = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+function h2hColors(ta, tb) {  // each side's bar color: whichever of its team's two colors stands out more on this theme's page
+  const bg = h2hLum((getComputedStyle(document.body).backgroundColor.match(/\d+/g) || [255, 255, 255]).slice(0, 3).map(Number));
+  const contrast = c => { const l = h2hLum(h2hRgb(c)); return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05); };
+  // of the four pairings, the one whose fainter side stands out most, skipping pairs that look alike (teammates, orange vs gold)
+  const near = (x, y) => h2hRgb(x).reduce((t, v, i) => t + Math.abs(v - h2hRgb(y)[i]), 0) < 120;
+  const pairs = [[ta[1], tb[1]], [ta[1], tb[2]], [ta[2], tb[1]], [ta[2], tb[2]]].map(p => [p, Math.min(contrast(p[0]), contrast(p[1])) - (near(...p) ? 100 : 0)]);
+  return pairs.sort((x, y) => y[1] - x[1])[0][0];
+}
+function h2hCard(pid, s, col) {
+  const P = PF.players[pid], b = P.bio || {}, tri = s ? s.team : P.team, [tname, c1, c2] = pfTeam(tri);
+  const when = !s ? `Didn't play in ${h2h.season}` : h2hIsCar(h2h.season) ? `${s.n} ${s.n === 1 ? "season" : "seasons"} · ${s.gp} games` : `${h2h.season} · ${s.gp} games`;
+  const bio = [tname || tri, b.pos && (PF_POS[b.pos] || b.pos), b.num && `#${b.num}`, b.ht].filter(Boolean).join(" · ");
+  const acc = (P.acc || []).slice(0, 4);
+  return `<div class="h2h-card" style="--tc:${c1};--ta:${c2};--c:${col}">
+    <div class="h2h-shot"><span class="ini" aria-hidden="true">${esc(pfInitials(P.name))}</span>${PF.teams[tri] ? pfLogo(PF.teams[tri], "lg") : ""}<img src="${pfHead(pid)}" alt="${esc(P.name)}" loading="lazy" onload="this.parentNode.querySelector('.ini')?.remove()" onerror="this.remove()"></div>
+    <div class="h2h-who"><button type="button" class="pf-link pf-open" data-pid="${pid}" aria-label="${esc(P.name)}: open profile">${esc(P.name)}</button>
+      <span class="meta">${esc(bio)}</span><span class="meta">${esc(when)}</span>
+      ${acc.length ? `<div class="h2h-acc">${acc.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}</div></div>`;
+}
+function h2hRender() {
+  const key = h2h.season, sa = h2hLine(h2h.a, key), sb = h2hLine(h2h.b, key), L = h2hLeague(key), per36 = h2h.mode === "36";
+  const rate = s => x => (per36 ? h2hDiv(x * 36, s.min) : h2hDiv(x, s.gp));
+  const [ca, cb] = h2hColors(pfTeam(sa ? sa.team : PF.players[h2h.a].team), pfTeam(sb ? sb.team : PF.players[h2h.b].team));
+  let wa = 0, wb = 0, html = "";
+  for (const [grp, label, val, fmt, better, detail, note] of H2H_ROWS) {
+    if (label === "Minutes" && per36) continue;
+    if (grp) html += `<div class="h2h-grp">${grp}</div>`;
+    const va = sa ? val(sa, rate(sa)) : null, vb = sb ? val(sb, rate(sb)) : null;
+    // compare what the reader sees: 24.96 and 25.04 both read 25.0, a tie
+    const na = va == null ? null : parseFloat(fmt(va)), nb = vb == null ? null : parseFloat(fmt(vb));
+    let win = "";
+    if (better && na != null && nb != null && na !== nb) { win = (na > nb) === (better > 0) ? "a" : "b"; if (win === "a") wa++; else wb++; }
+    const max = Math.max(Math.abs(va || 0), Math.abs(vb || 0)) || 1;
+    const lg = L && (fmt === h2hPct ? val(L) : per36 && better && fmt === f1 ? val(L, x => h2hDiv(x * 36, L.min)) : null);
+    const sub = [fmt === f1 && label !== "Minutes" ? (per36 ? "per 36" : "per game") : "", note, lg != null ? `league ${fmt(lg)}` : ""].filter(Boolean).join(" · ");
+    const side = (cls, v, s, c, w) => `<div class="h2h-side ${cls}${w ? " win" : ""}" style="--c:${c}">
+      <span class="h2h-v">${v == null ? `<b>—</b>` : `<b>${fmt(v)}</b>`}${v != null && detail ? `<small>${detail(s)}</small>` : ""}</span>
+      <span class="h2h-bar" aria-hidden="true"><i style="width:${v == null ? 0 : (Math.abs(v) / max * 100).toFixed(1)}%"></i></span></div>`;
+    html += `<div class="h2h-row${better ? "" : " ctx"}">${side("a", va, sa, ca, win === "a")}<div class="h2h-lab"><b>${label}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</div>${side("b", vb, sb, cb, win === "b")}</div>`;
+  }
+  $("h2hBoard").innerHTML = html;
+  const n = H2H_ROWS.filter(r => r[4]).length, la = h2hLast(h2h.a), lb = h2hLast(h2h.b);
+  $("h2hFace").innerHTML = h2hCard(h2h.a, sa, ca) + `<div class="h2h-mid"><span class="vs">VS</span>
+      ${sa && sb ? `<span class="score" aria-label="${wa} categories to ${wb}"><span class="${wa >= wb ? "lead" : "trail"}">${wa}</span><i>–</i><span class="${wb >= wa ? "lead" : "trail"}">${wb}</span></span><span class="label">categories won</span>` : ""}</div>` + h2hCard(h2h.b, sb, cb);
+  const when = h2hIsCar(key) ? (key === H2H_CAR ? "over their regular-season careers" : "over their playoff careers") : `in ${key}`;
+  $("h2hVerdict").innerHTML = !sa || !sb ? `<b>${esc(!sa ? pfName(h2h.a) : pfName(h2h.b))}</b> has no games ${esc(when)}. Pick a season they both played.`
+    : wa === wb ? `Dead even ${esc(when)}: ${wa} categories each${n - wa - wb ? `, ${n - wa - wb} tied` : ""}.`
+    : `<b>${esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b))}</b> leads ${Math.max(wa, wb)}–${Math.min(wa, wb)} ${esc(when)}${n - wa - wb ? ` (${n - wa - wb} tied)` : ""}.`;
+  $("h2hA").placeholder = pfName(h2h.a); $("h2hB").placeholder = pfName(h2h.b);
+  if (curTab === "h2h") try { history.replaceState(null, "", `#/h2h/${h2h.a}-${h2h.b}`); } catch (e) {}
+}
+function h2hSet(a, b) {
+  h2h.a = a; h2h.b = b;
+  h2hSeasonOpts();
+  h2h.season = h2hDefaultSeason();
+  $("h2hSeason").value = h2h.season;
+  h2hRender();
+}
+function initH2H() {
+  if (!PF || Object.keys(PF.players).length < 2) return;
+  const ids = Object.keys(PF.players).map(Number).filter(id => Object.keys(PF.players[id].seasons).length);
+  const latest = PF.seasons.filter(k => !isPO(k)).pop() || PF.seasons[PF.seasons.length - 1];
+  const minOf = id => (PF.players[id].seasons[latest] || { min: 0 }).min;
+  // busiest this season first; everyone else after, by career minutes
+  const career = id => Object.values(PF.players[id].seasons).reduce((t, s) => t + s.min, 0);
+  const items = ids.sort((x, y) => minOf(y) - minOf(x) || career(y) - career(x)).map(id => {
+    const P = PF.players[id], k = pfLatest(P), s = P.seasons[k];
+    return { key: id, id, name: P.name, team: P.team || "", meta: `${k} · ${f1(s.pts / Math.max(s.gp, 1))} PPG · ${s.gp} games` };
+  });
+  playerSearch($("h2hA"), { items: () => items.filter(it => it.id !== h2h.b), pick: it => h2hSet(it.id, h2h.b), top: "Most minutes", browse: { rest: "No current team" } });
+  playerSearch($("h2hB"), { items: () => items.filter(it => it.id !== h2h.a), pick: it => h2hSet(h2h.a, it.id), top: "Most minutes", browse: { rest: "No current team" } });
+  $("h2hSwap").addEventListener("click", () => h2hSet(h2h.b, h2h.a));
+  $("h2hSeason").addEventListener("change", e => { h2h.season = e.target.value; h2hRender(); });
+  $("h2hMode").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-m]");
+    if (!btn) return;
+    h2h.mode = btn.dataset.m;
+    $("h2hMode").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === btn));
+    h2hRender();
+  });
+  // a shared link names both players; otherwise the two best fantasy seasons of the latest year
+  const m = START_HASH.match(/^#\/?h2h\/(\d+)-(\d+)/);
+  let pair = m && PF.players[+m[1]] && PF.players[+m[2]] && +m[1] !== +m[2] ? [+m[1], +m[2]] : null;
+  if (!pair) {
+    const top = ids.filter(id => (PF.players[id].seasons[latest] || { gp: 0 }).gp >= 20)
+      .map(id => [id, pfFP(PF.players[id].seasons[latest]) / PF.players[id].seasons[latest].gp]).sort((x, y) => y[1] - x[1]);
+    pair = top.length >= 2 ? [top[0][0], top[1][0]] : ids.slice(0, 2);
+  }
+  $("h2h").hidden = false;
+  h2hSet(pair[0], pair[1]);
+  const redraw = () => requestAnimationFrame(() => h2h.a && h2hRender());  // bar colors are picked against the theme's background
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+}
+
 /* ---------- tabs + theme ---------- */
 function scIndexOf(pid) { return SC ? SC.players.findIndex(p => p.id === +pid) : -1; }
 function scNowOf(pid) { const i = scIndexOf(pid); return i >= 0 ? SC.players[i].now : null; }
-const TABS = ["home", "shots", "matchups", "players", "coaches", "fantasy", "games", "model", "sources"];
-const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", coaches: "Coaches", fantasy: "Fantasy", games: "Game replay", model: "Model", sources: "Sources" };
+const TABS = ["home", "shots", "matchups", "players", "coaches", "fantasy", "h2h", "games", "model", "sources"];
+const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", coaches: "Coaches", fantasy: "Fantasy", h2h: "Head to head", games: "Game replay", model: "Model", sources: "Sources" };
 let curTab = "home";
 function tabHasContent(name) {
   return [...document.querySelectorAll(`[data-tab~="${name}"]`)].some(el => !el.hidden && el.id !== "synNotice");
@@ -5101,7 +5508,7 @@ function initTabs() {
     try { localStorage.setItem("theme", document.documentElement.dataset.theme); } catch (e) {}
   });
   const h = START_HASH.replace(/^#\/?/, "");  // "#/model"; plain "#model" from old links still works
-  showTab(h.startsWith("shots/") ? "shots" : h.startsWith("games/") ? "games" : h.startsWith("matchups/") ? "matchups" : h.startsWith("player-") ? "players" : h.startsWith("coaches/") ? "coaches" : h || "home");
+  showTab(h.startsWith("shots/") ? "shots" : h.startsWith("games/") ? "games" : h.startsWith("matchups/") ? "matchups" : h.startsWith("player-") ? "players" : h.startsWith("coaches/") ? "coaches" : h.startsWith("h2h/") ? "h2h" : h || "home");
   if (h.startsWith("coaches/") && curTab === "coaches") coRoute(START_HASH);  // a coach's own page, "#/coaches/<id>[/defense]"
   // inits may write deep-link hashes while they render; a visit with no hash should stay on home after a refresh
   if (!START_HASH) try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
@@ -5149,6 +5556,7 @@ try { initCoaches(); } catch (e) { console.error(e); }  // a bug in one tab shou
 scInit();
 muInit();
 srcInit();
+try { initH2H(); } catch (e) { console.error(e); }
 homeInit();
 initTabs();
 replayFromHash();

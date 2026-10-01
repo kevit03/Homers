@@ -234,7 +234,7 @@ Outputs match PyTorch to within $10^{-4}$ absolute difference. Because inference
     </td>
     <td width="50%" valign="top">
       <img alt="Fantasy leaderboard" src="docs/images/fantasy.png"><br>
-      <b>Fantasy leaderboard.</b> NBA.com fantasy scoring by season and team, with regular-season and playoff splits and award annotations.
+      <b>Fantasy leaderboard.</b> Players ranked by NBA.com fantasy points, points, rebounds, assists, stocks (STL+BLK) or threes, per game or per 36 minutes (12+ min/game). Bars show ±1 SD game-to-game spread for the latest season against the league average, with sortable cost columns (GP, MIN, FGA, TS%, TOV). Filterable by season, team and playoffs.
     </td>
   </tr>
   <tr>
