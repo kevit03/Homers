@@ -25,7 +25,7 @@
 
 <br>
 
-**HOMERs** (Hierarchical Optimization & Modeling for Event-level Replay and Simulation) models NBA games at the level of individual plays. The system is trained on ten seasons of play-by-play data (2016-17 through 2025-26; approximately 13,000 games) and consists of three components: an autoregressive transformer over discrete game events that predicts the next play and the home team's win probability; a multi-task network for shot selection and make probability conditioned on the ten players on the floor and both head coaches; and a bilinear generalized linear model of individual scorer-defender matchups. Trained weights are exported to a single static HTML file, and all inference runs client-side in JavaScript.
+**HOMERs** models NBA games at the level of individual plays. The system is trained on ten seasons of play-by-play data (2016-17 through 2025-26; approximately 13,000 games) and consists of three components: an autoregressive transformer over discrete game events that predicts the next play and the home team's win probability; a multi-task network for shot selection and make probability conditioned on the ten players on the floor and both head coaches; and a bilinear generalized linear model of individual scorer-defender matchups. 
 
 <br>
 
@@ -105,7 +105,7 @@ Input at position t:
     x_t = Embed_tok(token_t) + Embed_pos(t) + W_feat · [ sec/2880, Δscore/20, period/4, Δscore / (5 · √(min + 1)) ]
 ```
 
-- **Game-state features.** In addition to clock, score differential and period, the input includes $\frac{\Delta\text{score}}{\sqrt{t+1}}$, which scales the lead by the time remaining. This gives the network a direct estimate of how secure a lead is instead of requiring it to be inferred from the token history.
+- **Game-state features.** The input includes $\frac{\Delta\text{score}}{\sqrt{t+1}}$, which scales the lead by the time remaining. It gives the network a direct estimate of how secure a lead is instead of requiring it to be inferred from the token history.
 - **Architecture.** Causal self-attention via PyTorch's `scaled_dot_product_attention`, with pre-layer normalization, dropout and scaled residual initialization ($d_{\text{model}} = 128$, $n_{\text{layers}} = 4$, $n_{\text{heads}} = 4$).
 - **Objective.** The token embedding and output projection share weights ($W_{\text{lm}} = W_{\text{tok}}^T$). The loss combines next-token cross-entropy with a binary cross-entropy term on the final outcome:
   $$\mathcal{L} = \mathcal{L}_{\text{CE}}(\text{next play}) + \lambda \, \mathcal{L}_{\text{BCE}}(\text{home win})$$
