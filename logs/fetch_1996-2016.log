@@ -359,3 +359,83 @@
   800/1189
   900/1189
   1000/1189
+  1100/1189
+2000-01 Regular Season: done, 0 failed []
+2000-01 Playoffs: 71 games
+  0/71
+2000-01 Playoffs: done, 0 failed []
+1999-00 Regular Season: 1189 games
+  0/1189
+  100/1189
+  200/1189
+  300/1189
+  400/1189
+  500/1189
+  600/1189
+  700/1189
+  800/1189
+  900/1189
+  0029900957 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0029900957 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900957&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900957 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900957&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900970 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out.
+  0029900970 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900970&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900970 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900970&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900971 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900971&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900971 attempt 2 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900971&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  0029900971 attempt 3 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Max retries exceeded with url: /stats/playbyplayv3?EndPeriod=0&GameID=0029900971&StartPeriod=0 (Caused by NameResolutionError("HTTPSConnection(host='stats.nba.com', port=443): Failed to resolve 'stats.nba.com' ([Errno 8] nodename nor servname provided, or not known)"))
+  1000/1189
+  1100/1189
+1999-00 Regular Season: done, 3 failed ['0029900957', '0029900970', '0029900971']
+1999-00 Playoffs: 75 games
+  0/75
+1999-00 Playoffs: done, 0 failed []
+1998-99 Regular Season: 725 games
+  0/725
+  100/725
+  200/725
+  300/725
+  400/725
+  500/725
+  600/725
+  700/725
+1998-99 Regular Season: done, 0 failed []
+1998-99 Playoffs: 66 games
+  0/66
+1998-99 Playoffs: done, 0 failed []
+1997-98 Regular Season: 1189 games
+  0/1189
+  100/1189
+  200/1189
+  300/1189
+  400/1189
+  500/1189
+  600/1189
+  700/1189
+  800/1189
+  900/1189
+  1000/1189
+  1100/1189
+1997-98 Regular Season: done, 0 failed []
+1997-98 Playoffs: 71 games
+  0/71
+1997-98 Playoffs: done, 0 failed []
+1996-97 Regular Season: 1189 games
+  0/1189
+  100/1189
+  200/1189
+  300/1189
+  400/1189
+  500/1189
+  600/1189
+  700/1189
+  800/1189
+  900/1189
+  0029600908 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  0029600909 attempt 1 failed: HTTPSConnectionPool(host='stats.nba.com', port=443): Read timed out. (read timeout=30)
+  1000/1189
+  1100/1189
+1996-97 Regular Season: done, 0 failed []
+1996-97 Playoffs: 72 games
+  0/72
+1996-97 Playoffs: done, 0 failed []

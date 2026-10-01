@@ -2510,7 +2510,7 @@ const EV_DID = { "2PT_MAKE": "scored", "3PT_MAKE": "hit a three", FT_MAKE: "made
 function whoDid(g, i) {
   const t = V[g.tok[i]], G = PF && PF.games[g.id], S = sides(g)[t[0] === "H" ? "H" : "A"];
   const pid = G && G.act[i] ? G.r[G.act[i] - 1] : 0;
-  const who = pid && PF.players[pid] ? `<button type="button" class="pf-link pf-open" data-pid="${pid}">${esc(PF.players[pid].name)}</button>` : `the ${esc(S.nick)}`;
+  const who = pid && PF.players[pid] ? `<button type="button" class="pf-link pf-open" data-pid="${pid}">${esc(PF.players[pid].name)}</button>` : `the ${pvT(S.tri, S.nick)}`;
   return `${who} ${EV_DID[t.slice(2)] || esc(pretty(g.tok[i]).toLowerCase())}`;
 }
 function gameStory(g) {
@@ -2566,12 +2566,12 @@ function gameStory(g) {
   if (call < last) M.push({ i: call, t: "Tempo calls it" });
   M.push({ i: last, t: "Final" });
   const seen = new Set(), moments = M.filter(m => !seen.has(m.i) && seen.add(m.i)).sort((a, b) => a.i - b.i);
-  return (g._story = { kicker, head: `${W.nick} ${ws}, ${Lo.nick} ${ls}`, html: S.join(" "), moments, call: call < last ? call : null });
+  return (g._story = { kicker, head: `${W.nick} ${ws}, ${Lo.nick} ${ls}`, headHtml: `${pvT(W.tri, W.nick)} ${ws}, ${pvT(Lo.tri, Lo.nick)} ${ls}`, html: S.join(" "), moments, call: call < last ? call : null });
 }
 function renderStory() {
   const S = gameStory(cur), g = cur, last = g.tok.length - 1;
   const at = i => { const c = clock(g.sec[i], g.per[i]); return c === "0:00" ? (i === last ? "Buzzer" : `End of ${pname(g.per[i])}`) : `${pname(g.per[i])} ${c}`; };
-  $("story").innerHTML = `<p class="kicker">${esc(S.kicker)}</p><h3 class="cast">${esc(S.head)}</h3>${S.html}
+  $("story").innerHTML = `<p class="kicker">${esc(S.kicker)}</p><h3 class="cast">${S.headHtml || esc(S.head)}</h3>${S.html}
     <div class="moments">${S.moments.map(m => `<button type="button" data-i="${m.i}"><small>${esc(at(m.i))}</small>${esc(m.t)}</button>`).join("")}
       <button type="button" class="share" id="shareBtn" title="Copy a link to this moment">Copy link</button></div>`;
 }
@@ -2951,7 +2951,7 @@ function renderPlayer(p) {
   $("styleBars").innerHTML = head("Shot style", "Share", "Share", "FG%") + SH.styles.map((s, i) => barRow(STN[s], ss[i], ls[i], pct(ss[i], 0), p.styles[i][0] ? pct(sfg[i], 0) : "–", { max: smax, alt: true })).join("");
   renderPlayerPlays(p);
   const overall = fgm / fga;
-  $("faced").innerHTML = p.faced.length ? p.faced.map(f => `<tr class="jump" data-id="${f.id}" tabindex="0"><td>${f.name}</td><td class="r">${f.n}</td><td class="r">${pct(f.fg)}</td><td class="r ${f.fg < overall ? "up" : "down"}">${pp(f.fg - overall)} pts</td></tr>`).join("")
+  $("faced").innerHTML = p.faced.length ? p.faced.map(f => `<tr class="jump" data-id="${f.id}" tabindex="0"><td>${pvS("p:" + f.id, esc(f.name))}</td><td class="r">${f.n}</td><td class="r">${pct(f.fg)}</td><td class="r ${f.fg < overall ? "up" : "down"}">${pp(f.fg - overall)} pts</td></tr>`).join("")
     : `<tr><td colspan="4" class="caption">No defender data for this player yet.</td></tr>`;
   runSim();
 }
@@ -3446,7 +3446,7 @@ function csRender(key, u, c) {
       return `<circle class="mine" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5"><title>${esc(tt)} ${ss}</title></circle>`; }).join("") +  // a coach's seasons often cluster, so only the selected one is labelled
     (([cx, cy]) => `<circle class="me" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="7"/><text class="tag" x="${(cx + 10).toFixed(1)}" y="${(cy + 4).toFixed(1)}">${esc(team)} ${season.slice(2)}</text>`)(csXY(u));
   const d = Math.hypot(u.a, u.s), how = d < 0.35 ? "Balanced" : `${d > 1 ? "" : "Leans "}${CS_Q[q][0]}`;
-  $("csVerdict").innerHTML = `<span class="label">${esc(team)} ${season} · estimated</span><b>${how}</b>` +
+  $("csVerdict").innerHTML = `<span class="label">${pvT(team)} ${season} · estimated</span><b>${how}</b>` +
     `<p>${d < 0.35 ? "Close to the league's middle on both axes: no one coverage stands out." : CS_Q[q][1]}</p>` +
     `<small>${nth(rankS)} of ${n} in defender changes · ${nth(rankA)} of ${n} in aggression</small>` +
     `<small>Grey dots: the other teams that season${mine.length ? ". Rings: his other seasons (hover for which)" : ""}.</small>`;
@@ -3541,7 +3541,7 @@ function coRender() {
   $("coHistWrap").hidden = !c.history.length;
   $("coHist").innerHTML = `<thead><tr><th>Season</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">W%</th><th class="r">Playoffs</th><th>Result</th></tr></thead><tbody>` +
     [...c.history].reverse().map(([se, t, g, w, l, pg, pw, pl, fin, note]) => `<tr class="${note === "NBA Champions" ? "champ" : ""}${s && se === s.season && t === s.team ? " sel" : ""}">
-      <td>${se}</td><td>${esc(t)}</td><td class="r">${w}</td><td class="r">${l}</td><td class="r">${g ? (w / g).toFixed(3).replace(/^0/, "") : ""}</td>
+      <td>${se}</td><td>${pvT(t)}</td><td class="r">${w}</td><td class="r">${l}</td><td class="r">${g ? (w / g).toFixed(3).replace(/^0/, "") : ""}</td>
       <td class="r">${pg ? `${pw}-${pl}` : ""}</td><td>${note === "NBA Champions" ? `${coRings(1)} Champions` : esc(note)}</td></tr>`).join("") + "</tbody>";
 }
 function initCoaches() {
@@ -3974,13 +3974,13 @@ function pfRenderSeason() {
     ${recent.length ? `<div class="pf-sub"><h3>Last ${recent.length} games</h3><div class="table-wrap"><table class="pf-mini">
       <thead><tr><th>Opp</th><th class="r">MIN</th><th class="r">PTS</th><th class="r">REB</th><th class="r">AST</th><th class="r">STL</th><th class="r">BLK</th><th class="r">TOV</th><th class="r">FG</th><th class="r">3PT</th><th class="r">FP</th><th></th></tr></thead>
       <tbody>${recent.map(r => { const go = PF_IN_REPLAY.has(r[0]); return `<tr${go ? ` class="go" data-gid="${r[0]}" tabindex="0"` : ""}>
-        <td>${r[2] ? "vs" : "@"} ${esc(r[1])}</td><td class="r">${Math.round(r[C.min])}</td><td class="r">${r[C.pts]}</td><td class="r">${r[C.reb]}</td><td class="r">${r[C.ast]}</td>
+        <td>${r[2] ? "vs" : "@"} ${pvS("t:" + r[1], esc(r[1]))}</td><td class="r">${Math.round(r[C.min])}</td><td class="r">${r[C.pts]}</td><td class="r">${r[C.reb]}</td><td class="r">${r[C.ast]}</td>
         <td class="r">${r[C.stl]}</td><td class="r">${r[C.blk]}</td><td class="r">${r[C.tov]}</td><td class="r">${r[C.fgm]}-${r[C.fga]}</td><td class="r">${r[C.tpm]}-${r[C.tpa]}</td>
         <td class="r fp">${f1(r[C.fp])}</td><td>${go ? `<span class="label" style="color:var(--model)">Replay ›</span>` : ""}</td></tr>`; }).join("")}</tbody></table></div></div>` : ""}
     <div class="pf-sub"><h3>Career in this dataset</h3><div class="table-wrap"><table class="pf-mini">
       <thead><tr><th>Season</th><th>Team</th><th class="r">GP</th><th class="r">MIN</th><th class="r">PTS</th><th class="r">REB</th><th class="r">AST</th><th class="r">STL</th><th class="r">BLK</th><th class="r">TOV</th><th class="r">FG%</th><th class="r">3P%</th><th class="r">FP/G</th></tr></thead>
       <tbody>${seasons.map(x => { const t = P.seasons[x], n = Math.max(t.gp, 1), p = (m, a) => (t[a] ? (t[m] / t[a] * 100).toFixed(1) : "–");
-        return `<tr class="go${x === season ? " sel" : ""}${isPO(x) ? " po" : ""}" data-season="${x}" tabindex="0"><td>${isPO(x) ? "Playoffs" : x}</td><td>${esc(t.team)}</td><td class="r">${t.gp}</td><td class="r">${f1(t.min / n)}</td><td class="r">${f1(t.pts / n)}</td>
+        return `<tr class="go${x === season ? " sel" : ""}${isPO(x) ? " po" : ""}" data-season="${x}" tabindex="0"><td>${isPO(x) ? "Playoffs" : x}</td><td>${pvS("t:" + t.team, esc(t.team))}</td><td class="r">${t.gp}</td><td class="r">${f1(t.min / n)}</td><td class="r">${f1(t.pts / n)}</td>
           <td class="r">${f1(pfReb(t) / n)}</td><td class="r">${f1(t.ast / n)}</td><td class="r">${f1(t.stl / n)}</td><td class="r">${f1(t.blk / n)}</td><td class="r">${f1(t.tov / n)}</td>
           <td class="r">${p("fgm", "fga")}</td><td class="r">${p("tpm", "tpa")}</td><td class="r fp">${f1(pfFP(t) / n)}</td></tr>`; }).join("")}</tbody></table></div></div>
     ${scIndexOf(pid) >= 0 ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="pfShotChart">Open his shot chart ›</button>${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<button type="button" id="pfShots">Matchup simulator ›</button>` : ""}</div>`
@@ -4029,7 +4029,7 @@ function fbRow(r, y, w) {
   const el = document.createElement("button");
   el.type = "button"; el.className = "fb-row pf-open fb-new"; el.dataset.pid = r.id;
   el.style.transform = `translateY(${y}px)`;
-  el.innerHTML = `<span class="fb-rk"></span><span class="fb-who">${pfAvatar(r.id, r.name)}<span class="fb-nm"><b>${esc(r.name)}<span class="fb-aw"></span></b><small></small></span></span>
+  el.innerHTML = `<span class="fb-rk"></span><span class="fb-who">${pfAvatar(r.id, r.name)}<span class="fb-nm"><b>${pvS("p:" + r.id, esc(r.name))}<span class="fb-aw"></span></b><small></small></span></span>
     <span class="fb-track"><span class="fb-bar" style="width:${w}"></span><span class="fb-wh" hidden></span></span><span class="fb-val"><b></b><small></small></span>${FB_COLS.map(() => `<span class="fb-c"></span>`).join("")}`;
   return el;
 }
@@ -4883,7 +4883,7 @@ function scBoard() {
   $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r, what]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0"${what ? ` title="${what}"` : ""} aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
   const pc = v => fmtP(v);
   $("lbBody").innerHTML = rows.map(r => `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0">
-    <td><b>${esc(r.name)}</b></td><td>${r.now ? esc(r.now) : `<span style="color:var(--muted)">—</span>`}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td>
+    <td><b>${pvS("p:" + SC.players[r.i].id, esc(r.name))}</b></td><td>${r.now ? pvS("t:" + r.now, esc(r.now)) : `<span style="color:var(--muted)">—</span>`}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td>
     <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
     <td class="r">${pc(r.rim.freq)}</td><td class="r">${r.pps.toFixed(2)}</td></tr>`).join("");
   $("lbCount").textContent = `${rows.length.toLocaleString()} of ${scRows().length.toLocaleString()} players${sc.season === "all" ? "" : " · " + scSelName()}`;
@@ -5183,12 +5183,12 @@ const hotCold = (v, ref, unit = "", dig = 1, invert = false) => {
   const rel = v / ref - 1, cls = Math.abs(rel) < .02 ? "" : (rel > 0) !== invert ? "hot" : "cold";
   return `<span class="chg ${cls}">${rel > .02 ? "▲" : rel < -.02 ? "▼" : "•"} ${Math.abs(v - ref).toFixed(dig)}${unit}</span>`;
 };
-const teamTag = t => t ? `<span class="team-tag">${esc(t)}</span>` : "";
+const teamTag = t => t ? `<span class="team-tag" data-pv="t:${esc(t)}">${esc(t)}</span>` : "";
 
 function muRender(initial) {
   const p = mu.off, q = mu.def, pr = muPred(p, q), av = muAvgOff(p);
   $("muOff").value = ""; $("muOff").placeholder = p.n; $("muDef").value = ""; $("muDef").placeholder = q.n;
-  $("muHead").innerHTML = `${teamTag(p.now)}${esc(p.n)} <span class="x">vs</span> ${teamTag(q.now)}${esc(q.n)}` +
+  $("muHead").innerHTML = `${teamTag(p.now)}${pvP(p.id, p.n)} <span class="x">vs</span> ${teamTag(q.now)}${pvP(q.id, q.n)}` +
     tip("Predictions are per 100 possessions in which this defender was the one guarding him, for the scorer only: his points, shot attempts and turnovers, and his FG% on those shots. Badges compare with his average against a typical defender.");
   const tile = (label, v, sub) => `<div class="tile"><span class="label">${label}</span><span class="v">${v}</span><span class="s">${sub}</span></div>`;
   $("muTiles").innerHTML = [
@@ -5210,7 +5210,7 @@ function muRender(initial) {
 
   // a bar instead of a badge: length is how far from the scorer's average (full at ±50%), blue colder, red hotter
   const row = (x, v, ref, attr) => { const d = v / ref - 1;
-    return `<button type="button" class="mu-row" ${attr}="${x.id}" title="${esc(x.n)}: ${v.toFixed(1)} pts / 100 (scorer's avg ${ref.toFixed(1)})"><span class="nm">${teamTag(x.now)}${esc(x.n)}</span><span class="num">${v.toFixed(1)}</span>` +
+    return `<button type="button" class="mu-row" ${attr}="${x.id}" title="${esc(x.n)}: ${v.toFixed(1)} pts / 100 (scorer's avg ${ref.toFixed(1)})"><span class="nm">${teamTag(x.now)}${pvS("p:" + x.id, esc(x.n))}</span><span class="num">${v.toFixed(1)}</span>` +
       `<span class="mu-d ${d < 0 ? "cold" : "hot"}" style="--w:${(Math.min(1, Math.abs(d) / .5) * 100).toFixed(0)}%"></span></button>`; };
   const muIn = (x, k) => mu.season ? ((x.s || {})[mu.season] || [0, 0])[k] >= 150 : x.now && (k ? x.dp : x.op) >= 400;  // k: 0 scorer, 1 defender
   const defs = MU_DEFS.filter(x => muIn(x, 1) && x.id !== p.id && !muSwitch(p, x)).map(x => [x, muPred(p, x).pts]);
@@ -5680,7 +5680,7 @@ function h2hCard(pid, s, col) {
   const when = !s ? `Didn't play in ${h2h.season}` : h2hIsCar(h2h.season) ? `${s.n} ${s.n === 1 ? "season" : "seasons"} · ${s.gp} games` : `${h2h.season} · ${s.gp} games`;
   const bio = [tname || tri, b.pos && (PF_POS[b.pos] || b.pos), b.num && `#${b.num}`, b.ht].filter(Boolean).join(" · ");
   const acc = (P.acc || []).slice(0, 4);
-  return `<div class="h2h-card" style="--tc:${c1};--ta:${c2};--c:${col}">
+  return `<div class="h2h-card lp-off" style="--tc:${c1};--ta:${c2};--c:${col}">
     <div class="h2h-shot"><span class="ini" aria-hidden="true">${esc(pfInitials(P.name))}</span>${PF.teams[tri] ? pfLogo(PF.teams[tri], "lg") : ""}<img src="${pfHead(pid)}" alt="${esc(P.name)}" loading="lazy" onload="this.parentNode.querySelector('.ini')?.remove()" onerror="this.remove()"></div>
     <div class="h2h-who"><button type="button" class="pf-link pf-open" data-pid="${pid}" aria-label="${esc(P.name)}: open profile">${esc(P.name)}</button>
       <span class="meta">${esc(bio)}</span><span class="meta">${esc(when)}</span>
@@ -5741,8 +5741,8 @@ function h2hRender() {
       ${sa && sb ? `<span class="score" aria-label="${wa} categories to ${wb}"><span class="${wa >= wb ? "lead" : "trail"}">${wa}</span><i>–</i><span class="${wb >= wa ? "lead" : "trail"}">${wb}</span></span><span class="label">categories won</span>` : ""}
       ${M.rec[0] + M.rec[1] ? `<span class="rec" aria-label="${M.rec[0]} wins to ${M.rec[1]} against each other"><span class="${M.rec[0] >= M.rec[1] ? "lead" : "trail"}">${M.rec[0]}</span><i>–</i><span class="${M.rec[1] >= M.rec[0] ? "lead" : "trail"}">${M.rec[1]}</span></span><span class="label">games vs each other</span>` : ""}</div>` + h2hCard(h2h.b, sb, cb);
   $("h2hMet").textContent = M.meet; $("h2hMet").hidden = !M.meet;
-  $("h2hVerdict").innerHTML = M.verdict ? esc(M.verdict).replace(esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b)), s => wa === wb ? s : `<b>${s}</b>`)
-    : `<b>${esc(!sa ? pfName(h2h.a) : pfName(h2h.b))}</b> has no games ${esc(M.when)}. Pick a season they both played.`;
+  $("h2hVerdict").innerHTML = M.verdict ? esc(M.verdict).replace(esc(wa > wb ? pfName(h2h.a) : pfName(h2h.b)), s => wa === wb ? s : `<b>${pvP(wa > wb ? h2h.a : h2h.b)}</b>`)
+    : `<b>${pvP(!sa ? h2h.a : h2h.b)}</b> has no games ${esc(M.when)}. Pick a season they both played.`;
   $("h2hSave").disabled = $("h2hCopy").disabled = !(sa && sb);
   $("h2hShareMsg").textContent = "";
   $("h2hA").placeholder = pfName(h2h.a); $("h2hB").placeholder = pfName(h2h.b);
@@ -6188,7 +6188,7 @@ function dzRay(x) {
     return `<figure class="dz-r${dd > 0 ? " grew" : ""}"><span class="dz-r-orb" role="img" aria-label="${esc(`${name}: ${p.vs.toFixed(1)} points per 100 against him, ${p.usual.toFixed(1)} against everyone else, over ${Math.round(p.poss)} possessions`)}">`
       + `<span class="dz-r-ring" style="width:${ring.toFixed(1)}px;height:${ring.toFixed(1)}px"></span>`
       + `<span class="dz-r-in" style="width:${inn.toFixed(1)}px;height:${inn.toFixed(1)}px;--k:${(ring / inn).toFixed(3)};--i:${i};--tc:${tc}"><img src="${pfHead(p.id, "260x190")}" alt="" loading="lazy" onerror="this.remove()"></span></span>`
-      + `<figcaption><b>${esc(name)}</b><span>${p.usual.toFixed(1)} → ${p.vs.toFixed(1)} · ${Math.round(p.poss)} poss</span><em>${dzSg(dd * 100, 0)}%</em></figcaption></figure>`;
+      + `<figcaption><b>${pvP(p.id, name)}</b><span>${p.usual.toFixed(1)} → ${p.vs.toFixed(1)} · ${Math.round(p.poss)} poss</span><em>${dzSg(dd * 100, 0)}%</em></figcaption></figure>`;
   }).join("") || `<p class="caption">Not enough possessions against any one scorer to show.</p>`;
 }
 
