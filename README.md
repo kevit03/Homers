@@ -325,6 +325,19 @@ python matchup_model.py --context data/context --out runs/matchups
 | Matchups | `matchup_model.py` | `runs/matchups/best.pt` | Poisson/binomial GLM with low-rank interaction |
 | Evaluation | `evaluate.py` | `results/metrics.json` | Per-quarter Brier scores, calibration |
 | Export | `export_dashboard.py` | `dashboard.html` | Weights, data and UI in a single file |
+| Site | `build_site.py` | `site/` | Gzipped static site for Vercel |
+
+### Deploying to Vercel
+
+The dashboard is a static site. `./deploy.sh` packs it with `build_site.py` and uploads `site/` with the Vercel CLI (project `homers`); run `npx vercel login` once first.
+
+```bash
+./deploy.sh              # current dashboard.html to production
+./deploy.sh --preview    # a preview URL instead
+./deploy.sh --rebuild    # re-export dashboard.html and games/ from the newest model first
+```
+
+The page (~50 MB) and the replay seasons in `games/` (~15 MB each) are over the 100 MB a Hobby account can upload, so `build_site.py` gzips everything (about 80 MB): `index.html` is a small loader that unzips the page in the browser, and Game replay unzips each season when it is picked. The build stops if the total passes 100 MB; on a Pro account pass `--max_mb 1000`.
 
 ---
 

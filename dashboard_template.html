@@ -2319,23 +2319,33 @@ const gpStore = { [GP_TEST]: games }, gpArrived = {};
 let gpSeason = GP_TEST;
 window.HOMERS_GAMES = (season, list) => { gpArrived[season] = list; };
 const gpIdSeason = id => { const yy = +String(id).slice(3, 5), y = yy >= 46 ? 1900 + yy : 2000 + yy; return `${y}-${String(y + 1).slice(2)}`; };
+async function gpGz(file) {  // the hosted site (build_site.py) ships games/<season>.js.gz to fit Vercel's upload limit; a blob: URL of the unzipped script
+  if (!/^https?:$/.test(location.protocol) || typeof DecompressionStream === "undefined") return null;
+  try {
+    const res = await fetch(file + ".gz");
+    if (!res.ok) return null;
+    const buf = new Uint8Array(await res.arrayBuffer());  // gzip bytes, unless the server already undid the gzip in transit
+    const text = buf[0] === 0x1f && buf[1] === 0x8b ? await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"))).text() : new TextDecoder().decode(buf);
+    return URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
+  } catch (e) { return null; }
+}
 function gpLoad(season) {
   if (gpStore[season]) return Promise.resolve(gpStore[season]);
   const r = REPLAY && REPLAY.find(x => x.season === season);
   if (!r || !r.file) return Promise.reject(new Error(`No replay games for ${season}.`));
-  return new Promise((resolve, reject) => {
+  return gpGz(r.file).then(blob => new Promise((resolve, reject) => {
     const tag = document.createElement("script");
-    tag.src = r.file;
+    tag.src = blob || r.file;
     tag.onload = () => {
       const list = gpArrived[season];
-      delete gpArrived[season]; tag.remove();
+      delete gpArrived[season]; tag.remove(); if (blob) URL.revokeObjectURL(blob);
       if (!list) return reject(new Error(`${r.file} had no games in it.`));
       list.forEach(unpackGame);
       resolve(gpStore[season] = prepGames(list));
     };
     tag.onerror = () => { tag.remove(); reject(new Error(`Couldn't load ${r.file}: it has to sit in a games folder next to this page.`)); };
     document.head.append(tag);
-  });
+  }));
 }
 async function gpSetSeason(season, keepId) {
   if (season === gpSeason) return true;
