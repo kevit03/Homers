@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HOMERs</title>
+<meta name="description" content="NBA play-by-play, read one play at a time: win probability, shot charts, matchups and the league's best defenders.">
+<style>
+  :root { color-scheme: dark; --o: #eb6834; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(120% 80% at 50% 100%, #1a1f26, #0f1216 60%);
+         color: #f1f3f6; font: 500 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  main { display: grid; justify-items: center; gap: 10px; width: min(340px, calc(100vw - 32px)); text-align: center; }
+  h1 { margin: 0; font: italic 800 52px/0.9 "Arial Narrow", "Helvetica Neue", sans-serif; letter-spacing: .01em; }
+  h1 span { color: var(--o); }
+  /* Homer himself (the poet the site is named after), dribbling while the page loads */
+  svg { width: 190px; height: auto; overflow: visible; }
+  .arm { transform-origin: 104px 78px; animation: arm .62s ease-in-out infinite; }
+  .ball { transform-box: fill-box; transform-origin: 50% 100%; animation: ball .62s infinite; }
+  .shadow { transform-box: fill-box; transform-origin: 50% 50%; animation: shadow .62s infinite; }
+  .body { animation: bob .62s ease-in-out infinite; }
+  @keyframes ball {
+    0%   { transform: translateY(0); animation-timing-function: cubic-bezier(.45, 0, .9, .6); }
+    46%  { transform: translateY(59px) scale(1, 1); }
+    52%  { transform: translateY(59px) scale(1.18, .8); animation-timing-function: cubic-bezier(.1, .4, .55, 1); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes shadow { 0%, 100% { transform: scale(.45); opacity: .25; } 50% { transform: scale(1); opacity: .6; } }
+  @keyframes arm { 0%, 100% { transform: rotate(0); } 22% { transform: rotate(7deg); } 62% { transform: rotate(-7deg); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(2px); } }
+  .meter { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: 100%; }
+  .meter b { font: italic 800 30px/1 "Arial Narrow", "Helvetica Neue", sans-serif; font-variant-numeric: tabular-nums; min-width: 2.6em; text-align: left; }
+  .bar { height: 6px; border-radius: 99px; background: #262c34; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .25s;
+           background: repeating-linear-gradient(-45deg, var(--o) 0 8px, #f08a5d 8px 16px); background-size: 22px 22px; animation: stripes .6s linear infinite; }
+  @keyframes stripes { to { background-position: 22px 0; } }
+  p { margin: 0; color: #8b94a1; font-size: 14px; min-height: 1.5em; transition: opacity .25s; }
+  p.err { color: #f08a7a; }
+  @media (prefers-reduced-motion: reduce) { .arm, .ball, .shadow, .body, .bar i { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>HOMER<span>s</span></h1>
+  <svg viewBox="20 20 170 190" role="img" aria-label="Homer, the Greek poet, dribbling a basketball">
+    <line x1="20" y1="202" x2="190" y2="202" stroke="#37404b" stroke-width="2" stroke-linecap="round"/>
+    <ellipse class="shadow" cx="139" cy="202" rx="16" ry="3.5" fill="#000"/>
+    <ellipse cx="88" cy="202" rx="34" ry="4" fill="#000" opacity=".35"/>
+    <g class="body" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <polyline points="80,150 72,174 76,199" stroke="#c9a27e" stroke-width="10"/>
+      <polyline points="98,150 108,173 105,199" stroke="#c9a27e" stroke-width="10"/>
+      <path d="M68 199h15M100 199h15M72 192l8-6M103 192l8-6" stroke="#8a5a32" stroke-width="4"/>
+      <polyline points="72,80 58,108 64,128" stroke="#c9a27e" stroke-width="9"/>
+      <path d="M66 74q22-12 44 0l6 86q-28 8-56 0z" fill="#ece5d8" stroke="none"/>
+      <path d="M66 76l46 50M64 158q28 8 56 0" stroke="#eb6834" stroke-width="4"/>
+      <path d="M70 92q14 14 10 50M98 96q6 22 2 54" stroke="#cfc6b6" stroke-width="2"/>
+      <circle cx="88" cy="48" r="14" fill="#c9a27e" stroke="none"/>
+      <path d="M74 50q2 22 14 24q12-2 14-24q-6 6-14 6t-14-6z" fill="#b8bec7" stroke="none"/>
+      <path d="M74 44q2-14 14-14t14 14q-6-6-14-6t-14 6z" fill="#b8bec7" stroke="none"/>
+      <path d="M73 42q15-12 30 0" stroke="#5fae5a" stroke-width="3" stroke-dasharray="3 2"/>
+      <circle cx="83" cy="47" r="1.6" fill="#1b1f25" stroke="none"/><circle cx="93" cy="47" r="1.6" fill="#1b1f25" stroke="none"/>
+      <path d="M80 43.5h5M91 43.5h5" stroke="#8e959e" stroke-width="1.6"/>
+    </g>
+    <g class="arm" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <polyline points="104,78 124,100 136,118" stroke="#c9a27e" stroke-width="9"/>
+    </g>
+    <g class="ball">
+      <circle cx="139" cy="131" r="12" fill="#eb6834"/>
+      <path d="M127 131h24M139 119v24M130.5 122.5q6 8.5 0 17M147.5 122.5q-6 8.5 0 17" stroke="#7a2c0d" stroke-width="1.6" fill="none"/>
+    </g>
+  </svg>
+  <div class="meter"><b id="pct">0%</b><div class="bar"><i id="bar"></i></div></div>
+  <p id="msg" role="status">Lacing up the sandals…</p>
+</main>
+
+</body>
+</html>
