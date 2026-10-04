@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* Layout: a scoreboard strip up top, then the game replay as the centerpiece, then model-quality charts and the what-if calculator. */
+/* Layout: a scoreboard strip up top, then the game replay as the centerpiece, then the model's report card. */
 :root {
   --bg: #f4f5f7; --surface: #ffffff; --ink: #14171c; --ink-2: #4b5360; --muted: #737c8a;
   --line: #e1e4e9; --line-strong: #c9ced6;
@@ -144,10 +144,94 @@ details summary { cursor: pointer; font-weight: 600; padding-block: 4px; }
 @media (max-width: 980px) { .grid3 { grid-template-columns: minmax(0, 1fr); } }
 .grid3 .panel { display: grid; gap: 10px; align-content: start; }
 
-.whatif { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; }
-@media (max-width: 800px) { .whatif { grid-template-columns: minmax(0, 1fr); } }
-.whatif .form { display: grid; gap: 16px; align-content: start; }
-.bigp { font-family: var(--font-display); font-size: 64px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+/* model report card: arena boards that stay dark in either theme, with glowing scoreboard numbers.
+   The hero and its stat strip reuse .hero/.jumbo from the broadcast styles further down, hence the doubled classes. */
+.hero.mq-hero h2.cast { font-size: clamp(46px, 7.4vw, 92px); }
+.jumbo.mq-led div { align-content: start; }
+.jumbo.mq-led b { color: var(--hero-accent); text-shadow: 0 0 18px rgb(255 120 50 / .45); }
+.jumbo.mq-led small { font-size: 12.5px; line-height: 1.35; color: rgb(255 255 255 / .5); margin-top: 2px; }
+.mq-board { --mq-ink: #f3f5f8; --mq-dim: rgb(255 255 255 / .62); --mq-line: rgb(255 255 255 / .13);
+  position: relative; isolation: isolate; overflow: hidden; display: grid; gap: 22px; padding: 26px; border-radius: 16px; color: var(--mq-ink);
+  background: radial-gradient(120% 140% at 0% 0%, #1e2531 0%, #0b0d11 58%) #0b0d11;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .07), 0 14px 30px -20px rgb(0 0 0 / .7); }
+.mq-board::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .5;  /* LED dot matrix */
+  background-image: radial-gradient(rgb(255 255 255 / .07) 1px, transparent 1.3px); background-size: 6px 6px; }
+.mq-board::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain); opacity: .12; mix-blend-mode: overlay; pointer-events: none; }
+.mq-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 28px; }
+.mq-head > div { display: grid; gap: 6px; }
+.mq-head h3.cast { font-size: clamp(30px, 4.2vw, 46px); color: #fff; text-transform: uppercase; }
+.mq-head h3 em, .mq-say em { font-style: inherit; color: var(--model); }
+.mq-sub { color: var(--mq-dim); max-width: 50ch; font-size: 14.5px; }
+.mq-call { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px 32px; align-items: center; }
+.mq-now { display: grid; gap: 10px; }
+.mq-time { display: flex; align-items: center; gap: 10px; }
+.mq-q { font-family: var(--font-label); font-weight: 700; font-size: 13px; letter-spacing: .1em; padding: 3px 8px; border-radius: 6px; background: var(--model); color: #fff; }
+.mq-time b { font-family: var(--font-mono); font-size: 32px; font-weight: 700; line-height: 1; color: #ffd166; letter-spacing: .04em;
+  text-shadow: 0 0 14px rgb(255 200 80 / .45); font-variant-numeric: tabular-nums; }
+.mq-big b { display: block; font-family: var(--font-cast); font-weight: 800; font-size: 92px; line-height: .88; color: var(--hero-accent);
+  text-shadow: 0 0 26px rgb(255 120 50 / .5); font-variant-numeric: tabular-nums; }
+.mq-big span, .mq-tube, .mq-qs, .mq-y { font-family: var(--font-label); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.mq-big span { font-size: 12.5px; color: var(--mq-dim); }
+.mq-edge { font-size: 14.5px; min-height: 3em; } .mq-edge b { color: #7ee2a0; } .mq-edge b.lo { color: #ffb38a; }
+.mq-race { display: grid; gap: 14px; }
+.mq-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 58px; align-items: center; gap: 14px; }
+.mq-row .nm { font-family: var(--font-label); font-weight: 700; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.2; }
+.mq-row .nm small { display: block; text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-weight: 400; font-size: 12.5px; color: var(--mq-dim); }
+.mq-row .tr { position: relative; height: 24px; border-radius: 5px; background: rgb(255 255 255 / .06); overflow: hidden; }
+.mq-row .tr i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: var(--c); transition: width .45s cubic-bezier(.2, .8, .2, 1);
+  background-image: repeating-linear-gradient(90deg, transparent 0 6px, rgb(0 0 0 / .25) 6px 7px); }  /* LED segments */
+.mq-row .tr::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed rgb(255 255 255 / .4); }  /* the coin flip */
+.mq-row .v { font-family: var(--font-cast); font-weight: 700; font-size: 26px; line-height: 1; text-align: right; font-variant-numeric: tabular-nums; }
+.mq-row.lead .v { color: var(--hero-accent); }
+.mq-plot { display: grid; gap: 4px; }
+.mq-svg { position: relative; height: 150px; margin-left: 40px; }
+.mq-svg svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.mq-svg .ax { stroke: var(--mq-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mq-svg .ax.q { stroke-dasharray: 2 4; }
+.mq-svg .ar { fill: url(#mqFill); }
+.mq-svg .lm { fill: none; stroke: var(--model); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.mq-svg .lb { fill: none; stroke: var(--base); stroke-width: 2; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+.mq-svg .lh { fill: none; stroke: rgb(255 255 255 / .35); stroke-width: 1.5; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+.mq-svg .cur { stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.mq-y { position: absolute; right: calc(100% + 8px); transform: translateY(-50%); font-size: 11px; color: var(--mq-dim); }
+.mq-dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--model); border: 2px solid #fff;
+  box-shadow: 0 0 0 5px rgb(235 104 52 / .3), 0 0 16px rgb(235 104 52 / .8); pointer-events: none; transition: left .2s, top .2s; }
+.mq-plot input[type=range] { margin: 6px 0 0 40px; width: calc(100% - 40px); }
+.mq-qs { display: grid; grid-template-columns: repeat(4, 1fr); margin-left: 40px; font-size: 12px; color: var(--mq-dim); text-align: center; }
+.mq-jumps { display: flex; flex-wrap: wrap; gap: 8px; }
+.mq-jumps button { background: rgb(255 255 255 / .06); color: var(--mq-ink); border: 1px solid var(--mq-line); border-radius: 999px; padding: 5px 13px; font-size: 13px; }
+.mq-jumps button:hover { border-color: rgb(255 255 255 / .5); }
+.mq-jumps button[aria-pressed=true] { background: var(--model); border-color: var(--model); color: #fff; }
+.mq-honest { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px 36px; align-items: end; }
+.mq-tubes { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.mq-tube { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 6px; justify-items: center; font-size: 12px; color: var(--mq-dim); min-width: 0; }
+.mq-tube .gl { position: relative; width: 100%; max-width: 46px; height: 180px; border-radius: 8px; background: rgb(255 255 255 / .05); border: 1px solid var(--mq-line); overflow: hidden; }
+.mq-tube .gl i { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, var(--hero-accent), var(--model)); opacity: .8; transition: opacity .15s; }
+.mq-tube .gl s { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid #fff; box-shadow: 0 0 6px #fff; }
+.mq-tube b { color: var(--mq-ink); font-family: var(--font-cast); font-size: 17px; letter-spacing: 0; }
+.mq-tube:hover .gl i, .mq-tube[aria-pressed=true] .gl i { opacity: 1; }
+.mq-tube[aria-pressed=true] .gl { border-color: #fff; box-shadow: 0 0 0 2px rgb(255 255 255 / .18); }
+.mq-tube:focus-visible .gl { outline: 2px solid var(--model); outline-offset: 2px; }
+.mq-verdict { display: grid; gap: 10px; }
+.mq-say { font-family: var(--font-cast); font-size: 32px; line-height: 1.02; font-weight: 700; font-style: italic; text-transform: uppercase; }
+.mq-say b { color: var(--hero-accent); }
+.mq-nerd { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+.mq-nerd > summary { list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 0; }
+.mq-nerd > summary::-webkit-details-marker { display: none; }
+.mq-nerd > summary .cast { font-size: 24px; }
+.mq-nerd > summary .cast::before { content: "+ "; color: var(--model); }
+.mq-nerd[open] > summary .cast::before { content: "− "; }
+.mq-nerd-in { display: grid; gap: 16px; margin-top: 14px; }
+.mq-nerd .panel { box-shadow: none; }
+@media (max-width: 860px) {
+  .mq-call, .mq-honest { grid-template-columns: minmax(0, 1fr); }
+  .mq-tube .gl { height: 130px; } .mq-tubes { gap: 4px; }
+}
+@media (max-width: 560px) {
+  .mq-board { padding: 20px 16px; }
+  .mq-row { grid-template-columns: 92px minmax(0, 1fr) 46px; gap: 10px; } .mq-row .nm small { display: none; } .mq-row .v { font-size: 22px; }
+  .mq-big b { font-size: 72px; } .mq-say { font-size: 26px; } .mq-tube b { font-size: 14px; } .mq-tube { font-size: 10.5px; letter-spacing: 0; }
+}
 footer { border-top: 1px solid var(--line-strong); padding-top: 16px; display: grid; gap: 6px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 /* navigation menu: a port of shadcn/ui's NavigationMenu (Radix) without React. Triggers open a panel on hover or click;
@@ -215,12 +299,6 @@ nav.nm { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bo
 .pl-stats b { font-family: var(--font-display); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 16px; }
 @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
-.court { width: 100%; max-width: 520px; height: auto; display: block; margin-inline: auto; }
-.court .ln { fill: none; stroke: var(--line-strong); stroke-width: 2; }
-.court .floor { fill: var(--surface); }
-.court .mk { fill: var(--model); stroke: var(--surface); stroke-width: 1; }
-.court .ms { fill: none; stroke: var(--muted); stroke-width: 1.6; }
-.court .dim { opacity: .12; }
 .bars { display: grid; gap: 7px; }
 .brow { display: grid; grid-template-columns: 118px minmax(0, 1fr) 54px 72px; gap: 10px; align-items: center; font-size: 13.5px; }
 .brow.head { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
@@ -252,8 +330,6 @@ nav.nm { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bo
 .chips-sm { display: flex; flex-wrap: wrap; gap: 8px; }
 .ind { border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; display: grid; gap: 2px; min-width: 118px; background: var(--surface); }
 .ind b { font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.sim { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; }
-@media (max-width: 800px) { .sim { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .brow { grid-template-columns: 96px minmax(0, 1fr) 44px 60px; gap: 6px; font-size: 12.5px; } }
 th.sort { cursor: pointer; user-select: none; }
 th.sort:hover { color: var(--ink); }
@@ -629,7 +705,6 @@ td.up, td.down { font-weight: 600; }
 .lb { max-height: 640px; overflow: auto; }
 .lb thead th { position: sticky; top: 0; background: var(--surface); z-index: 2; }
 .lb-bar .seg[hidden] { display: none; }
-.two[hidden] { display: none; }
 .chip.pl-go { cursor: pointer; color: var(--ink); border-color: var(--model); font: inherit; font-size: 12.5px; }
 .chip.pl-go:hover { background: var(--model); color: #fff; }
 .lb-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
@@ -1559,8 +1634,7 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
         <div class="nm-content" id="nm-games" hidden>
           <ul class="nm-grid one">
             <li><a class="nm-link" href="#/games" data-nav="games"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Game replay</span><p>Watch any held-out game, regular season or playoffs, with Tempo's win chance after every play.</p></a></li>
-            <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-quality"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>Model quality</span><p>Calibration, error by quarter, and the training curve.</p></a></li>
-            <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-whatif"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>What-if</span><p>Pick a quarter, a clock and a lead, and see the win chance.</p></a></li>
+            <li><a class="nm-link" href="#/model" data-nav="model" data-to="h-quality"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>Model quality</span><p>How often it calls the winner, and the games it read best and worst.</p></a></li>
           </ul>
         </div>
       </li>
@@ -1570,7 +1644,7 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
           <ul class="nm-grid two">
             <li><a class="nm-link" href="#/shots" data-nav="shots"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Shot charts</span><p>Every shot by every player, hot and cold against the league.</p></a></li>
             <li><a class="nm-link" href="#/matchups" data-nav="matchups"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Matchups</span><p>Who guards whom, and what it does to the scorer.</p></a></li>
-            <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-players"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tendencies</span><p>A player's shot diet and the matchup simulator.</p></a></li>
+            <li><a class="nm-link" href="#/players" data-nav="players" data-to="h-players"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tendencies</span><p>How a player scores and defends: play types, actions and hustle.</p></a></li>
           </ul>
         </div>
       </li>
@@ -1721,11 +1795,6 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
 
   <div class="notice" id="synNotice" data-tab="games model" hidden><b>Synthetic data.</b> These are simulated games used to test the pipeline. Train on real NBA seasons and re-export to see real results.</div>
 
-  <section aria-labelledby="h-board" data-tab="model">
-    <h2 id="h-board" class="label" style="font-style:normal;line-height:1.4">Scoreboard · held-out games</h2>
-    <div class="board" id="board"></div>
-  </section>
-
   <section aria-labelledby="h-replay" id="replay" data-tab="games">
     <div class="sec-head">
       <h2 id="h-replay">Game replay</h2>
@@ -1832,21 +1901,6 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
     <div class="panel" style="display:grid;gap:14px">
       <div class="pl-head"><span class="pname" id="plName"></span><div class="chips" id="plChips"></div></div>
       <div class="pl-stats" id="plStats"></div>
-      <!-- the shot chart and shot mix live on the Shot charts tab (the "Shot chart" chip jumps there); kept hidden so renderPlayer still runs -->
-      <div class="two" hidden>
-        <div style="display:grid;gap:8px;align-content:start">
-          <h3>Shot chart</h3>
-          <svg class="court" id="court" viewBox="-252 -55 504 360" role="img" aria-label="Shot chart"></svg>
-          <div class="legend"><span class="key"><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--model)"></circle></svg>Make</span>
-            <span class="key"><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="none" stroke="var(--muted)" stroke-width="1.6"></circle></svg>Miss</span>
-            <span class="caption" id="dotNote"></span></div>
-        </div>
-        <div style="display:grid;gap:16px;align-content:start">
-          <div class="bars" id="zoneBars"></div>
-          <p class="keys"><span><i class="kb"></i>his share</span><span><span class="lg-mark" aria-hidden="true"></span>league</span><span>click a type to find it on the chart</span></p>
-          <div class="bars" id="styleBars"></div>
-        </div>
-      </div>
       <div id="ptWrap" class="plays">
         <div class="plays-col"><h3 class="co-side">Offense</h3><div class="bars" id="ptBars"></div><div class="bars" id="ptAct"></div></div>
         <div class="plays-col" id="ptDefCol"><h3 class="co-side def">Defense</h3><div class="bars" id="ptDef"></div><div class="bars" id="ptHus"></div></div>
@@ -1854,25 +1908,8 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
       </div>
     </div>
 
-    <div class="panel" style="display:grid;gap:12px" id="simPanel">
-      <div class="sec-head"><h3>Matchup simulator<span class="tip" tabindex="0" role="note" aria-label="The shot model's prediction for this player against a chosen defender and opposing coach's scheme, compared with a league-average defender and coach." data-tip="The shot model's prediction for this player against a chosen defender and opposing coach's scheme, compared with a league-average defender and coach.">i</span></h3></div>
-      <div class="sim">
-        <div style="display:grid;gap:12px;align-content:start">
-          <div class="field"><label class="label" for="simDef">Defender</label><select id="simDef"></select></div>
-          <div class="field"><label class="label" for="simCoach" title="His defensive scheme">Opposing coach</label><select id="simCoach"></select></div>
-          <div class="field"><label class="label" for="simQ">Quarter</label><select id="simQ"><option value="1">Q1</option><option value="2" selected>Q2</option><option value="3">Q3</option><option value="4">Q4</option></select></div>
-          <div class="field"><label class="label" for="simM">Lead · <span class="num" id="simMv"></span></label><input type="range" id="simM" min="-20" max="20" value="0"></div>
-        </div>
-        <div style="display:grid;gap:12px;align-content:start">
-          <div class="chips-sm" id="simInd"></div>
-          <div class="bars" id="simBars"></div>
-          <p class="keys"><span><i class="kb"></i>this matchup</span><span><span class="lg-mark" aria-hidden="true"></span>average defender and coach</span></p>
-        </div>
-      </div>
-    </div>
-
     <div class="panel" style="display:grid;gap:8px" id="facedPanel">
-      <h3>Defenders he saw most<span class="tip" tabindex="0" role="note" aria-label="Actual results when this defender was the likely primary defender (at least 12 shots). Click a row to load him in the simulator." data-tip="Actual results when this defender was the likely primary defender (at least 12 shots). Click a row to load him in the simulator.">i</span></h3>
+      <h3>Defenders he saw most<span class="tip" tabindex="0" role="note" aria-label="Actual results when this defender was the likely primary defender (at least 12 shots)." data-tip="Actual results when this defender was the likely primary defender (at least 12 shots).">i</span></h3>
       <div class="table-wrap"><table><thead><tr><th>Defender</th><th class="r">Shots</th><th class="r">FG%</th><th class="r">vs his avg</th></tr></thead><tbody id="faced"></tbody></table></div>
     </div>
   </section>
@@ -2053,66 +2090,99 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
     </div>
   </section>
 
-  <section aria-labelledby="h-quality" data-tab="model">
-    <div class="sec-head">
-      <h2 id="h-quality">Model quality<span class="tip" tabindex="0" role="note" aria-label="Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25." data-tip="Brier score is the squared error of the win probability. Lower is better, and a coin flip scores 0.25.">i</span></h2>
+  <section aria-labelledby="h-quality" id="mq" data-tab="model">
+    <div class="hero mq-hero" data-photo="arena">
+      <div class="hero-in">
+        <p class="kicker" id="mqKick">Report card · held-out games</p>
+        <h2 id="h-quality" class="cast">Can it call<br>the <em>game?</em></h2>
+        <p class="lede" id="mqLede">How often Tempo picks the winner, how honest its percentages are, and the games it read best and worst.</p>
+      </div>
+      <div class="jumbo mq-led" id="mqTiles"></div>
     </div>
-    <div class="grid3">
-      <div class="panel">
-        <h3>Error by quarter<span class="tip" tabindex="0" role="note" aria-label="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer." data-tip="Brier score in each quarter. Errors shrink as the game goes on and the outcome gets clearer.">i</span></h3>
-        <div class="legend">
-          <span class="key"><i style="border-color:var(--model);border-top-width:8px;width:10px"></i>Tempo</span>
-          <span class="key"><i style="border-color:var(--base);border-top-width:8px;width:10px"></i>Baseline</span>
-        </div>
-        <div class="chart-sm"><canvas id="qChart" aria-label="Brier score by quarter"></canvas></div>
-      </div>
-      <div class="panel">
-        <h3>Calibration<span class="tip" tabindex="0" role="note" aria-label="When the model says 70%, the home team should win about 70% of the time." data-tip="When the model says 70%, the home team should win about 70% of the time.">i</span></h3>
-        <div class="legend">
-          <span class="key"><i style="border-color:var(--model)"></i>Tempo</span>
-          <span class="key"><i class="dash" style="border-color:var(--base)"></i>Baseline</span>
-          <span class="key"><i class="dash" style="border-color:var(--muted)"></i>Perfect</span>
-        </div>
-        <div class="chart-sm"><canvas id="calChart" aria-label="Calibration plot"></canvas></div>
-      </div>
-      <div class="panel" id="histPanel">
-        <h3>Training history</h3>
-        <div class="legend">
-          <span class="key"><i style="border-color:var(--ink-2)"></i>Train loss</span>
-          <span class="key"><i style="border-color:var(--model)"></i>Validation loss</span>
-        </div>
-        <div class="chart-sm"><canvas id="histChart" aria-label="Training and validation loss by epoch"></canvas></div>
-        <p class="caption" id="histCap"></p>
-      </div>
-    </div>
-  </section>
 
-  <section aria-labelledby="h-whatif" data-tab="model">
+    <div class="mq-board" id="mqCall">
+      <div class="mq-head">
+        <div><p class="kicker">Pause every game</p><h3 class="cast">Who's going to <em>win?</em></h3></div>
+        <p class="mq-sub" id="mqCallSub">Drag the clock. At that moment in every held-out game, each guesser picks its favorite. The bars show how often that favorite went on to win.</p>
+      </div>
+      <div class="mq-call">
+        <div class="mq-now">
+          <div class="mq-time"><span class="mq-q" id="mqQ">Q3</span><b id="mqClock">12:00</b></div>
+          <div class="mq-big"><b id="mqBig">–</b><span>of winners called by Tempo</span></div>
+          <p class="mq-edge" id="mqEdge" aria-live="polite"></p>
+        </div>
+        <div class="mq-race" id="mqRace"></div>
+      </div>
+      <div class="mq-plot">
+        <div class="mq-svg">
+          <svg id="mqPlot" viewBox="0 0 480 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <span class="mq-y" style="top:0">100%</span><span class="mq-y" style="top:50%">75%</span><span class="mq-y" style="top:100%">50%</span>
+          <span class="mq-dot" id="mqDot"></span>
+        </div>
+        <input type="range" id="mqT" min="0" max="96" step="1" value="48" aria-label="Game clock">
+        <div class="mq-qs" aria-hidden="true"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div>
+      </div>
+      <div class="mq-jumps" id="mqJumps" role="group" aria-label="Jump to a moment"></div>
+    </div>
+
+    <div class="mq-board">
+      <div class="mq-head">
+        <div><p class="kicker">Honesty check</p><h3 class="cast">Does 70% mean <em>70%?</em></h3></div>
+        <p class="mq-sub">Every win chance Tempo gave, grouped by what it said. The white line is the chance it gave; the fill is how often the home team actually won.</p>
+      </div>
+      <div class="mq-honest">
+        <div class="mq-tubes" id="mqTubes" role="group" aria-label="What Tempo said against what happened"></div>
+        <div class="mq-verdict">
+          <p class="mq-say" id="mqSay" aria-live="polite"></p>
+          <p class="mq-sub" id="mqGap"></p>
+        </div>
+      </div>
+    </div>
+
     <div class="sec-head">
-      <h2 id="h-whatif">What-if<span class="tip" tabindex="0" role="note" aria-label="The baseline's win probability for any quarter, clock and lead. Tempo needs the full play sequence, so its predictions live in Game replay." data-tip="The baseline's win probability for any quarter, clock and lead. Tempo needs the full play sequence, so its predictions live in Game replay.">i</span></h2>
+      <h2 class="cast">The tape</h2>
+      <div class="seg" id="mqTape" role="group" aria-label="Which games"></div>
     </div>
-    <div class="whatif">
-      <div class="panel form">
-        <div class="field"><label class="label" for="wQ">Quarter</label>
-          <select id="wQ"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4" selected>Q4</option></select></div>
-        <div class="field"><label class="label" for="wT">Time left · <span class="num" id="wTv"></span></label>
-          <input type="range" id="wT" min="0" max="720" step="5" value="120"></div>
-        <div class="field"><label class="label" for="wM">Home lead · <span class="num" id="wMv"></span></label>
-          <input type="range" id="wM" min="-30" max="30" step="1" value="3"></div>
-        <div>
-          <div class="label">Home win chance</div>
-          <div class="bigp" id="wP"></div>
+    <p class="caption" id="mqTapeCap"></p>
+    <div class="hm-games" id="mqGames"></div>
+
+    <details class="mq-nerd" id="mqNerd">
+      <summary><span class="cast">Under the hood</span><span class="caption">Error scores, the calibration curve and the training run, for the stats-minded.</span></summary>
+      <div class="mq-nerd-in">
+        <div class="board" id="board"></div>
+        <div class="grid3">
+          <div class="panel">
+            <h3>Error by quarter</h3>
+            <p class="caption">Brier score: the average squared miss of the win chance. Lower is better, and a coin flip scores 0.25. Both models get sharper as the game goes on.</p>
+            <div class="legend">
+              <span class="key"><i style="border-color:var(--model);border-top-width:8px;width:10px"></i>Tempo</span>
+              <span class="key"><i style="border-color:var(--base);border-top-width:8px;width:10px"></i>Score &amp; clock</span>
+            </div>
+            <div class="chart-sm"><canvas id="qChart" aria-label="Brier score by quarter"></canvas></div>
+          </div>
+          <div class="panel">
+            <h3>Calibration</h3>
+            <p class="caption">The honesty check as a chart. Points on the dotted diagonal mean the chances it gives come true as often as it says.</p>
+            <div class="legend">
+              <span class="key"><i style="border-color:var(--model)"></i>Tempo</span>
+              <span class="key"><i class="dash" style="border-color:var(--base)"></i>Score &amp; clock</span>
+              <span class="key"><i class="dash" style="border-color:var(--muted)"></i>Perfect</span>
+            </div>
+            <div class="chart-sm"><canvas id="calChart" aria-label="Calibration plot"></canvas></div>
+          </div>
+          <div class="panel" id="histPanel">
+            <h3>Training history</h3>
+            <p class="caption">Loss on games it trained on and on games it was checked against. Training stopped at the dot, where the check games scored best.</p>
+            <div class="legend">
+              <span class="key"><i style="border-color:var(--ink-2)"></i>Train loss</span>
+              <span class="key"><i style="border-color:var(--model)"></i>Validation loss</span>
+            </div>
+            <div class="chart-sm"><canvas id="histChart" aria-label="Training and validation loss by epoch"></canvas></div>
+            <p class="caption" id="histCap"></p>
+          </div>
         </div>
       </div>
-      <div class="panel" style="display:grid;gap:8px">
-        <div class="legend">
-          <span class="key"><i style="border-color:var(--model);border-top-width:3px"></i><span id="wNowLbl">Now</span></span>
-          <span class="key"><i style="border-color:var(--seq-2)"></i>Start of Q4</span>
-          <span class="key"><i style="border-color:var(--seq-1)"></i>Halftime</span>
-        </div>
-        <div class="chart-sm" style="height:300px"><canvas id="wChart" aria-label="Win probability by lead"></canvas></div>
-      </div>
-    </div>
+    </details>
   </section>
 
 <section aria-labelledby="h-sources" id="sources" data-tab="sources">
@@ -2564,7 +2634,6 @@ async function gpSetSeason(season, keepId) {
   gf.team = "";  // the teams change with the era
   $("gpKind").hidden = !games.some(g => isPlayoffId(g.id));
   if (!games.some(g => gpIsKind(g, gf.kind))) gf.kind = "";
-  $("h-board").textContent = season === GP_TEST || games.every(g => g.sp === "old") ? "Scoreboard · held-out games" : "Scoreboard · games Tempo trained on";
   sortGames(keepId);
   return true;
 }
@@ -2974,43 +3043,152 @@ function buildQualityCharts() {
   });
 }
 
-/* ---------- what-if (logistic baseline) ---------- */
-const BL = DATA.baseline;
-function baseP(secLeft, diff) {
-  const m = Math.max(secLeft, 0) / 60;
-  const f = [diff, diff / Math.sqrt(m + 1), m];
-  const z = BL.b + f.reduce((s, v, i) => s + v * BL.w[i], 0);
-  return 1 / (1 + Math.exp(-z));
+/* ---------- model report card ----------
+   Accuracy in plain words, on the held-out season (DATA.games, the games behind DATA.metrics): how often the favorite at
+   a given moment goes on to win, whether the percentages come true, and the games Tempo read best and worst. The Brier,
+   calibration and training charts (buildQualityCharts) sit in the "Under the hood" drawer. */
+const mq = { G: [], curve: [], home: .5, t: 48, tape: "reads", seen: false };
+const mqMin = m => { const s = Math.round(m * 60); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+const mqIdx = (g, t) => { let lo = 0, hi = g.x.length - 1; while (lo < hi) { const k = (lo + hi + 1) >> 1; if (g.x[k] <= t) lo = k; else hi = k - 1; } return lo; };
+const mqHit = (p, w) => (p === .5 ? .5 : +((p > .5) === w));
+function mqLock(g, p) {  // minutes in when the eventual winner became the favorite for good; null if it never did
+  const w = !!g.home_win;
+  let k = p.length;
+  while (k > 0 && p[k - 1] !== .5 && (p[k - 1] > .5) === w) k--;
+  return k === p.length ? null : k ? g.x[k] : 0;
 }
-const MARGINS = Array.from({ length: 61 }, (_, i) => i - 30);
-function whatIfSec() { return (4 - +$("wQ").value) * 720 + +$("wT").value; }
-function updateWhatIf() {
-  const t = +$("wT").value, m = +$("wM").value, s = whatIfSec();
-  $("wTv").textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
-  $("wMv").textContent = m === 0 ? "tied" : signed(m);
-  $("wP").textContent = pct(baseP(s, m));
-  $("wNowLbl").textContent = `Now (Q${$("wQ").value} ${$("wTv").textContent})`;
-  if (charts.w) {
-    charts.w.data.datasets[0].data = MARGINS.map(x => ({ x, y: baseP(s, x) }));
-    charts.w.data.datasets[0].pointRadius = MARGINS.map(x => x === m ? 5 : 0);
-    charts.w.update();
-  }
-}
-function buildWhatIfChart() {
-  charts.w = new Chart($("wChart"), {
-    type: "line",
-    data: { datasets: [
-      { label: "Now", data: [], borderColor: css("--model"), backgroundColor: css("--model"), borderWidth: 3, pointBorderColor: css("--surface"), pointBorderWidth: 2, pointHoverRadius: 5 },
-      { label: "Start of Q4", data: MARGINS.map(x => ({ x, y: baseP(720, x) })), borderColor: css("--seq-2"), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 },
-      { label: "Halftime", data: MARGINS.map(x => ({ x, y: baseP(1440, x) })), borderColor: css("--seq-1"), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4 },
-    ] },
-    options: { responsive: true, maintainAspectRatio: false, parsing: false,
-      interaction: { mode: "index", intersect: false },
-      scales: { x: { type: "linear", min: -30, max: 30, title: { display: true, text: "Home lead (points)" }, ticks: { callback: v => signed(v), stepSize: 10 } },
-                y: { min: 0, max: 1, ticks: { callback: v => pct(v, 0), stepSize: .25 } } },
-      plugins: { tooltip: { callbacks: { title: it => `Home lead ${signed(it[0].parsed.x)}`, label: it => ` ${it.dataset.label === "Now" ? $("wNowLbl").textContent : it.dataset.label}: ${pct(it.parsed.y)}` } } } },
+const MQ_JUMPS = [[0, "Tip-off"], [12, "End of Q1"], [24, "Halftime"], [36, "End of Q3"], [43, "5:00 left"], [47, "1:00 left"]];
+const MQ_RACE = [["Tempo", "Reads every play", "var(--model)"], ["Score & clock", "The baseline model", "var(--base)"],
+                 ["Home team", "Always picks the home side", "#9aa3b0"], ["Coin flip", "Picks at random", "#5d6673"]];
+const MQ_TAPE = {
+  reads: ["Best reads", "Games where Tempo settled on the winner the longest before the score and clock did.",
+    G => G.filter(g => g.lockM != null && g.lockB != null).sort((a, b) => (b.lockB - b.lockM) - (a.lockB - a.lockM)),
+    (g, W) => `Locked in on ${W} ${Math.round(g.lockB - g.lockM)} min before the score did`],
+  back: ["Saw the comeback", "Games where Tempo kept backing the eventual winner while they were furthest behind on the scoreboard.",
+    G => G.filter(g => g.down > 0).sort((a, b) => b.down - a.down || b.gain - a.gain),
+    (g, W) => `Stuck with ${W} while down ${g.down}`],
+  miss: ["Biggest misses", "Games where Tempo was surest about the team that lost.",
+    G => [...G].sort((a, b) => b.miss - a.miss),
+    (g, W, L) => `Had ${L} at ${pct(Math.min(g.miss, .999), g.miss > .99 ? 1 : 0)} to win`],
+};
+function mqInit() {
+  const G = mq.G = DATA.games.map(g => {
+    let run = 0;  // as prepGames: time never runs backwards
+    const x = g.sec.map((s, i) => (run = Math.max(run, elapsed(s, g.per[i])))), w = !!g.home_win;
+    const brier = p => p.reduce((s, v) => s + (v - w) ** 2, 0) / p.length;
+    const o = { ...g, x, end: x[x.length - 1], ot: Math.max(...g.per) - 4, final: g.diff[g.diff.length - 1] };
+    let down = 0;  // the winner's deepest deficit while Tempo still made them the favorite
+    g.pm.forEach((v, i) => { if (v !== .5 && (v > .5) === w) down = Math.max(down, w ? -g.diff[i] : g.diff[i]); });
+    return Object.assign(o, { lockM: mqLock(o, g.pm), lockB: mqLock(o, g.pb), gain: brier(g.pb) - brier(g.pm), down,
+                              miss: Math.max(...g.pm.map(v => (w ? 1 - v : v))) });
   });
-  updateWhatIf();
+  $("mq").hidden = !G.length;
+  if (!G.length) return;
+  mq.home = G.reduce((s, g) => s + !!g.home_win, 0) / G.length;
+  mq.curve = Array.from({ length: 97 }, (_, k) => {  // every half minute of regulation: [Tempo, score & clock] share of winners called
+    let m = 0, b = 0;
+    for (const g of G) { const i = mqIdx(g, k / 2), w = !!g.home_win; m += mqHit(g.pm[i], w); b += mqHit(g.pb[i], w); }
+    return [m / G.length, b / G.length];
+  });
+
+  // hero: who these games are, and four numbers
+  const n = G.length.toLocaleString(), po = G.some(g => isPlayoffId(g.id));
+  $("mqLede").textContent = `${n} games from ${G[0].season}${po ? ", playoffs included," : ""} that Tempo never saw in training. How often does it pick the winner, and do its percentages come true?`;
+  const left = G.filter(g => g.lockM != null).map(g => g.end - g.lockM).sort((a, b) => a - b);
+  const tiles = [
+    [mq.curve[48][0], "pct", "Winners called at halftime", `Score &amp; clock alone: ${pct(mq.curve[48][1], 0)}`],
+    [mq.curve[86][0], "pct", "Called with 5:00 to go", `Score &amp; clock alone: ${pct(mq.curve[86][1], 0)}`],
+    [left[left.length >> 1] || 0, "min", "Minutes left when it locks in", "In the typical game, its pick never changes after this"],
+    [G.filter(g => g.gain > 0).length / G.length, "pct", "Games it read sharper", "Smaller error than score &amp; clock alone"],
+  ];
+  $("mqTiles").innerHTML = tiles.map(([v, f, l, s]) => `<div><b data-v="${v}" data-f="${f}">${mqFmt(v, f)}</b><span>${l}</span><small>${s}</small></div>`).join("");
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); mqCount(); } });
+    io.observe($("mqTiles"));
+  }
+
+  // pause the game: race bars, the curve, the clock
+  $("mqCallSub").textContent = `Drag the clock. At that moment in all ${n} games, each guesser picks a favorite. The bars show how often that favorite went on to win.`;
+  $("mqRace").innerHTML = MQ_RACE.map(([nm, sub, c]) => `<div class="mq-row" style="--c:${c}"><span class="nm">${esc(nm)}<small>${sub}</small></span><span class="tr"><i></i></span><b class="v"></b></div>`).join("");
+  const X = k => (k / 96 * 480).toFixed(1), Y = v => ((1 - (Math.max(v, .5) - .5) / .5) * 100).toFixed(1);
+  const line = j => mq.curve.map((c, k) => `${X(k)},${Y(c[j])}`).join(" ");
+  $("mqPlot").innerHTML = `<defs><linearGradient id="mqFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--model)" stop-opacity=".45"/><stop offset="1" stop-color="var(--model)" stop-opacity="0"/></linearGradient></defs>
+    ${[25, 50, 75].map(y => `<line class="ax" x1="0" x2="480" y1="${y}" y2="${y}"/>`).join("")}${[120, 240, 360].map(x => `<line class="ax q" x1="${x}" x2="${x}" y1="0" y2="100"/>`).join("")}
+    <line class="ax" x1="0" x2="480" y1="100" y2="100"/>
+    <polyline class="lh" points="0,${Y(mq.home)} 480,${Y(mq.home)}"/>
+    <polygon class="ar" points="0,100 ${line(0)} 480,100"/><polyline class="lb" points="${line(1)}"/><polyline class="lm" points="${line(0)}"/>
+    <line class="cur" id="mqCur" x1="0" x2="0" y1="0" y2="100"/>`;
+  $("mqJumps").innerHTML = MQ_JUMPS.map(([t, l]) => `<button type="button" data-t="${t * 2}" aria-pressed="false">${l}</button>`).join("");
+  $("mqT").addEventListener("input", e => mqSet(+e.target.value));
+  $("mqJumps").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { $("mqT").value = b.dataset.t; mqSet(+b.dataset.t); } });
+  mqSet(+$("mqT").value);
+
+  // honesty check: one tube per calibration bin
+  const C = M.cal_model, gap = A => { let s = 0, w = 0; A.forEach(([p, a, k]) => { s += Math.abs(p - a) * k; w += k; }); return s / w * 100; };
+  $("mqTubes").innerHTML = C.map(([p, a, k], i) => `<button type="button" class="mq-tube" data-i="${i}" aria-pressed="false" aria-label="Said ${pct(p, 0)}, happened ${pct(a, 0)} (${k.toLocaleString()} moments)">
+    <b>${pct(a, 0)}</b><span class="gl"><i style="height:${(a * 100).toFixed(1)}%"></i><s style="bottom:${(p * 100).toFixed(1)}%"></s></span><span>${pct(p, 0)}</span></button>`).join("");
+  $("mqGap").innerHTML = `Top: how often the home team won. Bottom: the chance Tempo gave. On average it's off by <b style="color:#fff">${gap(C).toFixed(1)} points</b>`
+    + (M.cal_baseline && M.cal_baseline.length ? `; score &amp; clock alone, ${gap(M.cal_baseline).toFixed(1)}.` : ".");
+  const tube = i => {
+    const [p, a] = C[i];
+    $("mqTubes").querySelectorAll(".mq-tube").forEach((b, j) => b.setAttribute("aria-pressed", j === i));
+    $("mqSay").innerHTML = `When Tempo gives the home team <b>${pct(p, 0)}</b>, the home team wins <b>${pct(a, 0)}</b> of the time.`;
+  };
+  $("mqTubes").addEventListener("click", e => { const b = e.target.closest(".mq-tube"); if (b) tube(+b.dataset.i); });
+  $("mqTubes").addEventListener("pointerover", e => { const b = e.target.closest(".mq-tube"); if (b) tube(+b.dataset.i); });
+  if (C.length) tube(C.reduce((best, c, i) => (Math.abs(c[0] - .7) < Math.abs(C[best][0] - .7) ? i : best), 0));
+
+  // the tape: game cards that open in Game replay
+  $("mqTape").innerHTML = Object.entries(MQ_TAPE).map(([k, [l]]) => `<button type="button" data-k="${k}" aria-pressed="${k === mq.tape}">${l}</button>`).join("");
+  $("mqTape").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { mq.tape = b.dataset.k; mqTape(); } });
+  $("mqGames").addEventListener("click", e => {
+    const b = e.target.closest(".hm-game");
+    if (!b) return;
+    const gid = b.dataset.gid;
+    gpSetSeason(GP_TEST, gid).then(ok => ok && openGame(gid));
+    showTab("games", true);
+  });
+  mqTape();
+  $("mqNerd").addEventListener("toggle", () => ["q", "cal", "hist"].forEach(k => charts[k] && charts[k].resize()));
+}
+const mqFmt = (v, f) => (f === "pct" ? Math.round(v * 100) + "%" : v.toFixed(1));
+function mqCount() {  // the hero numbers run up like a scoreboard
+  const els = [...$("mqTiles").querySelectorAll("b[data-v]")], t0 = performance.now();
+  const tick = now => {
+    const k = Math.min((now - t0) / 1100, 1), e = 1 - (1 - k) ** 3;
+    els.forEach(b => { b.textContent = mqFmt(+b.dataset.v * e, b.dataset.f); });
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+function mqSet(k) {
+  const t = k / 2, [m, b] = mq.curve[k], vals = [m, b, mq.home, .5], q = t ? Math.ceil(t / 12) : 1;  // the end of a quarter reads 0:00, not 12:00 of the next
+  $("mqQ").textContent = "Q" + q;
+  $("mqClock").textContent = mqMin(q * 12 - t);
+  $("mqBig").textContent = pct(m, 0);
+  const top = Math.max(...vals);
+  $("mqRace").querySelectorAll(".mq-row").forEach((r, i) => {
+    r.querySelector("i").style.width = (vals[i] * 100).toFixed(1) + "%";
+    r.querySelector(".v").textContent = pct(vals[i], 0);
+    r.classList.toggle("lead", vals[i] === top);
+  });
+  const d = Math.round((m - b) * 100);
+  $("mqEdge").innerHTML = d > 0 ? `Tempo calls <b>${d} more winner${d > 1 ? "s" : ""}</b> per 100 games than the score and clock alone.`
+    : d < 0 ? `Here the score and clock alone call <b class="lo">${-d} more</b> per 100 games.` : "Dead even with the score and clock alone here.";
+  const x = (k / 96 * 480).toFixed(1);
+  $("mqCur").setAttribute("x1", x); $("mqCur").setAttribute("x2", x);
+  Object.assign($("mqDot").style, { left: (k / 96 * 100) + "%", top: ((1 - (Math.max(m, .5) - .5) / .5) * 100) + "%" });
+  $("mqJumps").querySelectorAll("button").forEach(btn => btn.setAttribute("aria-pressed", +btn.dataset.t === k));
+  $("mqT").setAttribute("aria-valuetext", `Q${q} ${mqMin(q * 12 - t)}: Tempo ${pct(m, 0)}, score and clock ${pct(b, 0)}`);
+}
+function mqTape() {
+  const [, cap, pick, stat] = MQ_TAPE[mq.tape];
+  $("mqTape").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === mq.tape));
+  $("mqTapeCap").textContent = cap;
+  $("mqGames").innerHTML = pick(mq.G).slice(0, 3).map(g => {
+    const { H, A } = sides(g), [W, L] = g.home_win ? [H, A] : [A, H];
+    return homeGameCard(g, "drama", MQ_TAPE[mq.tape][0], esc(stat(g, W.tri, L.tri)));
+  }).join("");
 }
 
 /* ---------- players, defenders, coaches ---------- */
@@ -3022,7 +3200,7 @@ const STN = { STANDARD: "Standard / catch", PULLUP: "Pull-up", STEPBACK: "Step-b
 const PTN = { Isolation: "Isolation", Transition: "Transition", PRBallHandler: "P&R ball handler", PRRollman: "P&R roll man",
   Postup: "Post-up", Spotup: "Spot-up", Handoff: "Handoff", Cut: "Cut", OffScreen: "Off screen", OffRebound: "Putbacks", Misc: "Misc." };
 const pp = v => (v >= 0 ? "+" : "−") + Math.abs(v * 100).toFixed(1);
-let PL = null, zoneFocus = null;
+let PL = null;
 
 function barRow(label, share, ref, right1, right2, opts = {}) {
   const max = opts.max || 1;
@@ -3033,29 +3211,10 @@ function barRow(label, share, ref, right1, right2, opts = {}) {
 const head = (a, b, c, d) => `<div class="brow head"><span>${a}</span><span>${b}</span><span class="num">${c}</span><span class="num">${d}</span></div>`;
 
 /* court: legacy coords in tenths of feet, basket at (0,0), baseline at y = -47.5 */
-function courtSvg() {
-  return `<rect class="floor" x="-250" y="-52.5" width="500" height="357"></rect>
-  <g class="ln"><rect x="-250" y="-47.5" width="500" height="352"></rect>
-  <rect x="-80" y="-47.5" width="160" height="190"></rect><rect x="-60" y="-47.5" width="120" height="190"></rect>
-  <path d="M -60 142.5 A 60 60 0 0 0 60 142.5"></path><path d="M -60 142.5 A 60 60 0 0 1 60 142.5" stroke-dasharray="6 6"></path>
-  <path d="M -40 0 A 40 40 0 0 0 40 0"></path><line x1="-30" y1="-7.5" x2="30" y2="-7.5"></line><circle cx="0" cy="0" r="7.5"></circle>
-  <path d="M -220 -47.5 L -220 92.5 A 237.5 237.5 0 0 0 220 92.5 L 220 -47.5"></path></g><g id="dots"></g>`;
-}
-function renderDots() {
-  const Z = SH.zones;
-  $("dots").innerHTML = PL.dots.filter(d => d[1] < 300).map(([x, y, m, z]) => {
-    const cls = (m ? "mk" : "ms") + (zoneFocus != null && z !== zoneFocus ? " dim" : "");
-    return m ? `<circle class="${cls}" cx="${x}" cy="${y}" r="5"><title>${ZN[Z[z]]} · make</title></circle>`
-             : `<circle class="${cls}" cx="${x}" cy="${y}" r="4.3"><title>${ZN[Z[z]]} · miss</title></circle>`;
-  }).join("");
-  $("dotNote").textContent = `${PL.dots.length} of ${PL.n.toLocaleString()} shots shown${zoneFocus != null ? " · " + ZN[Z[zoneFocus]] : ""}`;
-}
-
 function leagueShares(tbl) { const t = tbl.reduce((s, r) => s + r[0], 0); return tbl.map(r => r[0] / t); }
-function fgOf(tbl) { return tbl.map(r => r[0] ? r[1] / r[0] : 0); }
 
 function renderPlayer(p) {
-  PL = p; zoneFocus = null;
+  PL = p;
   $("plFind").placeholder = p.name;
   const coach = SH.coaches.find(c => c.id === p.coachId);
   $("plName").innerHTML = `${pfAvatar(p.id, p.name)}<span>${esc(p.name)}</span>`;
@@ -3069,68 +3228,11 @@ function renderPlayer(p) {
   $("plStats").innerHTML = [["Shots", fga.toLocaleString()], ["FG%", pct(fgm / fga)], ["eFG%", pct((fgm + 0.5 * threes) / fga)],
     ["Pts / shot", (pts / fga).toFixed(2) + ` <span class="caption">lg ${lgPts.toFixed(2)}</span>`], ["Makes assisted", pct(p.assisted, 0)]]
     .map(([k, v]) => `<div><span class="label">${k}</span><b>${v}</b></div>`).join("");
-  $("court").innerHTML = courtSvg(); renderDots(); renderZoneBars();
-  const ss = leagueShares(p.styles), ls = leagueShares(SH.league.styles), sfg = fgOf(p.styles);
-  const smax = Math.max(...ss, ...ls) * 1.1;
-  $("styleBars").innerHTML = head("Shot style", "Share", "Share", "FG%") + SH.styles.map((s, i) => barRow(STN[s], ss[i], ls[i], pct(ss[i], 0), p.styles[i][0] ? pct(sfg[i], 0) : "–", { max: smax, alt: true })).join("");
   renderPlayerPlays(p);
   const overall = fgm / fga;
-  $("faced").innerHTML = p.faced.length ? p.faced.map(f => `<tr class="jump" data-id="${f.id}" tabindex="0"><td>${pvS("p:" + f.id, esc(f.name))}</td><td class="r">${f.n}</td><td class="r">${pct(f.fg)}</td><td class="r ${f.fg < overall ? "up" : "down"}">${pp(f.fg - overall)} pts</td></tr>`).join("")
+  $("faced").innerHTML = p.faced.length ? p.faced.map(f => `<tr><td>${pvS("p:" + f.id, esc(f.name))}</td><td class="r">${f.n}</td><td class="r">${pct(f.fg)}</td><td class="r ${f.fg < overall ? "up" : "down"}">${pp(f.fg - overall)} pts</td></tr>`).join("")
     : `<tr><td colspan="4" class="caption">No defender data for this player yet.</td></tr>`;
-  runSim();
 }
-function renderZoneBars() {
-  const p = PL, zs = leagueShares(p.zones), lz = leagueShares(SH.league.zones), zfg = fgOf(p.zones), lfg = fgOf(SH.league.zones);
-  const zmax = Math.max(...zs, ...lz) * 1.1;
-  $("zoneBars").innerHTML = head("Shot type", "Share of his shots", "Share", "FG% (lg)") + SH.zones.map((z, i) =>
-    barRow(ZN[z], zs[i], lz[i], pct(zs[i], 0), p.zones[i][0] ? `${pct(zfg[i], 0)} <span style="color:var(--muted)">${pct(lfg[i], 0)}</span>` : "–", { max: zmax, btn: String(i), sel: zoneFocus === i })).join("");
-}
-
-/* in-browser shot model (same math as ShotNet in shot_model.py) */
-const Wt = SH ? SH.weights : null;
-function lin(W, b, x) { const o = new Array(b.length); for (let i = 0; i < b.length; i++) { let s = b[i]; const w = W[i]; for (let j = 0; j < x.length; j++) s += w[j] * x[j]; o[i] = s; } return o; }
-const relu = v => v.map(x => x > 0 ? x : 0);
-function softmax(v) { const m = Math.max(...v), e = v.map(x => Math.exp(x - m)), s = e.reduce((a, b) => a + b, 0); return e.map(x => x / s); }
-const sig = z => 1 / (1 + Math.exp(-z));
-function shotModel(p, defIdx, coachDef, q, margin) {
-  const defVec = defIdx == null ? SH.avg.def : Wt["def_emb.weight"][defIdx];
-  const defsVec = defIdx == null ? SH.avg.defs : SH.avg.defs.map((v, i) => (4 * v + defVec[i]) / 5);
-  const cOff = SH.coaches.find(c => c.id === p.coachId);
-  const x = [...Wt["off_emb.weight"][p.idx], ...p.mates, ...defVec, ...defsVec,
-    ...(cOff ? Wt["coach_off_emb.weight"][cOff.idx] : SH.avg.coach_off),
-    ...(coachDef ? Wt["coach_def_emb.weight"][coachDef.idx] : SH.avg.coach_def),
-    ...p.prof_off, ...(coachDef ? coachDef.prof_def : SH.play_types.map(() => 0)),
-    ((4 - q) * 720 + 360) / 2880, Math.max(-30, Math.min(30, margin)) / 20, Math.min(q, 5) / 4, 0.5, SH.avg.conf];
-  const h = relu(lin(Wt["mlp.3.weight"], Wt["mlp.3.bias"], relu(lin(Wt["mlp.0.weight"], Wt["mlp.0.bias"], x))));
-  const pz = softmax(lin(Wt["zone_head.weight"], Wt["zone_head.bias"], h).map((v, i) => v + Wt.prior_zone[p.idx][i]));
-  const pst = softmax(lin(Wt["style_head.weight"], Wt["style_head.bias"], h));
-  const Z = SH.zones.length;
-  const pm = SH.zones.map((_, z) => sig(lin(Wt["make_head.weight"], Wt["make_head.bias"], [...h, ...Array.from({ length: Z }, (_, k) => k === z ? 1 : 0)])[0] + Wt.prior_make[p.idx][z]));
-  const pps = pz.reduce((s, v, i) => s + v * pm[i] * SH.zone_value[i], 0);
-  return { pz, pm, pst, pps };
-}
-function runSim() {
-  if (!PL) return;
-  const dv = $("simDef").value, cv = $("simCoach").value, q = +$("simQ").value, m = +$("simM").value;
-  $("simMv").textContent = m === 0 ? "tied" : signed(m);
-  const d = dv === "" ? null : SH.defenders.find(x => String(x.id) === dv);
-  const c = cv === "" ? null : SH.coaches.find(x => String(x.id) === cv);
-  const base = shotModel(PL, null, null, q, m), sim = shotModel(PL, d ? d.idx : null, c, q, m);
-  const grp = (pz, ix) => ix.reduce((s, i) => s + pz[i], 0);
-  const ind = [["Rim shots", [0, 1]], ["Mid-range", [2, 3, 4, 5]], ["3-pointers", [6, 7]]].map(([k, ix]) => {
-    const a = grp(sim.pz, ix), b = grp(base.pz, ix);
-    return `<div class="ind"><span class="label">${k}</span><b>${pct(a, 0)}</b><span style="font-size:12.5px;color:var(--ink-2)">${pp(a - b)} pts vs avg</span></div>`;
-  });
-  const dp = sim.pps - base.pps;
-  ind.push(`<div class="ind"><span class="label">Exp. pts / shot</span><b>${sim.pps.toFixed(3)}</b><span class="delta ${Math.abs(dp) < 0.0005 ? "" : dp > 0 ? "up" : "down"}" style="font-size:12.5px">${dp >= 0 ? "+" : "−"}${Math.abs(dp).toFixed(3)} vs avg</span></div>`);
-  const topStyle = sim.pst.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 3).map(([v, i]) => `${STN[SH.styles[i]]} ${pct(v, 0)}`).join(" · ");
-  ind.push(`<div class="ind" style="flex:1 1 220px"><span class="label">Most likely styles</span><span style="font-size:14px;font-weight:600">${topStyle}</span></div>`);
-  $("simInd").innerHTML = ind.join("");
-  const mx = Math.max(...sim.pz, ...base.pz) * 1.1;
-  $("simBars").innerHTML = head("Shot type", "Predicted share", "Share", "FG%") + SH.zones.map((z, i) =>
-    barRow(ZN[z], sim.pz[i], base.pz[i], pct(sim.pz[i], 0), pct(sim.pm[i], 0), { max: mx })).join("");
-}
-
 /* ---------- offense and defense play blocks: a team season (coaches) or a player's career (tendencies) ----------
    A unit holds regular-season totals (export_tracking.py): Synergy play types as [possessions, points], tracking actions as
    [count, points, makes, attempts], hustle counts, and [makes, attempts, expected makes] for opponents at the rim and from three.
@@ -3659,8 +3761,7 @@ function coRender() {
     $("coOffModel").innerHTML = [chip("Rim shots", pp(eo.rim), "pts of shot share"), chip("Mid-range", pp(eo.mid), "pts of shot share"),
       chip("3-pointers", pp(eo.three), "pts of shot share")].join("");
     $("coDefModel").innerHTML = [chip("Allows at the rim", pp(ed.rim), "pts of shot share"), chip("Allows 3s", pp(ed.three), "pts of shot share"),
-      chip("Pts / shot", `${ed.pps >= 0 ? "+" : "−"}${Math.abs(ed.pps).toFixed(3)}`, "vs average scheme", ed.pps < -0.0005 ? "up" : ed.pps > 0.0005 ? "down" : ""),
-      `<div class="ind" style="justify-content:center"><button type="button" id="coSim">Simulate against his defense ›</button></div>`].join("");
+      chip("Pts / shot", `${ed.pps >= 0 ? "+" : "−"}${Math.abs(ed.pps).toFixed(3)}`, "vs average scheme", ed.pps < -0.0005 ? "up" : ed.pps > 0.0005 ? "down" : "")].join("");
   }
   $("coHistWrap").hidden = !c.history.length;
   $("coHist").innerHTML = `<thead><tr><th>Season</th><th>Team</th><th class="r">W</th><th class="r">L</th><th class="r">W%</th><th class="r">Playoffs</th><th>Result</th></tr></thead><tbody>` +
@@ -3712,13 +3813,6 @@ function initCoaches() {
     coSide(e.key === "Home" ? "off" : e.key === "End" ? "def" : co.side === "off" ? "def" : "off", true); coHash(false);
   });
   document.querySelectorAll("#coaches .q-slot").forEach(s => { s.outerHTML = qBtn(s.dataset.q, s.parentElement.querySelector("h3").textContent); });
-  $("coDefModel").addEventListener("click", e => {
-    if (e.target.id !== "coSim") return;
-    const c = coById(co.sel), sc = SH.coaches[c.shot];
-    $("simCoach").value = String(sc.id); runSim();
-    showTab("players", true);
-    requestAnimationFrame(() => $("simPanel").scrollIntoView({ behavior: "smooth", block: "center" }));
-  });
   co.sel = coList()[0].id;
   coGrid(); coRender();
 }
@@ -3733,29 +3827,12 @@ function initPlayers() {
   const plItems = [...SH.players].sort((a, b) => b.n - a.n)
     .map(p => ({ key: p.id, id: p.id, name: p.name, team: p.team, meta: `${p.n.toLocaleString()} shots in the model` }));
   playerSearch($("plFind"), { items: () => plItems, pick: it => renderPlayer(SH.players.find(p => p.id === it.id)), top: "Most shots", browse: {} });
-  const byName = [...SH.defenders].sort((a, b) => a.name.localeCompare(b.name));
-  $("simDef").innerHTML = `<option value="">League-average defender</option>` + byName.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
-  $("simCoach").innerHTML = `<option value="">League-average scheme</option>` + SH.coaches.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
-  selSearch($("simDef"), { reset: true, top: "Most shots defended", browse: {},
-    items: [...SH.defenders].sort((a, b) => b.n - a.n).map(d => ({ key: d.id, id: d.id, name: d.name, team: playerTeam(d.id), meta: `${d.n.toLocaleString()} shots defended` })) });
-  const stints = c => c.stints.reduce((r, s) => { const [t, y] = s.split(" "), l = r.at(-1); if (l && l.t === t) l.b = y; else r.push({ t, a: y, b: y }); return r; }, [])
-    .map(({ t, a, b }) => `${t} ${a === b ? a : a.slice(0, 4) + "–" + b.slice(-2)}`).join(" · ");  // "BKN 2016–19 · CLE 2024–26"
-  selSearch($("simCoach"), { reset: true, top: null, browse: { rest: "No team" }, noun: "coaches",
-    items: SH.coaches.map(c => ({ key: c.id, id: c.id, name: c.name, team: c.team, meta: stints(c) })) });
-  selSeg($("simQ"));
-  ["simDef", "simCoach", "simQ", "simM"].forEach(id => $(id).addEventListener("input", runSim));
   $("plChips").addEventListener("click", e => {
     const b = e.target.closest("[data-sc]");
     if (!b) return;
     const i = SC.players.findIndex(x => x.id === +b.dataset.sc);
     if (i >= 0) { showTab("shots", true); scPick(i, true); }
   });
-  $("zoneBars").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; const z = +b.dataset.z; zoneFocus = zoneFocus === z ? null : z; renderDots(); renderZoneBars(); });
-  const loadDef = id => { if (!SH.defenders.some(d => d.id === id)) return; $("simDef").value = String(id); runSim(); $("simPanel").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); };
-  for (const tb of ["faced"]) {
-    $(tb).addEventListener("click", e => { const tr = e.target.closest("tr[data-id]"); if (tr) loadDef(+tr.dataset.id); });
-    $(tb).addEventListener("keydown", e => { const tr = e.target.closest("tr[data-id]"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); loadDef(+tr.dataset.id); } });
-  }
   if (SH.players.length) renderPlayer(SH.players[0]);
 }
 
@@ -4117,8 +4194,8 @@ function pfRenderSeason() {
         return `<tr class="go${x === season ? " sel" : ""}${isPO(x) ? " po" : ""}" data-season="${x}" tabindex="0"><td>${isPO(x) ? "Playoffs" : x}</td><td>${pvS("t:" + t.team, esc(t.team))}</td><td class="r">${t.gp}</td><td class="r">${f1(t.min / n)}</td><td class="r">${f1(t.pts / n)}</td>
           <td class="r">${f1(pfReb(t) / n)}</td><td class="r">${f1(t.ast / n)}</td><td class="r">${f1(t.stl / n)}</td><td class="r">${f1(t.blk / n)}</td><td class="r">${f1(t.tov / n)}</td>
           <td class="r">${p("fgm", "fga")}</td><td class="r">${p("tpm", "tpa")}</td><td class="r fp">${f1(pfFP(t) / n)}</td></tr>`; }).join("")}</tbody></table></div></div>
-    ${scIndexOf(pid) >= 0 ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="pfShotChart">Open his shot chart ›</button>${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<button type="button" id="pfShots">Matchup simulator ›</button>` : ""}</div>`
-      : DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<div><button type="button" id="pfShots">Open his shot chart and matchup simulator ›</button></div>` : ""}`;
+    ${scIndexOf(pid) >= 0 ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="pfShotChart">Open his shot chart ›</button>${DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<button type="button" id="pfShots">Tendencies ›</button>` : ""}</div>`
+      : DATA.shots && DATA.shots.players.some(p => p.id === pid) ? `<div><button type="button" id="pfShots">Open his tendencies ›</button></div>` : ""}`;
   selSeason($("pfSeasonSel"));
 }
 function pfJumpToGame(gid) {
@@ -5013,7 +5090,7 @@ function scPanel() {
 
 /* All players: one table, three views of the same rows. Box-score numbers come from DATA.profiles over the same seasons
    as the shot chart; shooting and shot diet from the shot chart itself. Good and bad numbers are shaded by where they rank
-   among the players listed (top and bottom fifth), so the table reads at a glance without a colour on every cell. */
+   among the players listed (top and bottom 20%), so the table reads at a glance without a colour on every cell. */
 const lb = { view: PF ? "box" : "shoot", per: "g", n: 50 };
 const lbPer = (r, f) => {  // a box-score count at the chosen rate
   const b = r.box;
@@ -5033,6 +5110,9 @@ const LB_BOX = [
   ["stl", "STL", r => lbPer(r, "stl"), lbN, 1, "Steals"],
   ["blk", "BLK", r => lbPer(r, "blk"), lbN, 1, "Blocks"],
   ["tov", "TOV", r => lbPer(r, "tov"), lbN, 0, "Turnovers"],
+  ["fg", "FG%", r => r.fg, lbP, 1],
+  ["fg3", "3P%", r => r.a3 ? r.fg3 : null, lbP, 1],
+  ["ft", "FT%", r => r.box && r.box.fta ? r.box.ftm / r.box.fta : null, lbP, 1],
   ["ts", "TS%", lbTS, lbP, 1, "True shooting: points per shot, counting free throws (PTS ÷ 2 × (FGA + 0.44 × FTA))"],
 ];
 const LB_SHOOT = [
@@ -5069,7 +5149,7 @@ function scBoard() {
   const k = sc.sort, dir = sc.asc ? 1 : -1;
   rows.sort(k === "name" ? (a, b) => dir * a.name.localeCompare(b.name)
     : (a, b) => { const x = val[k].get(a), y = val[k].get(b); return x == null && y == null ? b.fga - a.fga : x == null ? 1 : y == null ? -1 : dir * (x - y) || b.fga - a.fga; });
-  // shading cut-offs: the top and bottom fifth of the players listed, per column
+  // shading cut-offs: the top and bottom 20% of the players listed, per column
   const cut = {};
   for (const [c, , f, , q] of cols) if (q) {
     const v = rows.map(r => val[c].get(r)).filter(x => x != null && isFinite(x)).sort((a, b) => a - b);
@@ -5098,7 +5178,7 @@ function scBoard() {
   $("lbMore").textContent = `Show ${Math.min(50, rows.length - lb.n)} more`;
   $("lbPer").hidden = lb.view === "diet" || !PF;
   $("lbKey").innerHTML = lb.view === "diet" ? LB_DIET.map(([l], i) => `<span><i class="d${i}"></i>${l}</span>`).join("")
-    : `<span><i class="hi"></i>Top fifth</span><span><i class="lo"></i>Bottom fifth</span>`;
+    : `<span><i class="hi"></i>Top 20%</span><span><i class="lo"></i>Bottom 20%</span>`;
   $("lbCount").textContent = `${rows.length.toLocaleString()} players${rows.length > shown.length ? `, top ${shown.length} shown` : ""} · ${scSelName()}`;
 }
 
@@ -5305,7 +5385,7 @@ function srcInit() {
       ["Inputs", "Three features: score margin, margin ÷ √(minutes left + 1) (a lead matters more as time runs out), and minutes left."],
       ["Model", "scikit-learn <code>LogisticRegression</code>: L2-regularised (C = 1), fitted with L-BFGS for up to 1,000 iterations. p = σ(b + w·x)."],
       ["Training data", "Every game state in the training seasons, sampled down to at most 2,000,000 rows."],
-      ["Used for", "The dashed line in the game replay, and the what-if calculator. Tempo has to beat it to be worth anything."],
+      ["Used for", "The dashed line in the game replay, and the yardstick on the Model quality page. Tempo has to beat it to be worth anything."],
     ]),
     card("Tempo", [tag("Decoder-only transformer"), tag("Softmax (multinomial logistic) head"), tag("Logistic head"), status(!!G, syn ? "Trained (synthetic demo)" : "Trained", "Not trained")], [
       ["Predicts", "At every play, (1) the next event out of 31 tokens such as <code>H_3PT_MAKE</code> or <code>A_DREB</code>, and (2) P(home win)."],
@@ -5824,8 +5904,7 @@ const H2H_ROWS = [
   ["Defense", "Steals", (s, r) => r(s.stl), f1, 1],
   [null, "Blocks", (s, r) => r(s.blk), f1, 1],
   [null, "Fouls", (s, r) => r(s.pf), f1, 0],
-  ["Overall", "Fantasy points", (s, r) => r(pfFP(s)), f1, 1, null, "NBA.com scoring"],
-  [null, "Minutes", s => h2hDiv(s.min, s.gp), f1, 0, null, "per game"],
+  ["Overall", "Minutes", s => h2hDiv(s.min, s.gp), f1, 0, null, "per game"],
   [null, "Games played", s => s.gp, v => String(v), 0],
 ];
 // head-to-head games: PF.meet lists each player's games as (gap since his last one) * 2 + won, in season-key order.
@@ -6348,14 +6427,13 @@ function dzReport(x) {
     x.dpoy || x.alld ? `${x.score >= 85 ? "Voters agreed" : "Voters rated him higher"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
   const byScore = [...dz.pool].sort((a, c) => c.score - a.score), rank = byScore.findIndex(y => y.id === x.id) + 1;
   const peers = byScore.filter(y => y.grp === x.grp), prank = peers.findIndex(y => y.id === x.id) + 1;
-  const canSim = SH && SH.defenders.some(d => d.id === x.id);
   $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
       <div><p class="kicker" style="color:var(--model)">${x.grp ? `${nth(prank)} of ${peers.length} ${grp} · ${nth(rank)} on the wall` : `${nth(rank)} of ${dz.pool.length} defenders`}</p><h3 class="cast">${esc(x.name)}</h3>
       <p class="meta">${[x.team && T[0], b.pos, b.ht, `${Math.round(x.min).toLocaleString()} minutes ${dzSeasons() ? dzSpanText() : `since ${x.first || dz.span.slice(0, 4)}`}`].filter(Boolean).map(esc).join(" · ")}</p>
       ${hw ? `<div class="dz-hw">${hw}</div>` : ""}</div></div>
     <p class="dz-why">${why}</p>
     <div class="dz-tiles">${tiles}</div>
-    <div class="dz-act">${P.name ? `<button type="button" class="pf-open" data-pid="${x.id}">Player card ›</button>` : ""}${canSim ? `<button type="button" id="dzSim">Guard someone in the simulator ›</button>` : ""}</div>`;
+    <div class="dz-act">${P.name ? `<button type="button" class="pf-open" data-pid="${x.id}">Player card ›</button>` : ""}</div>`;
 }
 
 function dzRay(x) {
@@ -6430,12 +6508,6 @@ function initDefense() {
   $("dzWall").addEventListener("click", e => { const b = e.target.closest(".dz-brick"); if (b) dzPick(+b.dataset.id, true); });
   new ResizeObserver(() => { const w = $("dzWall").clientWidth, c = Math.max(2, Math.min(7, Math.floor(w / 160))); if (w && c !== dz.cols) dzWall(!dz.cols); }).observe($("dzWall"));
   playerSearch($("dzFind"), { items: dzItems, pick: it => dzPick(it.id, false), top: "Best defenders", browse: {} });
-  $("dzReport").addEventListener("click", e => {
-    if (e.target.id !== "dzSim") return;
-    $("simDef").value = String(dz.sel); runSim();
-    showTab("players", true);
-    requestAnimationFrame(() => $("simPanel").scrollIntoView({ behavior: "smooth", block: "center" }));
-  });
   dzPick(dzItems()[0].id, false);
 }
 function dzItems() { return [...dz.pool].sort((a, b) => b.score - a.score).map(x => ({ key: x.id, id: x.id, name: x.name, team: x.team, meta: `Wall rating ${x.score} among ${DZ_GRP[x.grp][1]}` })); }
@@ -6753,7 +6825,7 @@ try { const th = localStorage.getItem("theme"); if (th) document.documentElement
 function buildAll() {
   Object.values(charts).forEach(c => c.destroy()); charts = {};
   themeDefaults();
-  buildReplayCharts(); buildQualityCharts(); buildWhatIfChart();
+  buildReplayCharts(); buildQualityCharts();
   if (cur) { const keep = step; gpRender(); pickGame(gi); setStep(keep); }  // cards redrawn for the new theme's team colors
 }
 $("prevG").addEventListener("click", () => { if (order.length) pickGame((gi - 1 + order.length) % order.length); });
@@ -6763,8 +6835,6 @@ $("stepBack").addEventListener("click", () => setStep(step - 1));
 $("stepFwd").addEventListener("click", () => setStep(step + 1));
 $("swings").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) setStep(+tr.dataset.i); });
 $("swings").addEventListener("keydown", e => { const tr = e.target.closest("tr"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setStep(+tr.dataset.i); } });
-selSeg($("wQ"));
-["wQ", "wT", "wM"].forEach(id => $(id).addEventListener("input", updateWhatIf));
 $("copyCsv").addEventListener("click", () => {
   const text = csv();
   navigator.clipboard.writeText(text).then(() => { $("copyMsg").textContent = "Copied. Paste into a spreadsheet."; })
@@ -6794,6 +6864,7 @@ srcInit();
 try { initH2H(); } catch (e) { console.error(e); }
 try { lpInit(); } catch (e) { console.error(e); }  // hover cards on every player, coach and team name
 homeInit();
+try { mqInit(); } catch (e) { console.error(e); }
 initTabs();
 replayFromHash();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => MU && muTeam());

@@ -5,6 +5,8 @@ Alongside each token we store the game state *after* that event:
 seconds remaining, score differential (home - away), and period.
 
     python -m models.tokenize_pbp --raw data/raw --out data/processed/games.pkl
+    python -m models.tokenize_pbp --out data/processed/games_30.pkl --workers 8 \
+        --splits_from data/processed/games.pkl      # 30 seasons; val/test pinned, pre-2016 -> "old"
 """
 import argparse
 import json
@@ -149,33 +151,77 @@ def split(games, val_frac=0.1):
     return {"train": rest[:-n_val], "val": rest[-n_val:], "test": test}
 
 
+def tokenize_file(f):
+    """(season folder, game dict or None, error message or None) for one raw parquet; runs in a worker."""
+    try:
+        return f.parent.name, process_game(pd.read_parquet(f)), None
+    except Exception as e:
+        return f.parent.name, None, f"{f.name}: {e}"
+
+
+def splits_from(games, ref_path, first_train="2016-17"):
+    """Copy val/test from an earlier games.pkl by game ID, so its metrics stay comparable.
+
+    Everything else from `first_train` on is train; earlier seasons go to "old" (never trained on).
+    """
+    with open(ref_path, "rb") as fh:
+        ref = pickle.load(fh)
+    pinned = {ref["games"][i]["gameId"]: k for k in ("val", "test") for i in ref["splits"][k]}
+    out = {"train": [], "val": [], "test": [], "old": []}
+    for i, g in enumerate(games):
+        out[pinned.get(g["gameId"]) or ("train" if g["season"] >= first_train else "old")].append(i)
+    found = {k: len(out[k]) for k in ("val", "test")}
+    want = {k: len(ref["splits"][k]) for k in ("val", "test")}
+    if found != want:
+        raise SystemExit(f"pinned splits incomplete: found {found}, reference has {want}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--raw", default="data/raw")
     ap.add_argument("--out", default="data/processed/games.pkl")
     ap.add_argument("--seasons", nargs="*", help="only these season folders, e.g. 2021-22 2022-23 (default: all)")
+    ap.add_argument("--workers", type=int, default=1, help="parallel processes for tokenizing")
+    ap.add_argument("--splits_from", help="copy val/test game IDs from this games.pkl; seasons before "
+                                          "--first_train go to an 'old' split")
+    ap.add_argument("--first_train", default="2016-17", help="with --splits_from: earliest 'train' season")
     args = ap.parse_args()
 
-    files = sorted(f for f in Path(args.raw).rglob("*.parquet") if not args.seasons or f.parent.name in args.seasons)
+    files = sorted(f for f in Path(args.raw).rglob("*.parquet")
+                   if f.parent.parent == Path(args.raw) and (not args.seasons or f.parent.name in args.seasons))
     print(f"{len(files)} raw games")
-    games = []
-    for f in files:
-        try:
-            g = process_game(pd.read_parquet(f))
-        except Exception as e:
-            print(f"skip {f.name}: {e}")
-            continue
-        if g is not None:
+    if args.workers > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(args.workers) as ex:
+            results = list(ex.map(tokenize_file, files, chunksize=64))
+    else:
+        results = [tokenize_file(f) for f in files]
+    games, stats = [], {}
+    for season, g, err in results:
+        st = stats.setdefault(season, {"raw": 0, "games": 0, "tied": 0, "errors": 0})
+        st["raw"] += 1
+        if err:
+            st["errors"] += 1
+            print(f"skip {err}")
+        elif g is None:
+            st["tied"] += 1  # final score level: an incomplete feed
+        else:
+            st["games"] += 1
             games.append(g)
     games.sort(key=lambda g: (g["season"], g["gameId"]))
-    splits = split(games)
+    splits = splits_from(games, args.splits_from, args.first_train) if args.splits_from else split(games)
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "wb") as fh:
         pickle.dump({"vocab": VOCAB, "games": games, "splits": splits}, fh)
-    json.dump(VOCAB, open(out.parent / "vocab.json", "w"), indent=1)
+    vocab_path = out.parent / "vocab.json"
+    if vocab_path.exists() and json.load(open(vocab_path)) != VOCAB:
+        print(f"WARNING: {vocab_path} differs from the tokenizer's vocab; overwriting")
+    json.dump(VOCAB, open(vocab_path, "w"), indent=1)
 
+    print(pd.DataFrame(stats).T.sort_index().to_string())
     lens = [len(g["tokens"]) for g in games]
     print(f"{len(games)} games | tokens: {sum(lens):,} | mean len {np.mean(lens):.0f}, max {max(lens)}")
     print({k: len(v) for k, v in splits.items()})
