@@ -626,8 +626,39 @@ kbd { font: 600 11px/1 var(--font-label); padding: 3px 6px; border-radius: 5px; 
 td.up, td.down { font-weight: 600; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
-.lb { max-height: 560px; overflow: auto; }
-.lb thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.lb { max-height: 640px; overflow: auto; }
+.lb thead th { position: sticky; top: 0; background: var(--surface); z-index: 2; }
+.lb-bar .seg[hidden] { display: none; }
+.two[hidden] { display: none; }
+.chip.pl-go { cursor: pointer; color: var(--ink); border-color: var(--model); font: inherit; font-size: 12.5px; }
+.chip.pl-go:hover { background: var(--model); color: #fff; }
+.lb-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.lb-t td { padding-block: 6px; }
+.lb-t td.mut { color: var(--muted); }
+.lb-t .lb-rk { width: 1%; color: var(--muted); font-size: 12.5px; text-align: right; padding-right: 2px; }
+.lb-t .lb-pl { position: sticky; left: 0; background: var(--surface); z-index: 1; min-width: 190px; }
+.lb-t thead .lb-pl { z-index: 3; }
+.lb-t tr.pick:hover .lb-pl, .lb-t tr.pick.cur .lb-pl { background: var(--bg); }
+.lb-who { display: flex; align-items: center; gap: 10px; }
+.lb-who .pf-av { width: 32px; height: 32px; font-size: 11px; box-shadow: 0 0 0 2px var(--tc); }
+.lb-who > span:last-child { display: grid; line-height: 1.2; min-width: 0; }
+.lb-who b { font-weight: 600; }
+.lb-who small { font-size: 12px; color: var(--muted); }
+.lb-t td.on { background: var(--accent-soft); font-weight: 700; color: var(--ink); }
+.lb-t td.hi { color: var(--good); }
+.lb-t td.top { color: var(--good); font-weight: 700; }
+.lb-t td.lo { color: var(--warn); }
+.lb-t td.on.hi, .lb-t td.on.top { color: var(--good); }
+.lb-dcell { min-width: 180px; }
+.lb-diet { display: flex; height: 12px; border-radius: 3px; overflow: hidden; gap: 1px; background: var(--line); }
+.lb-diet i, .lb-key i { display: block; flex-basis: 0; min-width: 0; }
+.lb-diet .d0, .lb-key .d0 { background: #e5533f; } .lb-diet .d1, .lb-key .d1 { background: #e89a4a; }
+.lb-diet .d2, .lb-key .d2 { background: #9aa3ae; } .lb-diet .d3, .lb-key .d3 { background: #4f9be8; }
+.lb-diet .d4, .lb-key .d4 { background: #2d5fa8; }
+.lb-foot { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+.lb-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); margin-left: auto; }
+.lb-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.lb-key i.hi { background: var(--good); } .lb-key i.lo { background: var(--warn); }
 #lbHead th.sort.on { color: var(--ink); }
 #lbHead th.sort.on::after { content: " ▾"; }
 #lbHead th.sort.on.asc::after { content: " ▴"; }
@@ -745,6 +776,7 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 
 /* home (cover page) */
 .hm-hero { min-height: 500px; }
+#home > .sec-head { margin-top: 44px; }  /* room between the cover's few sections */
 .hm-games { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 940px) { .hm-games { grid-template-columns: minmax(0, 1fr); } }
 .hm-game { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 10px; align-content: start; padding: 14px; min-width: 0;
@@ -771,18 +803,6 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .hm-lead .rk { font-family: var(--font-label); font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; opacity: .9; }
 .hm-lead .who b { font-family: var(--font-cast); font-size: 24px; line-height: .95; }
 .hm-lead .who strong { font-family: var(--font-cast); font-size: 38px; font-weight: 800; }
-.hm-tour { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-@media (max-width: 900px) { .hm-tour { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 520px) { .hm-tour { grid-template-columns: minmax(0, 1fr); } .hm-card { min-height: 160px; } }
-.hm-card { all: unset; box-sizing: border-box; cursor: pointer; position: relative; overflow: hidden; isolation: isolate; display: grid; align-content: end; gap: 4px;
-           min-height: 200px; padding: 16px; border-radius: 14px; color: #fff; background: #14171c; }
-.hm-card::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--photo, linear-gradient(135deg, #2b313a, #0b0d11)) center / cover; transition: transform .4s ease; }
-.hm-card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(8 10 14 / 0) 25%, rgb(8 10 14 / .9) 100%); }
-.hm-card:hover::before { transform: scale(1.06); }
-.hm-card:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
-.hm-card b { font-size: 30px; }
-.hm-card span { font-size: 13.5px; line-height: 1.4; color: rgb(255 255 255 / .84); }
-.hm-card i { font-style: normal; color: var(--hero-accent); }
 
 /* faces and logos next to names: shot charts, player tendencies, game replay title */
 .sc-name, .pl-head .pname { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -990,6 +1010,9 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .tx-q b { color: var(--ink); }
 .tx-q ul { display: grid; gap: 10px; padding-left: 18px; }
 .tx-wide { grid-column: 1 / -1; }
+.tx-more { border-top: 1px solid var(--line); padding-top: 16px; }
+.tx-more > summary { cursor: pointer; width: fit-content; font: 600 13px/1.3 var(--font-label); letter-spacing: .08em; text-transform: uppercase; color: var(--model); }
+.tx-more > .tx-grid { margin-top: 20px; }
 .tx-wide ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 40px; }
 @media (max-width: 760px) { .tx-wide ul { grid-template-columns: minmax(0, 1fr); } }
 .tx-q a { color: var(--model); }
@@ -1264,10 +1287,6 @@ h3.co-side.def::before { background: var(--base); }
 .aw-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .aw-row .aw { margin: 0; font-size: 11.5px; line-height: 20px; padding: 0 8px; }
 .aw-row .aw.lo { background: var(--surface); border-color: var(--line-strong); color: var(--ink-2); }
-.hm-card.faces::before { background: linear-gradient(150deg, #2b313a, #0b0d11); }
-.hm-card[data-photo="card-defense"]::before { background-position: 50% 12%; }  /* keep LeBron's and Kobe's faces in frame */
-.hm-faces { position: absolute; z-index: -1; right: 6px; top: 12px; display: flex; }
-.hm-faces img { height: 118px; width: auto; margin-left: -46px; filter: drop-shadow(0 6px 12px rgb(0 0 0 / .45)); }
 </style>
 
 <style>
@@ -1530,8 +1549,8 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
           <ul class="nm-grid home">
             <li class="nm-feature"><a class="nm-link nm-hero" href="#/home" data-nav="home" data-photo="arena"><span class="kicker">HOMERs</span><b class="cast">Every game is an <em>epic.</em></b><p>NBA play-by-play, read one play at a time.</p></a></li>
             <li><a class="nm-link" href="#/home" data-nav="home" data-to="hmGamesHead"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Featured games</span><p>The most dramatic, closest and most shocking games the model never saw.</p></a></li>
-            <li><a class="nm-link" href="#/home" data-nav="home" data-to="hmOrbHead"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><path d="M10.4 21.9a10 10 0 0 0 9.941-15.416"/><path d="M13.5 2.1a10 10 0 0 0-9.841 15.416"/></svg>Seasons in orbit</span><p>Every season in the data, its champion, and how the model used its games.</p></a></li>
             <li><a class="nm-link" href="#/home" data-nav="home" data-to="hmLeadHead"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>Season leaders</span><p>Points, rebounds, assists, threes and fantasy points per game.</p></a></li>
+            <li><a class="nm-link" href="#/home" data-nav="home" data-to="hmOrbHead"><span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><path d="M10.4 21.9a10 10 0 0 0 9.941-15.416"/><path d="M13.5 2.1a10 10 0 0 0-9.841 15.416"/></svg>Seasons in orbit</span><p>Every season in the data, its champion, and how the model used its games.</p></a></li>
           </ul>
         </div>
       </li>
@@ -1571,8 +1590,6 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
       <p class="lede" id="hmLede">It reads every play, then calls the next one and the winner.</p>
       <div class="hero-cta">
         <button type="button" class="go" data-go="games">Replay a game</button>
-        <button type="button" data-go="shots">Shot charts</button>
-        <button type="button" data-go="sources">Why “HOMERs”?</button>
       </div>
     </div>
     <div class="jumbo" id="hmJumbo"></div>
@@ -1581,15 +1598,12 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
   <div class="sec-head" id="hmGamesHead"><h2 class="cast">Featured games<span id="hmGamesCap"></span></h2></div>
   <div class="hm-games" id="hmGames"></div>
 
-  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2>
-    <div class="field orb-pick"><label class="label" for="hmOrbPick">Season</label><select id="hmOrbPick"></select></div></div>
-  <div class="orb" id="hmOrbit" hidden></div>
-
   <div class="sec-head" id="hmLeadHead" hidden><h2 class="cast">Season leaders</h2><p class="caption" id="hmLeadCap"></p></div>
   <div class="pf-podium" id="hmLeaders" hidden></div>
 
-  <div class="sec-head"><h2 class="cast">Explore</h2></div>
-  <div class="hm-tour" id="hmTour"></div>
+  <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2>
+    <div class="field orb-pick"><label class="label" for="hmOrbPick">Season</label><select id="hmOrbPick"></select></div></div>
+  <div class="orb" id="hmOrbit" hidden></div>
 </section>
 
 <section aria-labelledby="h-shots" id="shots" data-tab="shots">
@@ -1637,16 +1651,21 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
 
   <div class="panel" style="display:grid;gap:12px">
     <div class="sec-head"><h3>All players</h3><p class="caption" id="lbCount"></p></div>
+    <div class="lb-bar">
+      <div class="seg" id="lbView" role="group" aria-label="Stats shown"><button type="button" data-v="box" aria-pressed="true">Box score</button><button type="button" data-v="shoot" aria-pressed="false">Shooting</button><button type="button" data-v="diet" aria-pressed="false">Shot diet</button></div>
+      <div class="seg" id="lbPer" role="group" aria-label="Rate"><button type="button" data-p="g" aria-pressed="true">Per game</button><button type="button" data-p="36" aria-pressed="false">Per 36</button><button type="button" data-p="tot" aria-pressed="false">Totals</button></div>
+    </div>
     <div class="controls">
       <div class="field grow"><label class="label" for="lbFind">Filter</label><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="lbFind" placeholder="Player or team (e.g. Knicks)" autocomplete="off" spellcheck="false"></div></div>
       <div class="field"><label class="label" for="lbTeam">Team</label><select id="lbTeam"></select></div>
-      <div class="field"><label class="label" for="lbMin">Min. FGA</label>
+      <div class="field"><label class="label" for="lbMin">Min. shots</label>
         <select id="lbMin"><option value="1">Any</option><option value="100">100</option><option value="250" selected>250</option><option value="500">500</option><option value="1000">1,000</option></select></div>
     </div>
-    <div class="table-wrap lb"><table>
+    <div class="table-wrap lb"><table class="lb-t">
       <thead id="lbHead"></thead>
       <tbody id="lbBody"></tbody>
     </table></div>
+    <div class="lb-foot"><button type="button" id="lbMore" hidden>Show more</button><span class="lb-key" id="lbKey" aria-hidden="true"></span></div>
   </div>
 </section>
 
@@ -1813,7 +1832,8 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
     <div class="panel" style="display:grid;gap:14px">
       <div class="pl-head"><span class="pname" id="plName"></span><div class="chips" id="plChips"></div></div>
       <div class="pl-stats" id="plStats"></div>
-      <div class="two">
+      <!-- the shot chart and shot mix live on the Shot charts tab (the "Shot chart" chip jumps there); kept hidden so renderPlayer still runs -->
+      <div class="two" hidden>
         <div style="display:grid;gap:8px;align-content:start">
           <h3>Shot chart</h3>
           <svg class="court" id="court" viewBox="-252 -55 504 360" role="img" aria-label="Shot chart"></svg>
@@ -2011,7 +2031,7 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
   <section id="h2h" aria-labelledby="h-h2h" data-tab="h2h" hidden>
     <div class="sec-head">
       <h2 id="h-h2h" class="cast">Head to head</h2>
-      <p class="caption" id="h2hCap">Pick any two players. The chip by a number shows who's ahead in that category and by how much. Minutes, games and fouls are shown for context and don't count toward the score. Under the score: how their teams did in the games they played against each other.</p>
+      <p class="caption" id="h2hCap">Pick any two players. Minutes, games and fouls are context only; they don't count toward the score.</p>
     </div>
     <div class="panel h2h-pick">
       <div class="field"><label class="label" for="h2hA">Player 1</label><div class="ps"><div class="ps-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="h2hA" placeholder="Search players…" autocomplete="off" spellcheck="false"></div></div></div>
@@ -2206,8 +2226,10 @@ function themeDefaults() {
 }
 
 /* ---------- game replay ---------- */
-// Games arrive packed as fixed-width base-62 strings (export_dashboard.pack_game). The per-play columns are
-// unpacked once; the top-5 guesses, most of the bytes, only when a game is opened (withTop).
+// Games arrive packed (export/replay_pack.py has the formats). v1: fixed-width base-62 strings. v2 (g.v === 2): one char
+// a token, sec and pm as varint deltas, per/diff/tot derived from the tokens and pb from DATA.baseline. v3: a whole
+// season in one object (games/<season>.js.gz on the hosted site, rpSeason), its top-5 guesses range-coded (rpTop).
+// The per-play columns are unpacked once; the top-5 guesses, most of the bytes, only when a game is opened (withTop).
 const B62I = new Int8Array(128);
 [..."0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"].forEach((c, i) => { B62I[c.charCodeAt(0)] = i; });
 function unpack(s, w, scale = 1, off = 0) {
@@ -2217,11 +2239,105 @@ function unpack(s, w, scale = 1, off = 0) {
   return out;
 }
 const fives = a => Array.from({ length: a.length / 5 }, (_, i) => a.slice(5 * i, 5 * i + 5));
-const unpackGame = g => Object.assign(g, { tok: unpack(g.tok, 1), per: unpack(g.per, 1), sec: unpack(g.sec, 3, 10), diff: unpack(g.diff, 2, 1, 100),
-  pm: unpack(g.pm, 2, 1000), pb: unpack(g.pb, 2, 1000), tot: unpack(g.tot, 2) });
+const RP_I = new Int8Array(128);  // v2/v3 alphabet: printable ASCII less " \ <, in order (replay_pack.ALPHA)
+for (let c = 32, i = 0; c < 127; c++) if (c !== 34 && c !== 92 && c !== 60) RP_I[c] = i++;
+function rpVint(rd, n, signed) {  // n varints from reader rd = { s, i }: digits 0..45 end a number, 46..91 carry
+  const s = rd.s, out = new Array(n);
+  let p = rd.i;
+  for (let k = 0; k < n; k++) {
+    let v = 0, mul = 1, c;
+    while ((c = RP_I[s.charCodeAt(p++)]) >= 46) { v += (c - 46) * mul; mul *= 46; }
+    v += c * mul;
+    out[k] = signed ? (v % 2 ? -(v + 1) / 2 : v / 2) : v;
+  }
+  rd.i = p;
+  return out;
+}
+const RP_PTS = { 3: 2, 5: 3, 7: 1, 16: -2, 18: -3, 20: -1 };  // H_2PT/3PT/FT_MAKE, A_ the same
+const rpSum = (d, start) => { let v = start; return d.map(x => (v += x)); };
+function rpCols(g, tok, rdSec, rdPm) {  // v2 columns of one game, from its own strings or a season's (v3)
+  const n = tok.length, per = [], diff = [], tot = [], bl = DATA.baseline;
+  for (let i = 0, p = 0, d = 0, t = 0; i < n; i++) {  // same rules as replay_pack.derive
+    if (tok[i] === 29) p++;
+    const pts = RP_PTS[tok[i]] || 0;
+    d += pts; t += Math.abs(pts);
+    per.push(Math.max(p, 1)); diff.push(d); tot.push(t);
+  }
+  const fix = (k, v) => g[k] ? rpSum(rpVint({ s: g[k], i: 0 }, n, true), 0) : v;
+  const sec = rpSum(rpVint(rdSec, n, true), -28800).map(v => -v / 10);  // tenths of a second run down from 2880.0
+  const pm = rpSum(rpVint(rdPm, n, true), 500).map(v => v / 1000);
+  Object.assign(g, { tok, per: fix("per", per), diff: fix("diff", diff), sec, pm, tot: g.nt ? undefined : fix("tot", tot) });
+  g.pb = sec.map((s, i) => {  // the logistic baseline, as export_dashboard bakes it: sigmoid(b + w · [diff, diff/sqrt(min+1), min])
+    if (!bl) return 0.5;
+    const m = Math.max(s, 0) / 60, d = g.diff[i];
+    return 1 / (1 + Math.exp(-(bl.b + bl.w[0] * d + bl.w[1] * d / Math.sqrt(m + 1) + bl.w[2] * m)));
+  });
+  return g;
+}
+const rpTok = s => Array.from(s, c => RP_I[c.charCodeAt(0)]);
+const unpackGame = g => {
+  if (g.v === 2) {
+    if (typeof g.tok === "string") rpCols(g, rpTok(g.tok), { s: g.sec, i: 0 }, { s: g.pm, i: 0 });
+    return g;
+  }
+  return Object.assign(g, { tok: unpack(g.tok, 1), per: unpack(g.per, 1), sec: unpack(g.sec, 3, 10), diff: unpack(g.diff, 2, 1, 100),
+    pm: unpack(g.pm, 2, 1000), pb: unpack(g.pb, 2, 1000), tot: unpack(g.tot, 2) });
+};
 DATA.games.forEach(unpackGame);
+function rpSeason(S, season) {  // a v3 season object to a list of games like unpackGame's; top-5 guesses wait for rpTop
+  const rdSec = { s: S.sec, i: 0 }, rdPm = { s: S.pm, i: 0 }, st = { S, games: [], out: [] };
+  let at = 0;
+  S.games.forEach((m, k) => {
+    const n = S.len[k], g = Object.assign({ season }, m, { rpTop: st, rpK: k });
+    st.games.push(rpCols(g, rpTok(S.tok.slice(at, at + n)), rdSec, rdPm));
+    at += n;
+  });
+  return st.games;
+}
+function rpTop(st, upto) {  // replay_pack._Enc / _top_code in reverse. The models adapt game by game, so this decodes
+  if (!st.next) st.next = rpTopDecoder(st);  // every game of the season up to the one opened (~0.7 s for a whole season)
+  while (st.out.length <= upto) st.out.push(st.next(st.games[st.out.length]));
+}
+function rpTopDecoder(st) {
+  const bin = atob(st.S.top), B = new Uint8Array(bin.length), ni = st.S.ni, tabs = new Map(), TOP = 16777216, BOT = 65536;
+  for (let i = 0; i < bin.length; i++) B[i] = bin.charCodeAt(i);
+  let pos = 0, low = 0, range = 4294967295, code = 0;
+  const next = () => (pos < B.length ? B[pos++] : 0);
+  for (let i = 0; i < 4; i++) code = code * 256 + next();
+  function sym(key, n) {
+    let f = tabs.get(key);
+    if (!f) { f = new Int32Array(n + 1).fill(1); f[n] = n; tabs.set(key, f); }
+    const r = Math.floor(range / f[n]);
+    const v = Math.min(Math.floor((code - low) / r), f[n] - 1);
+    let s = 0, c = 0;
+    while (c + f[s] <= v) c += f[s++];
+    low += c * r; range = r * f[s];
+    for (;;) {
+      if (Math.floor(low / TOP) === Math.floor((low + range) / TOP)) { /* top byte settled */ }
+      else if (range < BOT) range = (BOT - low % BOT) % BOT;
+      else break;
+      code = (code % TOP) * 256 + next(); low = (low % TOP) * 256; range = (range % TOP) * 256;
+    }
+    f[s] += 24; f[n] += 24;
+    if (f[n] > 32768) { let t = 0; for (let i = 0; i < n; i++) { f[i] = (f[i] + 1) >> 1; t += f[i]; } f[n] = t; }
+    return s;
+  }
+  return g => {  // one game's [top_i, top_p]: each guess given the token and the guesses before it, each chance given the one above
+    const ti = [], tp = [];
+    for (const t of g.tok) {
+      const a = sym(8 * t, ni), b = sym(1 + 8 * (t + ni * a), ni), c = sym(2 + 8 * (t + ni * (a + ni * b)), ni);
+      const d = sym(3 + 8 * (t + ni * (a + ni * (b + ni * c))), ni), e = sym(4 + 8 * (b + ni * (c + ni * d)), ni);
+      const q = [sym(5 + 8 * (t + ni * (a + ni * b)), 101)];
+      for (let k = 1, s = q[0]; k < 5; k++) { q.push(sym(6 + 8 * (k + 8 * (q[k - 1] + 101 * (k > 1 ? Math.min(s >> 2, 25) : 0))), q[k - 1] + 1)); s += q[k]; }
+      ti.push([a, b, c, d, e]); tp.push(q.map(x => x / 100));
+    }
+    return [ti, tp];
+  };
+}
 function withTop(g) {
-  if (typeof g.top_i === "string") { g.top_i = fives(unpack(g.top_i, 1)); g.top_p = fives(unpack(g.top_p, 2, 1000)); }
+  if (g.rpTop) { rpTop(g.rpTop, g.rpK); [g.top_i, g.top_p] = g.rpTop.out[g.rpK]; delete g.rpTop; }  // g may be prepGames' copy
+  else if (typeof g.top_i === "string") { g.top_i = fives(unpack(g.top_i, 1)); g.top_p = fives(unpack(g.top_p, 2, 1000)); }
+  else if (typeof g.ti === "string") { g.top_i = fives(rpTok(g.ti)); g.top_p = fives(rpVint({ s: g.tp, i: 0 }, g.ti.length, false).map(v => v / 100)); delete g.ti; delete g.tp; }
   return g;
 }
 let gpSeq = 0;  // card ids stay unique across every season loaded
@@ -2423,13 +2539,18 @@ function gpLoad(season) {
     const tag = document.createElement("script");
     tag.src = blob || r.file;
     tag.onload = () => {
-      const list = gpArrived[season];
+      let list = gpArrived[season];
       delete gpArrived[season]; tag.remove(); if (blob) URL.revokeObjectURL(blob);
       if (!list) return reject(new Error(`${r.file} had no games in it.`));
-      list.forEach(unpackGame);
+      if (Array.isArray(list)) list.forEach(unpackGame);  // v1/v2: a list of games; v3: one object for the season
+      else list = rpSeason(list, season);
       resolve(gpStore[season] = prepGames(list));
     };
-    tag.onerror = () => { tag.remove(); reject(new Error(`Couldn't load ${r.file}: it has to sit in a games folder next to this page.`)); };
+    tag.onerror = () => {  // on the hosted site, build_site.py leaves out the oldest seasons when they don't all fit
+      tag.remove();
+      reject(new Error(/^https?:$/.test(location.protocol) ? `${season} isn't on the hosted site yet. Its replay games only work in a local build.`
+        : `Couldn't load ${r.file}: it has to sit in a games folder next to this page.`));
+    };
     document.head.append(tag);
   }));
 }
@@ -2443,12 +2564,14 @@ async function gpSetSeason(season, keepId) {
   gf.team = "";  // the teams change with the era
   $("gpKind").hidden = !games.some(g => isPlayoffId(g.id));
   if (!games.some(g => gpIsKind(g, gf.kind))) gf.kind = "";
-  $("h-board").textContent = season === GP_TEST ? "Scoreboard · held-out games" : "Scoreboard · games Tempo trained on";
+  $("h-board").textContent = season === GP_TEST || games.every(g => g.sp === "old") ? "Scoreboard · held-out games" : "Scoreboard · games Tempo trained on";
   sortGames(keepId);
   return true;
 }
 function gpInSample() {  // the note under the count: win chances on games the model trained on look better than they are
   if (gpSeason === GP_TEST) return "";
+  if (games.every(g => g.sp === "old"))  // seasons before the training data (export splits them off as "old")
+    return `Tempo never trained on ${gpSeason}: it learned from 2016-17 on, so these win chances are out-of-sample, from an earlier era of the game.`;
   const val = games.filter(g => g.sp === "val").length, n = games.length;
   return `Tempo trained on ${val ? `${(n - val).toLocaleString()} of these games and used the other ${val.toLocaleString()} to decide when to stop` : "these games"}, `
     + `so its win chances here are in-sample and look sharper than they would on new games. ${GP_TEST} is the season it never saw.`;
@@ -2937,7 +3060,8 @@ function renderPlayer(p) {
   const coach = SH.coaches.find(c => c.id === p.coachId);
   $("plName").innerHTML = `${pfAvatar(p.id, p.name)}<span>${esc(p.name)}</span>`;
   $("plChips").innerHTML = [p.team + " · " + p.season, coach ? "Coach " + coach.name : null, p.playtypes ? p.playtypes.poss.toLocaleString() + " tracked possessions" : null]
-    .filter(Boolean).map(t => `<span class="chip">${t}</span>`).join("");
+    .filter(Boolean).map(t => `<span class="chip">${t}</span>`).join("") +
+    (SC && SC.players.some(x => x.id === p.id) ? `<button type="button" class="chip pl-go" data-sc="${p.id}">Shot chart →</button>` : "");
   const fga = p.n, fgm = p.zones.reduce((s, r) => s + r[1], 0);
   const threes = p.zones.slice(6).reduce((s, r) => s + r[1], 0);
   const pts = p.zones.reduce((s, r, i) => s + r[1] * SH.zone_value[i], 0);
@@ -3620,6 +3744,12 @@ function initPlayers() {
     items: SH.coaches.map(c => ({ key: c.id, id: c.id, name: c.name, team: c.team, meta: stints(c) })) });
   selSeg($("simQ"));
   ["simDef", "simCoach", "simQ", "simM"].forEach(id => $(id).addEventListener("input", runSim));
+  $("plChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-sc]");
+    if (!b) return;
+    const i = SC.players.findIndex(x => x.id === +b.dataset.sc);
+    if (i >= 0) { showTab("shots", true); scPick(i, true); }
+  });
   $("zoneBars").addEventListener("click", e => { const b = e.target.closest("[data-z]"); if (!b) return; const z = +b.dataset.z; zoneFocus = zoneFocus === z ? null : z; renderDots(); renderZoneBars(); });
   const loadDef = id => { if (!SH.defenders.some(d => d.id === id)) return; $("simDef").value = String(id); runSim(); $("simPanel").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); };
   for (const tb of ["faced"]) {
@@ -3643,6 +3773,10 @@ const PF_TEAMS = {
   ORL: ["Orlando Magic", "#0077C0", "#C4CED4"], PHI: ["Philadelphia 76ers", "#006BB6", "#ED174C"], PHX: ["Phoenix Suns", "#1D1160", "#E56020"],
   POR: ["Portland Trail Blazers", "#E03A3E", "#202020"], SAC: ["Sacramento Kings", "#5A2D81", "#9EA2A2"], SAS: ["San Antonio Spurs", "#3A4149", "#C4CED4"],
   TOR: ["Toronto Raptors", "#CE1141", "#202020"], UTA: ["Utah Jazz", "#002B5C", "#F9A01B"], WAS: ["Washington Wizards", "#002B5C", "#E31837"],
+  // franchises as they were in the older seasons (the play-by-play keeps each season's own tricode)
+  SEA: ["Seattle SuperSonics", "#00653A", "#FFC200"], VAN: ["Vancouver Grizzlies", "#00B2A9", "#E43C40"], NJN: ["New Jersey Nets", "#002A60", "#CD1041"],
+  CHH: ["Charlotte Hornets (1988–2002)", "#00778B", "#280071"], NOH: ["New Orleans Hornets", "#0C2340", "#00778B"],
+  NOK: ["New Orleans/Oklahoma City Hornets", "#0C2340", "#00778B"], WSB: ["Washington Bullets", "#002566", "#CE1141"],
 };
 const PF_EVN = { "2PT_MAKE": "Makes a 2", "2PT_MISS": "Misses a 2", "3PT_MAKE": "Makes a 3", "3PT_MISS": "Misses a 3", FT_MAKE: "Makes a free throw",
   FT_MISS: "Misses a free throw", OREB: "Offensive rebound", DREB: "Defensive rebound", TOV: "Turnover", FOUL: "Commits a foul" };
@@ -4471,7 +4605,7 @@ const TEAM_ALIASES = {
   BKN: ["BRK"], BOS: ["Celts"], CHA: ["CHO"], CLE: ["Cavs"], DAL: ["Mavs"], DEN: ["Nugs"], GSW: ["GS", "Golden St", "Dubs"],
   LAC: ["LA", "Los Angeles Clippers", "Clips"], LAL: ["LA", "LA Lakers"], MEM: ["Grizz"], MIN: ["Wolves", "T-Wolves"],
   NOP: ["NO", "NOLA", "Pels"], NYK: ["NY", "Knickerbockers"], PHI: ["Sixers", "Philly"], PHX: ["PHO"], POR: ["Rip City"],
-  SAS: ["SA"], TOR: ["Raps"], WAS: ["WSH", "Wiz"],
+  SAS: ["SA"], TOR: ["Raps"], WAS: ["WSH", "Wiz"], SEA: ["Sonics"], VAN: ["Vancouver"], NJN: ["New Jersey"], WSB: ["Bullets"],
 };
 const TEAM_KEYS = Object.entries(PF_TEAMS).map(([t, [full]]) => [t, [t, full, ...(TEAM_ALIASES[t] || [])].map(fold)]);
 // both are asked once per player on every keystroke, so each query is folded and looked up only once
@@ -4510,7 +4644,7 @@ function playerTeam(id) {  // his team on the current roster, else the last team
 
 /* ---------- shot charts (every player) ---------- */
 const SC = DATA.shotcharts;
-const sc = { player: 0, season: "", view: "hex", kind: "type", sort: "fga", asc: false, cache: {} };
+const sc = { player: 0, season: "", view: "hex", kind: "type", sort: "pts", asc: false, cache: {} };
 const TYPE_NAMES = { LAYUP: "Layup", DUNK: "Dunk", FLOATER: "Floater", HOOK: "Hook shot", SHORT_MID: "Short mid-range (≤14 ft)", LONG_MID: "Long mid-range",
   CORNER_3: "Corner 3", ABOVE_BREAK_3: "Above-the-break 3" };
 const STYLE_NAMES = { STANDARD: "Catch / standard", PULLUP: "Pull-up", STEPBACK: "Step-back", FADEAWAY: "Fadeaway / turnaround", DRIVING: "Driving",
@@ -4678,9 +4812,21 @@ function scRows() {
     const recs = scRecs(p);
     if (!recs.length) return null;
     const o = scSum(recs);
-    return { i, name: p.n, team: o.teams.join("/"), now: p.now ? p.now.team : "", ...scStats(o) };
+    return { i, name: p.n, team: o.teams.join("/"), now: p.now ? p.now.team : "", ...scStats(o), box: lbBox(p.id) };
   }).filter(Boolean);
   return sc.cache[k];
+}
+// the player's box-score totals (DATA.profiles) over the same seasons as the shot chart, or null without profiles
+function lbBox(pid) {
+  const P = PF && PF.players[pid];
+  if (!P) return null;
+  const b = { ...pfZero(), gp: 0 };
+  for (const [key, s] of Object.entries(P.seasons)) {
+    const i = SC.seasons.indexOf(key);
+    if (i < 0 || !scWants(i)) continue;
+    for (const f in b) b[f] += s[f] || 0;
+  }
+  return b.gp ? b : null;
 }
 
 /* court geometry (tenths of a foot, hoop at 0,0; screen y is flipped so the hoop sits at the bottom) */
@@ -4865,28 +5011,95 @@ function scPanel() {
   $("scKinds").innerHTML = byType ? scPairRows(o.ty, L.o.ty, SC.types, TYPE_NAMES, s.fga) : scPairRows(o.st, L.o.st, SC.styles, STYLE_NAMES, s.fga);
 }
 
-const LB_COLS = [  // [key, header, right-aligned, what the header means]
-  ["name", "Player", 0], ["now", "Team", 0, "Current team (Basketball-Reference)"], ["g", "G", 1, "Games"], ["fga", "FGA", 1, "Field-goal attempts"],
-  ["fg", "FG%", 1], ["efg", "eFG%", 1, "Effective FG%: a three counts 1.5 makes"], ["fg3", "3P%", 1], ["rate3", "3PA rate", 1, "Share of his attempts that are threes"],
-  ["rimF", "Rim", 1, "Share of his attempts in the restricted area"], ["pps", "Pts/shot", 1, "Points per field-goal attempt"],
+/* All players: one table, three views of the same rows. Box-score numbers come from DATA.profiles over the same seasons
+   as the shot chart; shooting and shot diet from the shot chart itself. Good and bad numbers are shaded by where they rank
+   among the players listed (top and bottom fifth), so the table reads at a glance without a colour on every cell. */
+const lb = { view: PF ? "box" : "shoot", per: "g", n: 50 };
+const lbPer = (r, f) => {  // a box-score count at the chosen rate
+  const b = r.box;
+  if (!b) return null;
+  return lb.per === "tot" ? b[f] : lb.per === "36" ? (b.min ? b[f] / b.min * 36 : null) : b[f] / b.gp;
+};
+const lbN = (v, d = 1) => v == null || !isFinite(v) ? "—" : lb.per === "tot" && d === 1 ? Math.round(v).toLocaleString() : v.toFixed(d);
+const lbP = v => v == null || !isFinite(v) ? "—" : (v * 100).toFixed(1);
+const lbTS = r => r.box && (r.box.fga || r.box.fta) ? r.box.pts / (2 * (r.box.fga + .44 * r.box.fta)) : null;
+const LB_DIET = [["Rim", "rim"], ["Paint", "paint"], ["Mid", "mid"], ["Corner 3", "c3"], ["Above-break 3", "ab3"]];
+// [key, header, value, format, shade (1 high is good, -1 low is good, 0 none), what the header means]
+const LB_BOX = [
+  ["min", "MIN", r => lbPer(r, "min"), v => lbN(v, 1), 0, "Minutes"],
+  ["pts", "PTS", r => lbPer(r, "pts"), lbN, 1, "Points"],
+  ["reb", "REB", r => r.box ? lbPer(r, "oreb") + lbPer(r, "dreb") : null, lbN, 1, "Rebounds"],
+  ["ast", "AST", r => lbPer(r, "ast"), lbN, 1, "Assists"],
+  ["stl", "STL", r => lbPer(r, "stl"), lbN, 1, "Steals"],
+  ["blk", "BLK", r => lbPer(r, "blk"), lbN, 1, "Blocks"],
+  ["tov", "TOV", r => lbPer(r, "tov"), lbN, 0, "Turnovers"],
+  ["ts", "TS%", lbTS, lbP, 1, "True shooting: points per shot, counting free throws (PTS ÷ 2 × (FGA + 0.44 × FTA))"],
 ];
-const lbVal = (r, k) => ({ rimF: r.rim.freq, rimFg: r.rim.fg, midF: r.mid.freq, midFg: r.mid.fg })[k] ?? r[k];
+const LB_SHOOT = [
+  ["fga", "FGA", r => r.box ? lbPer(r, "fga") : r.fga, lbN, 0, "Field-goal attempts"],
+  ["fg", "FG%", r => r.fg, lbP, 1],
+  ["tpm", "3PM", r => r.box ? lbPer(r, "tpm") : r.m3, lbN, 1, "Threes made"],
+  ["fg3", "3P%", r => r.a3 ? r.fg3 : null, lbP, 1],
+  ["fta", "FTA", r => lbPer(r, "fta"), lbN, 1, "Free-throw attempts"],
+  ["ft", "FT%", r => r.box && r.box.fta ? r.box.ftm / r.box.fta : null, lbP, 1],
+  ["efg", "eFG%", r => r.efg, lbP, 1, "Effective FG%: a three counts as 1.5 makes"],
+  ["ts", "TS%", lbTS, lbP, 1, "True shooting: points per shot, counting free throws"],
+  ["pps", "Pts/shot", r => r.pps, v => v == null ? "—" : v.toFixed(2), 1, "Points per field-goal attempt"],
+];
+const LB_DIETC = [
+  ["shots", "Shots", r => r.fga, v => v.toLocaleString(), 0, "Field-goal attempts in the seasons picked"],
+  ["diet", "Where his shots come from", null, null, 0, "Share of his attempts from each part of the floor"],
+  ["rimFg", "Rim FG%", r => r.rim.a >= 20 ? r.rim.fg : null, lbP, 1, "FG% in the restricted area (20+ attempts)"],
+  ["midFg", "Mid FG%", r => r.mid.a >= 20 ? r.mid.fg : null, lbP, 1, "FG% from mid-range (20+ attempts)"],
+  ["c3Fg", "Corner 3%", r => r.c3.a >= 20 ? r.c3.fg : null, lbP, 1, "3P% from the corners (20+ attempts)"],
+  ["dist", "Avg ft", r => r.dist, v => v == null ? "—" : v.toFixed(1), 0, "Average shot distance in feet"],
+  ["ast", "Ast'd", r => r.ast, lbP, 0, "Share of his makes that were assisted"],
+];
+const lbCols = () => ({ box: LB_BOX, shoot: LB_SHOOT, diet: LB_DIETC })[lb.view];
+function lbDiet(r) {
+  return `<span class="lb-diet" title="${LB_DIET.map(([l, k]) => `${l} ${fmtP(r[k].freq, 0)}`).join(" · ")}">` +
+    LB_DIET.map(([, k], i) => `<i class="d${i}" style="flex-grow:${(r[k].freq || 0).toFixed(3)}"></i>`).join("") + "</span>";
+}
 function scBoard() {
-  const min = +$("lbMin").value, m = nameOrTeam($("lbFind").value), tm = $("lbTeam").value;
+  const min = +$("lbMin").value, m = nameOrTeam($("lbFind").value), tm = $("lbTeam").value, cols = lbCols();
+  if (sc.sort !== "name" && !cols.some(c => c[0] === sc.sort && c[2])) { sc.sort = { box: "pts", shoot: "ts", diet: "shots" }[lb.view]; sc.asc = false; }
   const rows = scRows().filter(r => r.fga >= min && (!tm || (tm === "-" ? !r.now : r.now === tm)) && m(r.name, r.team, r.now));
+  const val = {};  // column key -> value per row, computed once
+  for (const [k, , f] of cols) if (f) val[k] = new Map(rows.map(r => [r, f(r)]));
   const k = sc.sort, dir = sc.asc ? 1 : -1;
-  rows.sort((a, b) => {
-    const x = lbVal(a, k), y = lbVal(b, k);
-    if (typeof x === "string") return dir * (x || "~").localeCompare(y || "~");
-    return dir * ((x ?? -1) - (y ?? -1));
-  });
-  $("lbHead").innerHTML = "<tr>" + LB_COLS.map(([c, lbl, r, what]) => `<th class="sort${r ? " r" : ""}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0"${what ? ` title="${what}"` : ""} aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`).join("") + "</tr>";
-  const pc = v => fmtP(v);
-  $("lbBody").innerHTML = rows.map(r => `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0">
-    <td><b>${pvS("p:" + SC.players[r.i].id, esc(r.name))}</b></td><td>${r.now ? pvS("t:" + r.now, esc(r.now)) : `<span style="color:var(--muted)">—</span>`}</td><td class="r">${r.g}</td><td class="r">${r.fga.toLocaleString()}</td>
-    <td class="r">${pc(r.fg)}</td><td class="r">${pc(r.efg)}</td><td class="r">${r.a3 ? pc(r.fg3) : "—"}</td><td class="r">${pc(r.rate3)}</td>
-    <td class="r">${pc(r.rim.freq)}</td><td class="r">${r.pps.toFixed(2)}</td></tr>`).join("");
-  $("lbCount").textContent = `${rows.length.toLocaleString()} of ${scRows().length.toLocaleString()} players${sc.season === "all" ? "" : " · " + scSelName()}`;
+  rows.sort(k === "name" ? (a, b) => dir * a.name.localeCompare(b.name)
+    : (a, b) => { const x = val[k].get(a), y = val[k].get(b); return x == null && y == null ? b.fga - a.fga : x == null ? 1 : y == null ? -1 : dir * (x - y) || b.fga - a.fga; });
+  // shading cut-offs: the top and bottom fifth of the players listed, per column
+  const cut = {};
+  for (const [c, , f, , q] of cols) if (q) {
+    const v = rows.map(r => val[c].get(r)).filter(x => x != null && isFinite(x)).sort((a, b) => a - b);
+    if (v.length >= 10) cut[c] = [v[Math.floor(v.length * .2)], v[Math.floor(v.length * .8)], v[Math.floor(v.length * .96)]];
+  }
+  const shade = (c, q, v) => {
+    const t = cut[c];
+    if (!t || v == null) return "";
+    const [lo, hi, top] = q > 0 ? t : [t[1], t[0], null];
+    return q > 0 ? (v >= top ? " top" : v >= hi ? " hi" : v <= lo ? " lo" : "") : (v <= hi ? " hi" : v >= lo ? " lo" : "");
+  };
+  const th = (c, lbl, cls, what) => `<th class="sort${cls}${c === k ? " on" + (sc.asc ? " asc" : "") : ""}" data-k="${c}" tabindex="0"${what ? ` title="${what}"` : ""} aria-sort="${c === k ? (sc.asc ? "ascending" : "descending") : "none"}">${lbl}</th>`;
+  $("lbHead").innerHTML = `<tr><th class="lb-rk" aria-label="Rank">#</th>${th("name", "Player", " lb-pl", "")}<th class="r" title="Games played">G</th>` +
+    cols.map(([c, lbl, f, , , what]) => f ? th(c, lbl, " r", what) : `<th${what ? ` title="${what}"` : ""}>${lbl}</th>`).join("") + "</tr>";
+  const shown = rows.slice(0, lb.n);
+  $("lbBody").innerHTML = shown.map((r, n) => {
+    const p = SC.players[r.i], tc = r.now ? pfTeam(r.now)[1] : "var(--line-strong)";
+    return `<tr class="pick${r.i === sc.player ? " cur" : ""}" data-i="${r.i}" tabindex="0"><td class="lb-rk">${n + 1}</td>` +
+      `<td class="lb-pl"><span class="lb-who" style="--tc:${tc}">${pfAvatar(p.id, p.n)}<span><b>${pvS("p:" + p.id, esc(r.name))}</b>` +
+      `<small>${r.now ? pvS("t:" + r.now, esc(r.now)) : esc(r.team || "—")}${r.now && r.team && r.team !== r.now ? ` · ${esc(r.team)}` : ""}</small></span></span></td>` +
+      `<td class="r mut">${r.box ? r.box.gp : r.g}</td>` +
+      cols.map(([c, , f, fmt, q]) => !f ? `<td class="lb-dcell">${lbDiet(r)}</td>`
+        : `<td class="r${c === k ? " on" : ""}${shade(c, q, val[c].get(r))}">${fmt(val[c].get(r))}</td>`).join("") + "</tr>";
+  }).join("");
+  $("lbMore").hidden = rows.length <= lb.n;
+  $("lbMore").textContent = `Show ${Math.min(50, rows.length - lb.n)} more`;
+  $("lbPer").hidden = lb.view === "diet" || !PF;
+  $("lbKey").innerHTML = lb.view === "diet" ? LB_DIET.map(([l], i) => `<span><i class="d${i}"></i>${l}</span>`).join("")
+    : `<span><i class="hi"></i>Top fifth</span><span><i class="lo"></i>Bottom fifth</span>`;
+  $("lbCount").textContent = `${rows.length.toLocaleString()} players${rows.length > shown.length ? `, top ${shown.length} shown` : ""} · ${scSelName()}`;
 }
 
 function scPick(i, scroll) {
@@ -4938,9 +5151,20 @@ function scInit() {
   $("scCourt").addEventListener("mousemove", scHover);
   $("scCourt").addEventListener("mouseleave", () => { $("scTip").hidden = true; });
   selSeg($("lbMin")); selTeam($("lbTeam"));
-  $("lbMin").addEventListener("change", scBoard);
-  $("lbTeam").addEventListener("change", scBoard);
-  $("lbFind").addEventListener("input", scBoard);
+  $("lbMin").addEventListener("change", () => { lb.n = 50; scBoard(); });
+  $("lbTeam").addEventListener("change", () => { lb.n = 50; scBoard(); });
+  $("lbFind").addEventListener("input", () => { lb.n = 50; scBoard(); });
+  if (!PF) $("lbView").querySelector('[data-v="box"]').remove();
+  $("lbView").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === lb.view));
+  const lbSeg = (id, key, attr) => $(id).addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    lb[key] = b.dataset[attr];
+    $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    scBoard();
+  });
+  lbSeg("lbView", "view", "v"); lbSeg("lbPer", "per", "p");
+  $("lbMore").addEventListener("click", () => { lb.n += 50; scBoard(); });
   const sortBy = th => { const k = th.dataset.k; if (sc.sort === k) sc.asc = !sc.asc; else { sc.sort = k; sc.asc = k === "name" || k === "team"; } scBoard(); };
   $("lbHead").addEventListener("click", e => { const th = e.target.closest("th"); if (th) sortBy(th); });
   $("lbHead").addEventListener("keydown", e => { const th = e.target.closest("th"); if (th && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); sortBy(th); } });
@@ -5043,6 +5267,7 @@ function srcInit() {
       q("How does it read a game?", `<p>Every play becomes a token. <code>H_</code> is the home team and <code>A_</code> the away team. A game opens like this:</p>
         <div class="tx-toks">${toks.map(t => `<code class="${t.startsWith("H_") ? "h" : ""}">${t}</code>`).join("<span>→</span>")}<span>→</span><code class="next">?</code></div>
         <p>Alongside each token it gets the clock, the score margin, the quarter and how big the lead is for the time left${elo ? ", plus how much stronger the home team was going in (an Elo rating built only from earlier games)" : ""}. The transformer's attention lets any play look back at any earlier one, so it can pick up runs, foul trouble and who keeps getting second chances.</p>`),
+    ].join("") + `<details class="tx-wide tx-more"><summary>How it learned, the baseline, and how it's graded</summary><div class="tx-grid">` + [
       q("How did it learn?", `<p>It was shown ${n(sp.train || 0)} games and asked over and over to predict the next play and the final result, adjusting itself a little after every mistake. Another ${n(sp.val || 0)} games were held back to decide when to stop, before it started memorising instead of learning.</p>
         <p>The ${n(sp.test || DATA.games.length)} games in Game replay are from a season it <b>never saw</b> during training. Every score on this page comes from those games, so it's an honest test, not a recap of what it memorised.</p>`),
       q("What is the baseline?", `<p>The baseline is a <b>logistic regression on the scoreboard</b>: three numbers, the score margin, the minutes left, and the margin scaled by the time left. It knows nothing about who has the ball, which plays happened or how the game got here. It's the dashed line in Game replay.</p>
@@ -5057,7 +5282,7 @@ function srcInit() {
         <li><b>…it only guesses the next play right ${(M.acc * 100).toFixed(0)}% of the time?</b> Basketball is noisy, and there are 31 options; a random guess is right about 3% of the time. Its perplexity of ${M.ppl.toFixed(2)} means it's usually torn between about ${Math.round(M.ppl)} plausible next plays, like a miss, a defensive rebound or a foul, rather than lost among 31.</li>
         <li><b>…a season is marked "held out" or "validation"?</b> Held out: Tempo never saw those games, so its numbers there are a fair test. Validation: it saw them only to decide when to stop training, never to learn from.</li>
       </ul>`, true),
-    ].join("");
+    ].join("") + "</div></details>";
   }
   const status = (ok, yes, no) => `<span class="tag ${ok ? "status-ok" : "status-no"}">${ok ? "✓ " + yes : "○ " + no}</span>`;
   const nShots = S.n_shots ? S.n_shots.toLocaleString() : "every";
@@ -5543,29 +5768,6 @@ function homeInit() {
     $("hmLeadHead").hidden = $("hmLeaders").hidden = !rows.length;
   }
 
-  // one photo card per tab
-  const TOUR = {
-    shots: ["Every shot, hot and cold, against the league.", "card-shots"],
-    matchups: ["Who guards whom, and what it does to the scorer.", "card-matchups"],
-    players: ["Tendencies and the matchup simulator.", "card-players"],
-    defense: ["The league's best defenders, built into a wall.", "card-defense"],
-    coaches: ["Every head coach: rings, awards, and how his teams play.", null, () => CO ? CO.coaches.filter(c => c.now && c.photos[0] && c.photos[0].includes("cdn.nba.com"))
-      .sort((a, b) => b.titles - a.titles || (b.career.w || 0) - (a.career.w || 0)).slice(0, 3).map(c => coSmall(c.photos[0])) : []],
-    fantasy: ["Fantasy points per game, by season and team.", null, () => {
-      if (!PF || !PF.seasons.length) return [];
-      const s = PF.seasons.filter(k => !isPO(k)).pop() || PF.seasons[PF.seasons.length - 1];
-      return pfRanks(s).slice(0, 3).map(id => pfHead(id, "260x190"));
-    }],
-    h2h: ["Any two players, every major stat, side by side.", null, () => (h2h.a ? [pfHead(h2h.a, "260x190"), pfHead(h2h.b, "260x190")] : [])],
-    games: ["Scrub any game and watch the odds swing.", "card-games"],
-    model: ["How good the predictions are, plus a what-if.", "card-model"],
-    sources: ["Where the numbers come from, and the name.", "card-sources"],
-  };
-  $("hmTour").innerHTML = Object.entries(TOUR).filter(([t]) => tabHasContent(t)).map(([t, [line, photo, faces]]) => {
-    const f = faces ? faces() : [];  // no licensed photo for these: headshots of the people in them instead
-    return `<button type="button" class="hm-card${f.length ? " faces" : ""}" data-go="${t}"${photo ? ` data-photo="${photo}"` : ""}>${f.length ? `<span class="hm-faces" aria-hidden="true">${f.map(u => `<img src="${u}" alt="" loading="lazy" onerror="this.remove()">`).join("")}</span>` : ""}<b class="cast">${esc(TAB_NAMES[t])}</b><span>${line} <i>→</i></span></button>`;
-  }).join("");
-  setPhotos($("hmTour"));
 
   $("hmGames").addEventListener("click", e => {
     const b = e.target.closest(".hm-game");
