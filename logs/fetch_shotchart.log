@@ -1,0 +1,5 @@
+/Users/kevintang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+    attempt 1 failed: Expecting value: line 1 column 1 (char 0)
+    attempt 2 failed: Expecting value: line 1 column 1 (char 0)
+  1996-97 Regular Season: league-wide request failed, going team by team

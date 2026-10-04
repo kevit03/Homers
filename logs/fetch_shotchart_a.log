@@ -1,0 +1,16 @@
+/Users/kevintang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+1996-97: 199,539 shots in 1261 games
+1997-98: 200,086 shots in 1260 games
+1998-99: 123,234 shots in 791 games
+1999-00: 206,790 shots in 1264 games
+/Users/kevintang/Downloads/nba-gpt/fetch/fetch_shotchart.py:74: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  return pd.concat(frames, ignore_index=True)
+2000-01: 203,058 shots in 1260 games
+/Users/kevintang/Downloads/nba-gpt/fetch/fetch_shotchart.py:74: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  return pd.concat(frames, ignore_index=True)
+2001-02: 204,608 shots in 1260 games
+2002-03: 206,114 shots in 1277 games
+2003-04: 202,420 shots in 1271 games
+2004-05: 210,915 shots in 1314 games
+2005-06: 208,085 shots in 1319 games

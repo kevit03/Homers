@@ -1,0 +1,12 @@
+/Users/kevintang/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+2006-07: 208,308 shots in 1309 games
+2007-08: 213,855 shots in 1316 games
+2008-09: 212,197 shots in 1315 games
+2009-10: 213,747 shots in 1312 games
+2010-11: 212,331 shots in 1311 games
+2011-12: 174,465 shots in 1074 games
+2012-13: 215,105 shots in 1314 games
+2013-14: 218,411 shots in 1319 games
+2014-15: 219,265 shots in 1311 games
+2015-16: 222,344 shots in 1316 games

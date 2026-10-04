@@ -1,0 +1,48 @@
+reusing 2,253,792 shots (10 seasons) from data/processed/shots.parquet
+  1998-99: 791 games, 123,234 shots, shot chart yes
+  1996-97: 1261 games, 199,539 shots, shot chart yes
+  1997-98: 1260 games, 200,086 shots, shot chart yes
+  2001-02: 1260 games, 204,608 shots, shot chart yes
+  1999-00: 1264 games, 206,790 shots, shot chart yes
+  2000-01: 1260 games, 203,058 shots, shot chart yes
+  2002-03: 1277 games, 206,114 shots, shot chart yes
+  2003-04: 1271 games, 202,420 shots, shot chart yes
+  2004-05: 1314 games, 210,915 shots, shot chart yes
+  2005-06: 1319 games, 208,085 shots, shot chart yes
+  2006-07: 1309 games, 208,308 shots, shot chart yes
+  2007-08: 1316 games, 213,855 shots, shot chart yes
+  2008-09: 1315 games, 212,197 shots, shot chart yes
+  2011-12: 1074 games, 174,465 shots, shot chart yes
+  2009-10: 1312 games, 213,747 shots, shot chart yes
+  2010-11: 1311 games, 212,331 shots, shot chart yes
+  2012-13: 1314 games, 215,105 shots, shot chart yes
+  2013-14: 1319 games, 218,411 shots, shot chart yes
+  2014-15: 1311 games, 219,265 shots, shot chart yes
+  2015-16: 1316 games, 222,344 shots, shot chart yes
+6,328,669 shots from 37986 games (0 skipped)
+full lineups on 98.7% of shots | shooter in own lineup 100.0%
+defender estimated on 32.0% of shots | coach known on 34.6%
+{'LAYUP': 0.265, 'ABOVE_BREAK_3': 0.204, 'LONG_MID': 0.199, 'SHORT_MID': 0.149, 'CORNER_3': 0.069, 'DUNK': 0.052, 'HOOK': 0.032, 'FLOATER': 0.031}
+{'STANDARD': 0.674, 'DRIVING': 0.116, 'PULLUP': 0.052, 'FADEAWAY': 0.042, 'RUNNING': 0.041, 'PUTBACK': 0.031, 'STEPBACK': 0.019, 'CUTTING': 0.015, 'ALLEY_OOP': 0.009}
+          shots  shotchart_match  coord_imputed
+season                                         
+1996-97  199539           0.9995         0.0002
+1997-98  200086           1.0000         0.0000
+1998-99  123234           1.0000         0.0000
+1999-00  206790           1.0000         0.0000
+2000-01  203058           1.0000         0.0000
+2001-02  204608           1.0000         0.0000
+2002-03  206114           1.0000         0.0000
+2003-04  202420           1.0000         0.0000
+2004-05  210915           1.0000         0.0000
+2005-06  208085           1.0000         0.0000
+2006-07  208308           1.0000         0.0000
+2007-08  213855           1.0000         0.0000
+2008-09  212197           1.0000         0.0000
+2009-10  213747           1.0000         0.0000
+2010-11  212331           1.0000         0.0000
+2011-12  174465           1.0000         0.0000
+2012-13  215105           1.0000         0.0000
+2013-14  218411           1.0000         0.0000
+2014-15  219265           1.0000         0.0000
+2015-16  222344           1.0000         0.0000
