@@ -43,6 +43,9 @@ def prep(df):
     df["teamId"] = pd.to_numeric(df["teamId"], errors="coerce").fillna(0).astype(int)
     df["period"] = pd.to_numeric(df["period"], errors="coerce").fillna(1).astype(int)
     df["teamTricode"] = df["teamTricode"].fillna("").astype(str).replace("None", "")
+    for col in ("actionType", "subType", "location"):  # 11 games of 2000-01 pad these with spaces
+        if col in df:
+            df[col] = df[col].fillna("").astype(str).str.strip()
     return df
 
 
@@ -222,7 +225,16 @@ def process_game(df, ctx=None):
             "team": team, "short": short, "full": full}
 
 
-def load_cache(raw, ctx, cache_path):
+def _process_file(job):
+    """Worker for load_cache: (file, context) -> (game ID, game or None, error or None)."""
+    f, ctx = job
+    try:
+        return f.stem, process_game(pd.read_parquet(f), ctx), None
+    except Exception as e:  # malformed game: skip, but keep going
+        return f.stem, None, f"{f.name}: {e}"
+
+
+def load_cache(raw, ctx, cache_path, workers=1):
     cache_path = Path(cache_path)
     cache = {}
     if cache_path.exists():
@@ -231,16 +243,23 @@ def load_cache(raw, ctx, cache_path):
             cache = c["games"]
     files = sorted(Path(raw).rglob("*.parquet"))
     todo = [f for f in files if f.stem not in cache]
-    for k, f in enumerate(todo):
-        try:
-            g = process_game(pd.read_parquet(f), ctx)
-        except Exception as e:  # malformed game: skip, but keep going
-            print(f"  profiles: skip {f.name}: {e}")  # not cached, so it's retried next time
+    jobs = [(f, ctx) for f in todo]
+    if workers > 1 and len(todo) > 100:
+        from concurrent.futures import ProcessPoolExecutor
+        ex = ProcessPoolExecutor(workers)
+        results = ex.map(_process_file, jobs, chunksize=32)
+    else:
+        ex, results = None, map(_process_file, jobs)
+    for k, (gid, g, err) in enumerate(results):
+        if err:
+            print(f"  profiles: skip {err}")  # not cached, so it's retried next time
             continue
         if g is not None:
-            cache[f.stem] = g
+            cache[gid] = g
         if k % 500 == 0:
-            print(f"  profiles: {k}/{len(todo)} new games")
+            print(f"  profiles: {k}/{len(todo)} new games", flush=True)
+    if ex is not None:
+        ex.shutdown()
     if todo:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         pickle.dump({"version": CACHE_VERSION, "games": cache}, open(cache_path, "wb"))
@@ -270,10 +289,11 @@ def load_rosters(ctx):
     return bio
 
 
-def build_profiles_payload(raw="data/raw", games=(), context="data/context", cache="data/processed/profiles_cache.pkl"):
+def build_profiles_payload(raw="data/raw", games=(), context="data/context", cache="data/processed/profiles_cache.pkl",
+                           workers=1):
     """games: the dashboard's game dicts (id + tok), for per-play actors and lineups."""
     ctx = Path(context) if context and Path(context).exists() else None
-    per_game = load_cache(raw, ctx, cache)
+    per_game = load_cache(raw, ctx, cache, workers)
     if not per_game:
         return None
     bio = load_rosters(ctx)
@@ -382,8 +402,9 @@ def main():
     ap.add_argument("--raw", default="data/raw")
     ap.add_argument("--context", default="data/context")
     ap.add_argument("--cache", default="data/processed/profiles_cache.pkl")
+    ap.add_argument("--workers", type=int, default=1, help="parallel processes for games not in the cache yet")
     args = ap.parse_args()
-    p = build_profiles_payload(args.raw, (), args.context, args.cache)
+    p = build_profiles_payload(args.raw, (), args.context, args.cache, args.workers)
     if p is None:
         print("no games with player data"); return
     rows, latest = [], [k for k in p["seasons"] if " " not in k][-1]  # latest regular season, not "... Playoffs"

@@ -25,6 +25,7 @@ from models.model import Config, Tempo, load_data, make_features
 
 ROOT = Path(__file__).resolve().parents[1]
 TOP_K = 5
+FIRST_TRAIN_SEASON = "2016-17"  # runs/base trained on 2016-17 on; replay labels earlier seasons split "old"
 
 
 @torch.no_grad()
@@ -63,6 +64,9 @@ def write_replay_seasons(model, clf, d, split, out_dir, raw):
     for old in gdir.glob("*.js"):  # a season dropped from the data shouldn't linger
         old.unlink()
     which = {i: name for name, idx in d["splits"].items() if name != split for i in idx}
+    for i, name in which.items():  # Tempo never trained before 2016-17 (games_30.pkl already says "old")
+        if name == "train" and d["games"][i]["season"] < FIRST_TRAIN_SEASON:
+            which[i] = "old"
     by_season = {}
     for i in sorted(which, key=lambda i: (d["games"][i]["season"], d["games"][i]["gameId"])):
         by_season.setdefault(d["games"][i]["season"], []).append(i)
@@ -92,7 +96,8 @@ B62 = np.frombuffer(b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv
 
 
 def b62(values, width, scale=1, offset=0):
-    """Fixed-width base-62 string of round(v * scale) + offset; the page reverses it with unpack()."""
+    """Fixed-width base-62 string of round(v * scale) + offset; the page reverses it with unpack(). This was the v1
+    replay format; pack_game no longer uses it, but the page still reads v1 games (older games/*.js) and tests compare to it."""
     v = np.rint(np.asarray(values, dtype=np.float64).ravel() * scale).astype(np.int64) + offset
     assert v.min(initial=0) >= 0 and v.max(initial=0) < 62 ** width, (v.min(), v.max(), width)
     digits = np.stack([v // 62 ** (width - 1 - j) % 62 for j in range(width)], axis=1)
@@ -100,11 +105,10 @@ def b62(values, width, scale=1, offset=0):
 
 
 def pack_game(g):
-    """A replay game as base-62 strings: about a third the size of JSON lists (games were 37 of the page's 52 MB)."""
-    return {"id": g["id"], "season": g["season"], "home_win": g["home_win"],
-            "tok": b62(g["tok"], 1), "per": b62(g["per"], 1), "sec": b62(g["sec"], 3, 10), "diff": b62(g["diff"], 2, 1, 100),
-            "pm": b62(g["pm"], 2, 1000), "pb": b62(g["pb"], 2, 1000), "top_i": b62(g["top_i"], 1), "top_p": b62(g["top_p"], 2, 1000),
-            **({"tot": b62(g["tot"], 2)} if g.get("tot") is not None else {})}
+    """A replay game in the v2 format of export/replay_pack.py: about half the gzipped size of the old base-62 one
+    (b62 above, which the page still reads). pb is dropped (the page recomputes it from DATA.baseline), top_p kept to 1/100."""
+    from export.replay_pack import pack_game_v2
+    return pack_game_v2(g)
 
 
 def main():
@@ -116,6 +120,9 @@ def main():
     ap.add_argument("--template", default=str(ROOT / "dashboard_template.html"))
     ap.add_argument("--out", default="dashboard.html")
     ap.add_argument("--shots", default="data/processed/shots.parquet")
+    ap.add_argument("--shotcharts", default=None, help="shots parquet for the Shot charts tab and the per-season shot "
+                    "counts (default: data/processed/shots_30.parquet if it exists, else --shots); ShotNet and the "
+                    "coach/matchup exports keep --shots, whose models only know 2016-17 on")
     ap.add_argument("--shot_run", default="runs/shots", help="shot model run dir; skipped if missing")
     ap.add_argument("--context", default="data/context")
     ap.add_argument("--raw", default="data/raw", help="raw play-by-play for player profiles; skipped for synthetic data")
@@ -210,9 +217,11 @@ def main():
         if payload["coachPlays"]:
             print(f"added play-type results (scored, FG, turnovers) for {len(payload['coachPlays']['units'])} team seasons")
     payload["shotcharts"] = None
-    if Path(args.shots).exists():
+    if args.shotcharts is None:
+        args.shotcharts = "data/processed/shots_30.parquet" if Path("data/processed/shots_30.parquet").exists() else args.shots
+    if Path(args.shotcharts).exists():
         from export.export_shotcharts import build_shotcharts_payload
-        payload["shotcharts"] = build_shotcharts_payload(args.shots, args.rosters)
+        payload["shotcharts"] = build_shotcharts_payload(args.shotcharts, args.rosters)
         sc = payload["shotcharts"]
         print(f"added shot charts for {sum(1 for p in sc['players'] if p['p'])} players ({', '.join(sc['seasons'])}), "
               f"current teams: {sc['roster']['season'] or 'not fetched'}")
@@ -239,7 +248,7 @@ def main():
     if payload["assets"] and payload["coaches"]:  # Wikipedia photos of coaches NBA.com and Basketball-Reference have none of
         payload["assets"]["credits"] += [{**c, "use": "Coaches", "title": f"{c['title']} (coach photo)"} for c in payload["coaches"]["credits"]]
     from export.export_sources import build_seasons_payload, build_sources_payload
-    payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shots, d)
+    payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shotcharts, d)  # shot counts for all 30 seasons
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
                                                synthetic=payload["meta"]["synthetic"])
 

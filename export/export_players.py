@@ -1,4 +1,4 @@
-"""Player / defender / coach data for the dashboard, including shot-model weights for in-browser inference.
+"""Player / defender / coach data for the dashboard, from the shot model and its training shots.
 
 Used by export/export_dashboard.py when --shot_run is given.
 """
@@ -62,7 +62,7 @@ def effect(pz, pps, pz0, pps0):
 
 
 @torch.no_grad()
-def build_players_payload(shots_path, run_dir, context="data/context", n_players=250, max_dots=350, seed=0):
+def build_players_payload(shots_path, run_dir, context="data/context", n_players=250, seed=0):
     run_dir = Path(run_dir)
     meta = json.load(open(run_dir / "meta.json"))
     shots = pd.read_parquet(shots_path)
@@ -162,9 +162,6 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
     for pid in top:
         ps = shots[shots["shooterId"] == pid]
         last = ps.sort_values(["season", "gameId"]).iloc[-1]
-        enc = encode(ps.head(2000), vocabs, prof_off, prof_def)
-        mates_vec = model.masked_mean(model.off_emb, enc["mates"]).mean(0)
-        dots = ps.sample(min(max_dots, len(ps)), random_state=seed)
         faced = (ps[ps["defenderId"] > 0].groupby("defenderId")
                  .agg(n=("made", "size"), fgm=("made", "sum")).query("n >= 12").sort_values("n", ascending=False).head(12))
         players.append({
@@ -172,10 +169,7 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
             "coachId": int(last["offCoachId"]), "season": last["season"], "n": int(len(ps)),
             "zones": zone_table(ps), "styles": style_table(ps),
             "assisted": round(float(ps["assisted"][ps["made"] == 1].mean()), 3) if ps["made"].sum() else 0,
-            "dots": [[int(x), int(y), int(m), ZONES.index(z)] for x, y, m, z in zip(dots["x"], dots["y"], dots["made"], dots["zone"])],
             "faced": [{"id": int(i), "name": name(i), "n": int(row.n), "fg": round(float(row.fgm / row.n), 3)} for i, row in faced.iterrows()],
-            "mates": r(mates_vec.numpy()),
-            "prof_off": r(prof_off.get((last["season"], int(last["offTeamId"])), np.zeros(len(PLAY_TYPES)))),
             "playtypes": pt_player.get(pid),
         })
 
@@ -186,12 +180,7 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
         for p in players:
             p["track"] = track["units"].get(p["id"])
 
-    sd = model.state_dict()
-    W = lambda k: r(sd[k].numpy())
-    weights = {k: W(k) for k in ("off_emb.weight", "def_emb.weight", "coach_off_emb.weight", "coach_def_emb.weight",
-                                 "prior_zone", "prior_make", "mlp.0.weight", "mlp.0.bias", "mlp.3.weight", "mlp.3.bias",
-                                 "zone_head.weight", "zone_head.bias", "style_head.weight", "style_head.bias",
-                                 "make_head.weight", "make_head.bias")}
+    # the page no longer runs ShotNet itself (the matchup simulator was removed), so no weights or embedding averages ship
     return {
         "zones": ZONES, "styles": STYLES, "play_types": PLAY_TYPES, "zone_value": ZONE_VALUE.tolist(),
         "league": {"zones": zone_table(shots), "styles": style_table(shots), "playtypes": league_pt},
@@ -199,8 +188,4 @@ def build_players_payload(shots_path, run_dir, context="data/context", n_players
         "n_shots": int(len(shots)), "defender_coverage": round(float((shots["defenderId"] > 0).mean()), 3),
         "players": players, "defenders": defenders, "coaches": coach_rows,
         "track": {"league": track["league"], "seasons": track["seasons"], **labels()} if track else None,
-        "avg": {"def": r(def_mean.numpy()), "coach_off": r(coff_mean.numpy()), "coach_def": r(cdef_mean.numpy()),
-                "defs": r(model.masked_mean(model.def_emb, eref["defs"]).mean(0).numpy()),
-                "conf": round(float(shots.loc[shots["defenderId"] > 0, "defenderConf"].mean()), 3) if (shots["defenderId"] > 0).any() else 0.0},
-        "weights": weights,
     }

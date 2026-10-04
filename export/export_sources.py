@@ -93,7 +93,7 @@ def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", 
         for split, idx in data["splits"].items():
             for i in idx:
                 s = split_per.setdefault(data["games"][i]["season"], {"train": 0, "val": 0, "test": 0})
-                s[split] += 1
+                s[split] = s.get(split, 0) + 1  # games_30.pkl adds "old": seasons Tempo never trained on
     out = []
     for d in sorted(p for p in root.iterdir() if p.is_dir()):
         kinds = pd.Series([game_type(f.stem) for f in d.glob("*.parquet")], dtype=object).value_counts()

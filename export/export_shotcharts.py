@@ -36,6 +36,9 @@ LOC_ZONES = ["Restricted area", "Paint (non-RA)", "Mid-range left", "Mid-range c
              "Corner 3 left", "Corner 3 right", "Above the break 3 left", "Above the break 3 center",
              "Above the break 3 right", "Heave (40+ ft)"]
 HEAVE = len(LOC_ZONES) - 1
+# Tricodes in the 1996-2016 play-by-play that today's team list doesn't have (team IDs carried over on relocation).
+HISTORIC_TEAMS = {"CHH": "Charlotte Hornets", "NJN": "New Jersey Nets", "NOH": "New Orleans Hornets",
+                  "NOK": "New Orleans/Oklahoma City Hornets", "SEA": "Seattle SuperSonics", "VAN": "Vancouver Grizzlies"}
 HEX_R = 12.0        # hex radius (center to corner), 1.2 ft
 CHART_TOP = 370.0   # the chart shows the court up to 37 ft from the hoop; farther shots are heaves
 
@@ -51,6 +54,13 @@ def loc_zone(x, y, is3):
     three = np.where(corner, np.where(x < 0, 5, 6), 7 + side)
     z = np.where(is3, three, two)
     return np.where((np.hypot(x, y) >= 400) | (y > CHART_TOP), HEAVE, z)
+
+
+# Shots with no court location at all (coord_imputed in shots_30.parquet: about 1 in 3 before 2010-11 that the
+# NBA.com shot chart doesn't have either) still count toward FGA, so they get the location zone their shot type
+# implies, but stay off the hex chart.
+IMPUTED_LZ = {"LAYUP": 0, "DUNK": 0, "FLOATER": 1, "HOOK": 1, "SHORT_MID": 1, "LONG_MID": 3,
+              "CORNER_3": 5, "ABOVE_BREAK_3": 8}
 
 
 def hex_axial(x, y, R=HEX_R):
@@ -102,18 +112,24 @@ def bio(row):
 
 
 def build_shotcharts_payload(shots_path, rosters_path="data/context/bbref_rosters.parquet"):
-    shots = pd.read_parquet(shots_path, columns=["gameId", "season", "shooterId", "shooter", "offTeam", "zone", "style",
-                                                 "made", "assisted", "is3", "dist", "x", "y"])
+    cols = ["gameId", "season", "shooterId", "shooter", "offTeam", "zone", "style", "made", "assisted", "is3", "dist", "x", "y"]
+    import pyarrow.parquet as pq
+    has_imp = "coord_imputed" in pq.ParquetFile(shots_path).schema.names
+    shots = pd.read_parquet(shots_path, columns=cols + (["coord_imputed"] if has_imp else []))
+    if not has_imp:
+        shots["coord_imputed"] = 0
     shots = shots[shots["shooterId"] > 0].reset_index(drop=True)
     shots["key"] = [season_key(s, g) for s, g in zip(shots["season"], shots["gameId"])]
     seasons = sorted(shots["key"].unique().tolist())
     shots["s"] = shots["key"].map({s: i for i, s in enumerate(seasons)})
     shots["lz"] = loc_zone(shots["x"], shots["y"], shots["is3"] == 1)
+    imp = shots["coord_imputed"].to_numpy() == 1
+    shots.loc[imp, "lz"] = shots.loc[imp, "zone"].map(IMPUTED_LZ).fillna(3).astype(int)
     shots["ty"] = shots["zone"].map({z: i for i, z in enumerate(ZONES)})
     shots["st"] = shots["style"].map({s: i for i, s in enumerate(STYLES)})
 
     # hex grid: only hexes that someone shot from, in the charted part of the court
-    on_chart = shots["lz"] != HEAVE
+    on_chart = (shots["lz"] != HEAVE) & ~imp
     q, r = hex_axial(shots["x"], shots["y"])
     keys = pd.Series(list(zip(q, r)))
     hexes = sorted(set(keys[on_chart.to_numpy()]))
@@ -174,7 +190,7 @@ def build_shotcharts_payload(shots_path, rosters_path="data/context/bbref_roster
     for _, r in roster.iterrows():  # rostered players with no shots yet (rookies, or not in these seasons)
         if pd.isna(r["personId"]) or int(r["personId"]) not in matched:
             players.append({"id": int(r["personId"]) if pd.notna(r["personId"]) else 0, "n": r["player"], "p": [], "now": bio(r)})
-    team_names = {t["abbreviation"]: t["full_name"] for t in nba_teams.get_teams()}
+    team_names = {**HISTORIC_TEAMS, **{t["abbreviation"]: t["full_name"] for t in nba_teams.get_teams()}}
 
     return {
         "seasons": seasons, "loc_zones": LOC_ZONES, "types": ZONES, "styles": STYLES,
