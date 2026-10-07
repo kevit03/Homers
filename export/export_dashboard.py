@@ -234,9 +234,15 @@ def main():
     payload["defSeasons"] = None
     if not payload["meta"]["synthetic"] and (Path(args.context) / "matchups").exists():
         from export.export_defense_seasons import build_defense_seasons_payload
-        payload["defSeasons"] = build_defense_seasons_payload(f"{args.context}/matchups", f"{args.context}/tracking.parquet")
+        payload["defSeasons"] = build_defense_seasons_payload(f"{args.context}/matchups", f"{args.context}/tracking.parquet", args.shots)
         if payload["defSeasons"]:
             print(f"added season-by-season defense for {len(payload['defSeasons']['players'])} players")
+    payload["defImpact"] = None
+    if not payload["meta"]["synthetic"] and Path(args.shots).exists():
+        from export.export_def_impact import build_def_impact_payload
+        payload["defImpact"] = build_def_impact_payload(args.shots)
+        if payload["defImpact"]:
+            print(f"added defensive impact (adjusted plus-minus on opponent shots) for {len(payload['defImpact']['players'])} players")
     payload["replay"] = None
     if args.all_seasons and not payload["meta"]["synthetic"]:
         print("writing replay games for the other seasons")
@@ -250,7 +256,7 @@ def main():
     from export.export_sources import build_seasons_payload, build_sources_payload
     payload["seasons"] = None if payload["meta"]["synthetic"] else build_seasons_payload(args.raw, args.shotcharts, d)  # shot counts for all 30 seasons
     payload["sources"] = build_sources_payload(args.raw, args.context, args.shots, args.ckpt, args.shot_run, args.baseline,
-                                               synthetic=payload["meta"]["synthetic"])
+                                               synthetic=payload["meta"]["synthetic"], shotcharts=args.shotcharts)
 
     html = Path(args.template).read_text()
     html = html.replace("/*__DATA__*/null", json.dumps(payload, separators=(",", ":")).replace("</", "<\\/"))

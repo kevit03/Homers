@@ -46,20 +46,32 @@ def _cov_by_type(root):
 
 
 def _finals(season_dir):
-    """Champion, runner-up and series score from the Finals games (playoff IDs with round 4: 004YY004SG)."""
-    wins, ids = {}, {}
-    for f in sorted(Path(season_dir).glob("004*.parquet")):
-        if f.stem[7] != "4":
-            continue
+    """Champion, runner-up and series score from the Finals games.
+
+    Since 2001-02 playoff IDs carry the round (004YY004SG, round 4 = the Finals). Before that they just count up
+    (0049600001..0049600088), so the Finals are the games between the two teams in the last playoff game.
+    """
+    files = sorted(Path(season_dir).glob("004*.parquet"))
+    finals = [f for f in files if f.stem[7] == "4" and f.stem[8] == "0"]
+    old_ids = not finals and files and all(f.stem[7] == "0" for f in files)
+    if old_ids:
+        finals = files
+    games, ids = [], {}
+    for f in finals:
         g = pd.read_parquet(f, columns=["location", "teamId", "teamTricode", "scoreHome", "scoreAway"])
         side = g[g["location"].isin(["h", "v"]) & (g["teamTricode"].fillna("").astype(str).str.len() == 3)].drop_duplicates("location")
         tri = dict(zip(side["location"], side["teamTricode"]))
         ids.update(zip(side["teamTricode"], pd.to_numeric(side["teamId"], errors="coerce").fillna(0).astype(int)))
         h, a = (pd.to_numeric(g[c], errors="coerce").ffill().iloc[-1] for c in ("scoreHome", "scoreAway"))
         if set(tri) == {"h", "v"} and h != a:
-            for t in tri.values():
-                wins.setdefault(t, 0)
-            wins[tri["h" if h > a else "v"]] += 1
+            games.append((frozenset(tri.values()), tri["h" if h > a else "v"]))
+    if old_ids and games:
+        games = [x for x in games if x[0] == games[-1][0]]
+    wins = {}
+    for pair, winner in games:
+        for t in pair:
+            wins.setdefault(t, 0)
+        wins[winner] += 1
     if len(wins) != 2:
         return None
     (champ, w), (opp, l) = sorted(wins.items(), key=lambda kv: -kv[1])
@@ -105,7 +117,7 @@ def build_seasons_payload(raw="data/raw", shots="data/processed/shots.parquet", 
 
 
 def build_sources_payload(raw="data/raw", context="data/context", shots="data/processed/shots.parquet",
-                          ckpt=None, shot_run="runs/shots", baseline="runs/baseline.joblib", synthetic=False):
+                          ckpt=None, shot_run="runs/shots", baseline="runs/baseline.joblib", synthetic=False, shotcharts=None):
     ctx = Path(context)
     pbp = _season_counts(raw)
     from fetch.fetch_history import load_games
@@ -120,7 +132,8 @@ def build_sources_payload(raw="data/raw", context="data/context", shots="data/pr
     roster_seasons = seasons_of(ctx / "rosters.parquet")
     bbref = ctx / "bbref_rosters.parquet"
     bb = pd.read_parquet(bbref) if bbref.exists() else None
-    n_shots = len(pd.read_parquet(shots, columns=["made"])) if Path(shots).exists() else 0
+    counted = shotcharts if shotcharts and Path(shotcharts).exists() else shots  # every charted shot, all seasons
+    n_shots = len(pd.read_parquet(counted, columns=["made"])) if Path(counted).exists() else 0
     tr_seasons = seasons_of(ctx / "tracking.parquet")
     acc_seasons = seasons_of(ctx / "bbref_players.parquet")
     n_acc = len(json.loads((ctx / "bbref_accolades.json").read_text())) if (ctx / "bbref_accolades.json").exists() else 0
