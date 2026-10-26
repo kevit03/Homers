@@ -207,13 +207,24 @@ def season_index(s):
     return int(s[:4])
 
 
-def rolling_ratings(lu, order_ids, seasons_of, ridge=RIDGE, block=BLOCK):
-    """{gameId: ratings fitted on earlier games only}, refit every `block` games (warm-up seasons included)."""
-    Gr, H, A, M, PH, PA = stint_arrays(lu, order_ids)
-    sidx = np.array([season_index(seasons_of[order_ids[g]]) for g in Gr]) if len(Gr) else np.array([])
+def rolling_ratings(lu, order_ids, seasons_of, ridge=RIDGE, block=BLOCK, cached=None):
+    """{gameId: ratings fitted on earlier games only}, refit every `block` games (warm-up seasons included).
+    cached: an earlier run's {gameId: ratings} with the same settings. A block that starts inside the unbroken prefix
+    of order_ids it covers keeps its fit (the fit only sees games before the block), so new games cost a fit or two."""
+    cached = cached or {}
+    n_pre = next((k for k, gid in enumerate(order_ids) if gid not in cached), len(order_ids))
+    Gr = None
     out, cur = {}, {}
     for start in range(0, len(order_ids), block):
         ids_blk = order_ids[start:start + block]
+        if start < n_pre:
+            cur = cached[order_ids[start]]
+            for gid in ids_blk:
+                out[gid] = cur
+            continue
+        if Gr is None:
+            Gr, H, A, M, PH, PA = stint_arrays(lu, order_ids)
+            sidx = np.array([season_index(seasons_of[order_ids[g]]) for g in Gr]) if len(Gr) else np.array([])
         s_now = season_index(seasons_of[ids_blk[0]])
         past = Gr < start
         if past.any():
@@ -390,8 +401,9 @@ def build(games, splits, lu, ctx, shots_path, ridge=RIDGE, ratings_cache=None):
     cached = pickle.load(open(ratings_cache, "rb")) if ratings_cache and Path(ratings_cache).exists() else None
     if cached and cached["key"] == key:
         ratings = cached["ratings"]
-    else:
-        ratings = rolling_ratings(lu, order_ids, seasons_of, ridge)
+    else:  # same settings, more games (a new season's days): reuse the fits that can't have changed
+        same = cached and cached["key"][:3] == key[:3]
+        ratings = rolling_ratings(lu, order_ids, seasons_of, ridge, cached=cached["ratings"] if same else None)
         if ratings_cache:
             with open(ratings_cache, "wb") as fh:
                 pickle.dump({"key": key, "ratings": ratings}, fh)
@@ -513,11 +525,17 @@ def main():
         return
     feats, coach = build(games, splits, lu, args.context, args.shots,
                          ratings_cache=Path(args.lineups).with_name("ratings_cache.pkl"))
+    save(args.out, feats, coach, lu)
+
+
+def save(path, feats, coach, lu):
     lineup = {gid: (r["home5"], r["away5"]) for gid, r in lu.items() if r and "home5" in r}
-    with open(args.out, "wb") as fh:
+    tmp = Path(str(path) + ".tmp")
+    with open(tmp, "wb") as fh:
         pickle.dump({"features": FEATURES, "groups": GROUPS, "monotone": MONOTONE, "values": feats,
                      "lineups": lineup, "coach": coach}, fh)
-    print(f"wrote {args.out}: {len(feats)} games x {len(FEATURES)} features")
+    tmp.replace(path)  # readers (a training or evaluation run) never see half a file
+    print(f"wrote {path}: {len(feats)} games x {len(FEATURES)} features")
 
 
 if __name__ == "__main__":

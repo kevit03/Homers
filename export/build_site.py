@@ -132,6 +132,26 @@ def gz(src: Path, dst: Path) -> int:
     return dst.stat().st_size
 
 
+def add_live(out: Path):
+    """The Live tab: Tempo in JavaScript (live/, from export/export_live.py) and the /api/record function. The record
+    snapshot is brought up to date first, so the function only replays games finished after this build."""
+    import subprocess
+    live = ROOT / "live"
+    if not (live / "tempo.bin").exists():
+        print("no live/tempo.bin (python -m export.export_live): the Live tab will say it can't start the model")
+        return
+    try:
+        subprocess.run(["node", str(live / "build_record.mjs")], check=True)
+    except (OSError, subprocess.CalledProcessError) as e:
+        print(f"couldn't refresh live/record.json ({e}); shipping the snapshot as it is")
+    (out / "live").mkdir(exist_ok=True)
+    for f in ("tempo.mjs", "worker.mjs", "record.mjs", "tempo.json", "tempo.bin", "record.json"):
+        if (live / f).exists():
+            shutil.copy2(live / f, out / "live" / f)
+    shutil.copytree(ROOT / "api", out / "api")
+    (out / "package.json").write_text('{ "private": true, "type": "module" }\n')  # the function and live/*.mjs are ES modules
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--page", default=str(ROOT / "dashboard.html"))
@@ -155,7 +175,11 @@ def main():
     name = "homers.html.gz"
     size = gz(page, out / name)
     (out / "index.html").write_text(LOADER.replace("__FILE__", name).replace("__BYTES__", str(size)))
-    (out / "vercel.json").write_text(json.dumps({"$schema": "https://openapi.vercel.sh/vercel.json", "framework": None}, indent=2) + "\n")
+    (out / "vercel.json").write_text(json.dumps({
+        "$schema": "https://openapi.vercel.sh/vercel.json", "framework": None,
+        # api/record.js reads Tempo's weights and the record snapshot from live/ (see add_live)
+        "functions": {"api/record.js": {"includeFiles": "live/**", "maxDuration": 60}}}, indent=2) + "\n")
+    add_live(out)
     total = sum(p.stat().st_size for p in out.iterdir() if p.is_file())
     if total / 1e6 > args.max_mb:
         raise SystemExit(f"The page alone is {total / 1e6:.0f} MB gzipped, over the {args.max_mb:.0f} MB upload limit.")

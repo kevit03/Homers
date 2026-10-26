@@ -1664,6 +1664,54 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
 }
 @media (max-width: 520px) { .dz-tiles { grid-template-columns: minmax(0, 1fr); } .dz-who { grid-template-columns: minmax(0, 1fr); } .dz-ray { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
+<style>
+/* Live: today's games from ESPN, scored in the browser by live/tempo.mjs (a Web Worker), and Tempo's record calling them */
+#live [hidden] { display: none !important; }
+#live > .sec-head { margin-top: 36px; align-items: center; }
+.jumbo.lv-led b.ok { color: var(--hero-accent); text-shadow: 0 0 18px rgb(255 120 50 / .45); }
+.jumbo.lv-led small { font-size: 12.5px; line-height: 1.35; color: rgb(255 255 255 / .5); margin-top: 2px; }
+.lv-strip { display: flex; flex-wrap: wrap; gap: 3px; padding: 0 44px 22px; }
+.lv-strip i { width: 11px; height: 11px; border-radius: 2px; background: var(--good); }
+.lv-strip i.x { background: var(--dv-5); }
+.lv-strip i.p { background: transparent; box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .55); }
+@media (max-width: 760px) { .lv-strip { padding: 0 20px 18px; } }
+.lv-note { margin: 4px 0 14px; }
+.lv-note.err { color: var(--dv-5); }
+.lv-card { position: relative; }
+.lv-card[aria-pressed="true"] { border-color: var(--model); box-shadow: 0 0 0 1px var(--model); }
+.lv-st { display: inline-flex; align-items: center; gap: 6px; }
+.lv-st.on { color: var(--dv-5) !important; }
+.lv-st.on::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: lv-blink 1.6s ease-in-out infinite; }
+@keyframes lv-blink { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .lv-st.on::before { animation: none; } }
+.lv-read { color: var(--ink); font-weight: 600; letter-spacing: .06em; }
+.hm-spark .cl { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; opacity: .7; }
+.lv-dot { fill: var(--model); stroke: var(--surface); stroke-width: 2; }
+.hm-spark .lv-tick { stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: .55; }
+.lv-call { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); min-height: 26px; }
+.lv-call b { color: var(--ink); font-weight: 600; }
+.lv-badge { flex: none; font-family: var(--font-label); font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 999px; background: var(--accent); color: var(--ink-2); }
+.lv-badge.ok { background: var(--good-bg); color: var(--good); }
+.lv-badge.x { background: color-mix(in srgb, var(--dv-5) 16%, transparent); color: var(--dv-5); }
+.lv-detail { margin-top: 16px; display: grid; gap: 14px; }
+.lv-dhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+.lv-dhead h3 { margin: 0; font-size: 30px; }
+.lv-dhead a { font-size: 13.5px; color: var(--ink-2); }
+.lv-chart { display: block; width: 100%; height: 240px; overflow: visible; }
+.lv-chart text { font-family: var(--font-label); font-size: 11.5px; fill: var(--muted); }
+.lv-chart .grid { stroke: var(--line); stroke-width: 1; }
+.lv-chart .mid { stroke: var(--line-strong); stroke-dasharray: 3 3; }
+.lv-chart .cl { stroke: var(--muted); stroke-dasharray: 2 4; opacity: .7; }
+.lv-chart .ln { fill: none; stroke: var(--model); stroke-width: 2.25; stroke-linejoin: round; }
+.lv-chart .ar { fill: color-mix(in srgb, var(--model) 12%, transparent); }
+.lv-plays { list-style: none; margin: 0; padding: 0; display: grid; font-size: 13.5px; }
+.lv-plays li { display: grid; grid-template-columns: 70px minmax(0, 1fr) 64px 70px; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.lv-plays .t { color: var(--muted); font-variant-numeric: tabular-nums; }
+.lv-plays .s, .lv-plays .p { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.lv-plays .p { font-weight: 600; color: var(--ink); }
+@media (max-width: 520px) { .lv-plays li { grid-template-columns: 56px minmax(0, 1fr) 54px; } .lv-plays .p { display: none; } }
+</style>
 
 <div class="wrap">
   <header>
@@ -1703,6 +1751,7 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
           </ul>
         </div>
       </li>
+      <li class="nm-item"><a class="nm-plain" href="#/live" data-nav="live">Live</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/defense" data-nav="defense">Defense</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/coaches" data-nav="coaches">Coaches</a></li>
       <li class="nm-item"><a class="nm-plain" href="#/fantasy" data-nav="fantasy">Fantasy</a></li>
@@ -1733,6 +1782,25 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
   <div class="sec-head" id="hmOrbHead" hidden><h2 class="cast"><span id="hmOrbTitle">Seasons in orbit</span><span id="hmOrbCap"></span></h2>
     <div class="field orb-pick"><label class="label" for="hmOrbPick">Season</label><select id="hmOrbPick"></select></div></div>
   <div class="orb" id="hmOrbit" hidden></div>
+</section>
+
+<section aria-labelledby="h-live" id="live" data-tab="live">
+  <div class="hero mq-hero" data-photo="arena">
+    <div class="hero-in">
+      <p class="kicker" id="lvKick">Live · 2026-27</p>
+      <h2 id="h-live" class="cast">Tempo<br>calls <em>it.</em></h2>
+      <p class="lede" id="lvLede">Every game tonight, read play by play as it happens. The first time either team reaches 80%, Tempo makes its call, and the call is locked.</p>
+    </div>
+    <div class="jumbo lv-led" id="lvTiles"></div>
+    <div class="lv-strip" id="lvStrip" aria-label="Every call this season, oldest first"></div>
+  </div>
+  <div class="sec-head">
+    <h2 class="cast" id="lvDayTitle">Tonight</h2>
+    <div class="seg" id="lvDay" role="group" aria-label="Day"></div>
+  </div>
+  <p class="caption lv-note" id="lvNote" aria-live="polite"></p>
+  <div class="hm-games" id="lvGames"></div>
+  <div class="panel lv-detail" id="lvDetail" hidden></div>
 </section>
 
 <section aria-labelledby="h-shots" id="shots" data-tab="shots">
@@ -6837,11 +6905,203 @@ function lpInit() {
   });
 }
 
+/* ---------- Live: tonight's games, scored as they happen ----------
+   ESPN's scoreboard lists the day's games; live/worker.mjs fetches each one's play-by-play and runs Tempo (live/tempo.mjs)
+   on the plays it hasn't seen. Tempo's call is the first play after tip-off that puts either team at CALL_AT; the season's
+   record comes from /api/record (api/record.js on Vercel), or the snapshot live/record.json when there's no server. */
+const LV_ESPN = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba", LV_POLL = 20000, LV_CALL_AT = 0.8;
+const lv = { day: 0, sb: [], res: new Map(), sel: null, worker: null, timer: 0, rec: null, on: false, busy: false };
+function lvDay(offset) {  // "20261026" in New York, offset days from today
+  const d = new Date(Date.now() + offset * 864e5);
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" })
+    .formatToParts(d).map(x => [x.type, x.value]));
+  return `${p.year}${p.month}${p.day}`;
+}
+const LV_TRI = { GS: "GSW", NY: "NYK", SA: "SAS", NO: "NOP", UTAH: "UTA", WSH: "WAS", PHO: "PHX" };  // ESPN -> NBA.com tricodes
+function lvSide(c) {
+  const tri = LV_TRI[c.team.abbreviation] || c.team.abbreviation, [full, c1, c2] = PF_TEAMS[tri] || [c.team.displayName, "#" + (c.team.color || "2B313A"), "#" + (c.team.alternateColor || "8B94A1")];
+  return { tri, full, c1, c2, nick: c.team.name || NICK(full), score: c.score, logo: PF && PF.teams[tri] ? `https://cdn.nba.com/logos/nba/${PF.teams[tri]}/global/L/logo.svg` : c.team.logo };
+}
+function lvEvent(e) {  // a scoreboard event, flattened
+  const c = e.competitions[0], st = e.status.type, side = ha => lvSide(c.competitors.find(x => x.homeAway === ha));
+  return { id: e.id, date: e.date, state: st.state, final: !!st.completed, detail: st.shortDetail, H: side("home"), A: side("away") };
+}
+const lvLeft = c => c.per <= 4 ? `${c.clock} left in Q${c.per}` : `in ${c.per > 5 ? c.per - 4 : ""}OT`;
+const lvPct = p => `${Math.min(99, Math.round(p * 100))}%`;  // never a sure thing
+function lvCallLine(ev, r) {
+  if (!r || r.error) return `<span>${r && r.error ? "Couldn't load the play-by-play" : ev.state === "pre" ? `Calls it at ${lvPct(LV_CALL_AT)}` : "Reading the plays…"}</span>`;
+  const c = r.call;
+  if (!c) return `<span>${ev.final ? `Never reached ${lvPct(LV_CALL_AT)}: no call` : `No call yet · calls at ${lvPct(LV_CALL_AT)}`}</span>${ev.final ? "" : '<span class="lv-badge">Waiting</span>'}`;
+  const who = c.home ? ev.H : ev.A, right = ev.final ? c.home === r.game.homeWin : null;
+  return `<span>Called <b>${esc(who.tri)}</b> at ${lvPct(c.p)}, ${esc(lvLeft(c))}</span>` +
+    `<span class="lv-badge${right == null ? "" : right ? " ok" : " x"}">${right == null ? "Pending" : right ? "✓ Right" : "✗ Wrong"}</span>`;
+}
+function lvSpark(r) {
+  const W = 100, H = 30;
+  if (!r || !r.wp || r.wp.length < 2) return `<svg class="hm-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line class="mid" x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}"/></svg>`;
+  const ev = r.game.events, xs = ev.map(e => elapsed(e.sec, e.per)), X = Math.max(48, ...xs);  // the away team, listed first, is up
+  const P = i => `${(xs[i] / X * W).toFixed(2)},${(r.wp[i] * H).toFixed(2)}`, pts = r.wp.map((_, i) => P(i)).join(" ");
+  const cx = r.call ? (xs[r.call.i] / X * W).toFixed(2) : null;  // the call: a tick, since the sparkline stretches circles
+  return `<svg class="hm-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <line class="cl" x1="0" x2="${W}" y1="${(1 - LV_CALL_AT) * H}" y2="${(1 - LV_CALL_AT) * H}"/><line class="cl" x1="0" x2="${W}" y1="${LV_CALL_AT * H}" y2="${LV_CALL_AT * H}"/>
+    <line class="mid" x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}"/><polygon class="ar" points="0,${H} ${pts} ${(xs[xs.length - 1] / X * W).toFixed(2)},${H}"/><polyline class="ln" points="${pts}"/>
+    ${cx ? `<line class="lv-tick" x1="${cx}" x2="${cx}" y1="0" y2="${H}"/>` : ""}</svg>`;
+}
+function lvCard(ev) {
+  const r = lv.res.get(ev.id), wp = r && r.wp && r.wp.length ? r.wp[r.wp.length - 1] : null;
+  const side = (S, won) => `<span class="hm-team${ev.final && !won ? " lost" : ""}" style="--tc:${S.c1};--ta:${S.c2}"><span class="lg">${S.logo ? `<img src="${esc(S.logo)}" alt="" loading="lazy" onerror="this.parentNode.style.visibility='hidden'">` : ""}</span>
+      <b>${esc(S.tri)}</b><span class="nm">${esc(S.full)}</span><strong>${ev.state === "pre" ? "" : esc(S.score)}</strong></span>`;
+  const hWon = ev.final && +ev.H.score > +ev.A.score;
+  const st = ev.state === "in" ? `<b class="lv-st on">${esc(ev.detail)}</b>` : ev.final ? "<b>Final</b>" :
+    `<b>${new Date(ev.date).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</b>`;
+  const read = wp == null || ev.state === "pre" ? "" : ev.final ? `<span>${esc((hWon ? ev.H : ev.A).tri)} won</span>` :
+    `<span class="lv-read">Tempo: ${esc((wp >= 0.5 ? ev.H : ev.A).tri)} ${lvPct(Math.max(wp, 1 - wp))}</span>`;
+  return `<button type="button" class="hm-game lv-card" data-id="${ev.id}" aria-pressed="${lv.sel === ev.id}" aria-label="${esc(`${ev.A.full} at ${ev.H.full}`)}: show the win chance and plays">
+    <span class="hm-kick">${st}${read}</span>${side(ev.A, !hWon)}${side(ev.H, hWon)}${lvSpark(r)}
+    <span class="lv-call">${lvCallLine(ev, r)}</span></button>`;
+}
+function lvRenderCard(id) {
+  const ev = lv.sb.find(e => e.id === id), el = document.querySelector(`#lvGames [data-id="${id}"]`);
+  if (ev && el) el.outerHTML = lvCard(ev);
+  if (lv.sel === id) lvRenderDetail();
+}
+function lvRenderDetail() {
+  const box = $("lvDetail"), ev = lv.sb.find(e => e.id === lv.sel), r = ev && lv.res.get(ev.id);
+  if (!ev || !r || !r.wp) { box.hidden = true; return; }
+  box.hidden = false;
+  const W = 800, H = 240, pad = { l: 34, r: 8, t: 10, b: 22 }, ev2 = r.game.events, xs = ev2.map(e => elapsed(e.sec, e.per)), X = Math.max(48, ...xs);
+  const px = x => pad.l + x / X * (W - pad.l - pad.r), py = p => pad.t + p * (H - pad.t - pad.b);  // home's chance, drawn with the away team (listed first) up
+  const pts = r.wp.map((p, i) => `${px(xs[i]).toFixed(1)},${py(p).toFixed(1)}`).join(" ");
+  const qs = [12, 24, 36, 48, ...Array.from({ length: Math.max(0, Math.ceil((X - 48) / 5)) }, (_, k) => 53 + 5 * k)].filter(q => q <= X + 0.01);
+  const grid = qs.map(q => `<line class="grid" x1="${px(q)}" x2="${px(q)}" y1="${pad.t}" y2="${H - pad.b}"/>`).join("") +
+    [["Q1", 6], ["Q2", 18], ["Q3", 30], ["Q4", 42]].map(([t, m]) => `<text x="${px(m)}" y="${H - 6}" text-anchor="middle">${t}</text>`).join("") +
+    `<text x="${pad.l - 6}" y="${py(0) + 10}" text-anchor="end">${esc(ev.A.tri)}</text><text x="${pad.l - 6}" y="${py(1)}" text-anchor="end">${esc(ev.H.tri)}</text>` +
+    `<text x="${pad.l - 6}" y="${py(0.5) + 4}" text-anchor="end">50%</text>`;
+  const c = r.call, mark = c ? `<circle class="lv-dot" cx="${px(xs[c.i])}" cy="${py(r.wp[c.i])}" r="5.5"/>
+    <text x="${px(xs[c.i]) + (xs[c.i] / X > 0.75 ? -9 : 9)}" y="${py(r.wp[c.i]) + (r.wp[c.i] > 0.5 ? -10 : 18)}" text-anchor="${xs[c.i] / X > 0.75 ? "end" : "start"}" style="fill:var(--ink);font-weight:600">Tempo calls ${esc((c.home ? ev.H : ev.A).tri)}</text>` : "";
+  const svg = `<svg class="lv-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(ev.H.tri)} win chance after every play">${grid}
+    <line class="cl" x1="${pad.l}" x2="${W - pad.r}" y1="${py(LV_CALL_AT)}" y2="${py(LV_CALL_AT)}"/><line class="cl" x1="${pad.l}" x2="${W - pad.r}" y1="${py(1 - LV_CALL_AT)}" y2="${py(1 - LV_CALL_AT)}"/>
+    <line class="mid" x1="${pad.l}" x2="${W - pad.r}" y1="${py(0.5)}" y2="${py(0.5)}"/>
+    <polygon class="ar" points="${px(xs[0])},${py(0.5)} ${pts} ${px(xs[xs.length - 1])},${py(0.5)}"/><polyline class="ln" points="${pts}"/>${mark}</svg>`;
+  const recent = ev2.map((e, i) => [e, i]).filter(([e]) => e.tok > 2).slice(-10).reverse();
+  const plays = recent.map(([e, i]) => `<li><span class="t">${e.per <= 4 ? `Q${e.per}` : `OT${e.per > 5 ? e.per - 4 : ""}`} ${esc(e.clock)}</span><span>${esc(e.text)}</span>
+    <span class="s">${e.as}–${e.hs}</span><span class="p" title="Tempo's favorite after this play">${esc((r.wp[i] >= 0.5 ? ev.H : ev.A).tri)} ${lvPct(Math.max(r.wp[i], 1 - r.wp[i]))}</span></li>`).join("");
+  box.innerHTML = `<div class="lv-dhead"><h3 class="cast">${esc(ev.A.nick)} at ${esc(ev.H.nick)}</h3>
+      <a href="https://www.espn.com/nba/game/_/gameId/${ev.id}" target="_blank" rel="noopener">ESPN Gamecast ↗</a></div>
+    <p class="caption">Who Tempo favored after every play: above the middle line ${esc(ev.A.tri)}, below it ${esc(ev.H.tri)}. The dotted lines are the ${lvPct(LV_CALL_AT)} call lines; the dot is Tempo's call.</p>
+    ${svg}<ul class="lv-plays" aria-label="Latest plays">${plays}</ul>`;
+}
+function lvRender() {
+  const days = [[-1, "Yesterday"], [0, "Tonight"], [1, "Tomorrow"]];
+  $("lvDay").innerHTML = days.map(([o, t]) => `<button type="button" data-o="${o}" aria-pressed="${lv.day === o}">${t}</button>`).join("");
+  $("lvDayTitle").textContent = days.find(d => d[0] === lv.day)[1];
+  $("lvGames").innerHTML = lv.sb.map(lvCard).join("");
+  lvRenderDetail();
+}
+/* The season's record, plus any game finished in this browser that the server hasn't counted yet (same code, same call) */
+function lvRenderRecord() {
+  const rec = lv.rec, games = new Map(((rec && rec.games) || []).map(g => [g.id, g]));
+  for (const [id, r] of lv.res) {
+    if (!games.has(id) && r.game && r.game.final && r.game.date >= "2026-10-20")
+      games.set(id, { id, date: r.game.date, h: r.game.home.tri, a: r.game.away.tri, call: r.call, right: r.call ? r.call.home === r.game.homeWin : null });
+  }
+  const all = [...games.values()].sort((a, b) => (a.date < b.date ? -1 : 1)), called = all.filter(g => g.call);
+  const right = called.filter(g => g.right).length, wrong = called.length - right;
+  const pending = lv.sb.filter(e => !e.final && lv.res.get(e.id)?.call).length;
+  const bt = rec && rec.backtest;
+  $("lvTiles").innerHTML = (rec || all.length ? [
+    [`${right}–${wrong}`, "Record this season", called.length ? `${all.length - called.length ? `${all.length - called.length} never reached ${lvPct(LV_CALL_AT)}` : "every game called"}` : "no finished games yet", "ok"],
+    [called.length ? lvPct(right / called.length) : "–", "Called right", bt ? `last season: ${lvPct(bt.right / (bt.right + bt.wrong))}, held out of training` : ""],
+    [called.length ? `${Math.round(called.reduce((s, g) => s + (g.call.per <= 4 ? g.call.sec / 60 : 0), 0) / called.length)}′` : "–", "Average time left", "on the clock when it called"],
+    [pending ? String(pending) : "0", "Calls pending", "made tonight, games still on"],
+  ] : [["–", "Record this season", "loading…"]]).map(([v, l, s, cls]) => `<div><b class="${cls || ""}">${v}</b><span>${l}</span>${s ? `<small>${esc(s)}</small>` : ""}</div>`).join("");
+  $("lvStrip").innerHTML = called.map(g => `<i class="${g.right ? "" : "x"}" title="${esc(`${new Date(g.date).toLocaleDateString([], { month: "short", day: "numeric" })} · ${g.a} at ${g.h}: called ${g.call.home ? g.h : g.a}, ${g.right ? "right" : "wrong"}`)}"></i>`).join("") +
+    lv.sb.filter(e => !e.final && lv.res.get(e.id)?.call).map(e => `<i class="p" title="${esc(`${e.A.tri} at ${e.H.tri}: pending`)}"></i>`).join("");
+}
+async function lvRecord() {
+  for (const url of ["api/record", "live/record.json"]) {
+    try {
+      const r = await fetch(url, { cache: "no-cache" });
+      if (r.ok && (r.headers.get("content-type") || "").includes("json")) { lv.rec = await r.json(); break; }
+    } catch (e) {}
+  }
+  lvRenderRecord();
+}
+async function lvTick() {
+  clearTimeout(lv.timer);
+  if (!lv.on || lv.busy) return;
+  lv.busy = true;
+  const day = lv.day;
+  try {
+    const r = await fetch(`${LV_ESPN}/scoreboard?dates=${lvDay(day)}`, { cache: "no-store" });
+    if (!r.ok) throw new Error(`ESPN answered ${r.status}`);
+    const sb = (await r.json()).events.filter(e => [2, 3, 5].includes(e.season?.type)).map(lvEvent);
+    if (day !== lv.day) return;
+    const fresh = sb.map(e => e.id).join() !== lv.sb.map(e => e.id).join();
+    lv.sb = sb;
+    const live = sb.filter(e => e.state === "in").length;
+    $("lvNote").className = "caption lv-note";
+    $("lvNote").textContent = !sb.length ? "No NBA games on this day." :
+      live ? `${live} game${live > 1 ? "s" : ""} on now · updates every ${LV_POLL / 1000} seconds · play-by-play from ESPN` :
+      sb.every(e => e.final) ? "All games final. Tempo's calls are counted in the record above." : "Win chances start at tip-off. Play-by-play from ESPN.";
+    if (fresh) lvRender(); else sb.forEach(e => lvRenderCard(e.id));
+    // the model reads every game in progress, and each finished one once
+    for (const e of sb) {
+      const have = lv.res.get(e.id);
+      if (e.state === "in" || (e.final && !(have && have.game && have.game.final))) lv.worker.postMessage({ id: e.id });
+    }
+    if (live) lv.timer = setTimeout(lvTick, LV_POLL);
+    else if (sb.some(e => e.state === "pre")) lv.timer = setTimeout(lvTick, 120000);  // check back for tip-off
+  } catch (e) {
+    $("lvNote").className = "caption lv-note err";
+    $("lvNote").textContent = `Couldn't reach ESPN's scoreboard (${e.message}). Trying again shortly.`;
+    lv.timer = setTimeout(lvTick, LV_POLL * 2);
+  } finally { lv.busy = false; }
+}
+function lvShow(on) {
+  lv.on = on && !document.hidden;
+  if (!lv.on) { clearTimeout(lv.timer); return; }
+  if (!lv.worker) {
+    lv.worker = new Worker(new URL("live/worker.mjs", location.href), { type: "module" });
+    lv.worker.onmessage = ({ data }) => {
+      const was = lv.res.get(data.id);
+      if (data.error && was && was.wp) return;  // keep the last good reading through a failed poll
+      lv.res.set(data.id, data);
+      lvRenderCard(data.id);
+      if (data.game && data.game.final && !(was && was.game && was.game.final)) lvRenderRecord();
+      else if (data.call && !(was && was.call)) lvRenderRecord();
+    };
+    lv.worker.onerror = () => { $("lvNote").className = "caption lv-note err"; $("lvNote").textContent = "Live needs the hosted site or a local server: this browser couldn't start the model."; };
+    lvRecord();
+  }
+  lvTick();
+}
+function lvInit() {
+  $("lvDay").addEventListener("click", e => {
+    const b = e.target.closest("button[data-o]");
+    if (!b || +b.dataset.o === lv.day) return;
+    lv.day = +b.dataset.o; lv.sb = []; lv.sel = null;
+    lvRender(); $("lvNote").textContent = "Loading…"; lv.busy = false; lvTick();
+  });
+  $("lvGames").addEventListener("click", e => {
+    const c = e.target.closest(".lv-card");
+    if (!c) return;
+    lv.sel = lv.sel === c.dataset.id ? null : c.dataset.id;
+    document.querySelectorAll("#lvGames .lv-card").forEach(x => x.setAttribute("aria-pressed", x.dataset.id === lv.sel));
+    lvRenderDetail();
+    if (lv.sel) requestAnimationFrame(() => $("lvDetail").scrollIntoView({ behavior: "smooth", block: "nearest" }));
+  });
+  document.addEventListener("visibilitychange", () => lvShow(curTab === "live"));
+  setPhotos($("live"));
+  lvRender();
+  lvRenderRecord();
+}
+
 /* ---------- tabs + theme ---------- */
 function scIndexOf(pid) { return SC ? SC.players.findIndex(p => p.id === +pid) : -1; }
 function scNowOf(pid) { const i = scIndexOf(pid); return i >= 0 ? SC.players[i].now : null; }
-const TABS = ["home", "shots", "matchups", "players", "defense", "coaches", "fantasy", "h2h", "games", "model", "sources"];
-const TAB_NAMES = { home: "Home", shots: "Shot charts", matchups: "Matchups", players: "Players", defense: "Defense", coaches: "Coaches", fantasy: "Fantasy", h2h: "Head to head", games: "Game replay", model: "Model", sources: "Sources" };
+const TABS = ["home", "live", "shots", "matchups", "players", "defense", "coaches", "fantasy", "h2h", "games", "model", "sources"];
+const TAB_NAMES = { home: "Home", live: "Live", shots: "Shot charts", matchups: "Matchups", players: "Players", defense: "Defense", coaches: "Coaches", fantasy: "Fantasy", h2h: "Head to head", games: "Game replay", model: "Model", sources: "Sources" };
 let curTab = "home";
 function tabHasContent(name) {
   return [...document.querySelectorAll(`[data-tab~="${name}"]`)].some(el => !el.hidden && el.id !== "synNotice");
@@ -6858,6 +7118,7 @@ function showTab(name, push) {
   });
   if (push) { try { history.replaceState(null, "", "#/" + name); } catch (e) {} window.scrollTo({ top: 0 }); }
   Object.values(charts).forEach(c => c.resize());
+  try { lvShow(name === "live"); } catch (e) { console.error(e); }  // Live polls only while it's on screen
 }
 
 /* ---------- navigation menu: shadcn's NavigationMenu behavior without React ----------
@@ -7002,6 +7263,7 @@ srcInit();
 try { initH2H(); } catch (e) { console.error(e); }
 try { lpInit(); } catch (e) { console.error(e); }  // hover cards on every player, coach and team name
 homeInit();
+try { lvInit(); } catch (e) { console.error(e); }
 try { mqInit(); } catch (e) { console.error(e); }
 initTabs();
 replayFromHash();

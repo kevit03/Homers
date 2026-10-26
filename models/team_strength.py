@@ -75,8 +75,9 @@ def final_margin(g):
     return float(g["diff"][-1])
 
 
-def run_elo(games, order, teams, k, hca, carry):
-    """Pre-game home edge in Elo points for every game (NaN if the teams are unknown)."""
+def run_elo(games, order, teams, k, hca, carry, final=False):
+    """Pre-game home edge in Elo points for every game (NaN if the teams are unknown).
+    final=True also returns the ratings after the last game, {teamId: rating}: the edge for games not played yet."""
     R, season, edge = {}, None, np.full(len(games), np.nan)
     for i in order:
         g = games[i]
@@ -95,7 +96,7 @@ def run_elo(games, order, teams, k, hca, carry):
         mult = (abs(margin) + 3) ** 0.8 / (7.5 + 0.006 * win_edge)
         shift = k * mult * (g["home_win"] - expected)
         R[h], R[a] = rh + shift, ra - shift
-    return edge
+    return (edge, R) if final else edge
 
 
 def with_history(games, order, teams, path):

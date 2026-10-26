@@ -19,32 +19,22 @@ function f16(bytes) {  // float16 -> Float32Array
   return out;
 }
 
-function erf(x) {  // Abramowitz & Stegun 7.1.26 would be 1.5e-7 off; this series/continued fraction is float32-exact
-  const ax = Math.abs(x);
-  if (ax > 6) return Math.sign(x);
-  if (ax < 2.5) {  // Maclaurin series
-    let sum = x, term = x, x2 = x * x;
-    for (let n = 1; n < 60; n++) {
-      term *= -x2 / n;
-      const t = term / (2 * n + 1);
-      sum += t;
-      if (Math.abs(t) < 1e-17) break;
-    }
-    return sum * 2 / Math.sqrt(Math.PI);
-  }
-  let f = 0;  // erfc continued fraction for the tails
-  for (let n = 60; n >= 1; n--) f = n / 2 / (ax + f);
-  const erfc = Math.exp(-ax * ax) / Math.sqrt(Math.PI) / (ax + f);
-  return Math.sign(x) * (1 - erfc);
+function erf(x) {  // Numerical Recipes erfc (Chebyshev fit), relative error under 1.2e-7: well inside float16 weights
+  const z = Math.abs(x), t = 1 / (1 + 0.5 * z);
+  const r = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 +
+            t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
+  return x >= 0 ? 1 - r : r - 1;
 }
 const gelu = x => 0.5 * x * (1 + erf(x / Math.SQRT2));
 
-function linear(W, b, x, nOut, nIn, out) {  // torch layout: W is [out, in]
+function linear(W, b, x, nOut, nIn, out) {  // torch layout: W is [out, in]; nIn is a multiple of 4 (4, 128, 512)
   for (let o = 0; o < nOut; o++) {
-    let s = b ? b[o] : 0;
+    let s0 = 0, s1 = 0, s2 = 0, s3 = 0;  // four running sums: about twice as fast in V8 as one
     const r = o * nIn;
-    for (let i = 0; i < nIn; i++) s += W[r + i] * x[i];
-    out[o] = s;
+    for (let i = 0; i < nIn; i += 4) {
+      s0 += W[r + i] * x[i]; s1 += W[r + i + 1] * x[i + 1]; s2 += W[r + i + 2] * x[i + 2]; s3 += W[r + i + 3] * x[i + 3];
+    }
+    out[o] = b[o] + s0 + s1 + s2 + s3;
   }
   return out;
 }
@@ -62,7 +52,7 @@ function layerNorm(x, g, b, out) {
 /* models/model.make_features with no Elo: time left, margin, period, margin for the time left */
 export function features(sec, diff, per) {
   const minutes = Math.max(sec, 0) / 60;
-  return [sec / 2880, diff / 20, Math.min(per, 6) / 4, diff / Math.sqrt(minutes + 1) / 5];
+  return Float32Array.of(sec / 2880, diff / 20, Math.min(per, 6) / 4, diff / Math.sqrt(minutes + 1) / 5);
 }
 
 export function loadTempo(meta, bytes) {
@@ -90,25 +80,32 @@ export function loadTempo(meta, bytes) {
       for (let i = 0; i < C; i++) x[i] += te[i] + pe[i];
       for (let l = 0; l < L; l++) {
         const b = blk[l];
+        const Kl = K[l], Vl = V[l];
         linear(b.qkvW, b.qkvB, layerNorm(x, b.ln1g, b.ln1b, h), 3 * C, C, qkv);
-        K[l].set(qkv.subarray(C, 2 * C), t * C);
-        V[l].set(qkv.subarray(2 * C, 3 * C), t * C);
+        Kl.set(qkv.subarray(C, 2 * C), t * C);
+        Vl.set(qkv.subarray(2 * C, 3 * C), t * C);
         for (let hd = 0; hd < NH; hd++) {
           const q0 = hd * HD;
           let mx = -Infinity;
           for (let j = 0; j <= t; j++) {
-            let d = 0;
+            let d0 = 0, d1 = 0, d2 = 0, d3 = 0;
             const k0 = j * C + q0;
-            for (let i = 0; i < HD; i++) d += qkv[q0 + i] * K[l][k0 + i];
-            att[j] = d * scale;
+            for (let i = 0; i < HD; i += 4) {
+              d0 += qkv[q0 + i] * Kl[k0 + i]; d1 += qkv[q0 + i + 1] * Kl[k0 + i + 1];
+              d2 += qkv[q0 + i + 2] * Kl[k0 + i + 2]; d3 += qkv[q0 + i + 3] * Kl[k0 + i + 3];
+            }
+            att[j] = (d0 + d1 + d2 + d3) * scale;
             if (att[j] > mx) mx = att[j];
           }
           let z = 0;
           for (let j = 0; j <= t; j++) z += (att[j] = Math.exp(att[j] - mx));
-          for (let i = 0; i < HD; i++) {
-            let acc = 0;
-            for (let j = 0; j <= t; j++) acc += att[j] * V[l][j * C + q0 + i];
-            y[q0 + i] = acc / z;
+          for (let i = 0; i < HD; i++) y[q0 + i] = 0;
+          for (let j = 0; j <= t; j++) {  // row by row: walks V in memory order
+            const a = att[j] / z, v0 = j * C + q0;
+            for (let i = 0; i < HD; i += 4) {
+              y[q0 + i] += a * Vl[v0 + i]; y[q0 + i + 1] += a * Vl[v0 + i + 1];
+              y[q0 + i + 2] += a * Vl[v0 + i + 2]; y[q0 + i + 3] += a * Vl[v0 + i + 3];
+            }
           }
         }
         linear(b.projW, b.projB, y, C, C, o);

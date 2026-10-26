@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Daily site update (update_season.sh). Install and uninstall commands: see the header of update_season.sh.
+     It doesn't deploy; to publish too, add <string>--deploy</string><string>prod</string> after the script path. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.homers.update-season</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/kevintang/Downloads/nba-gpt/update_season.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/kevintang/Downloads/nba-gpt</string>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/kevintang/Downloads/nba-gpt/logs/update_season/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/kevintang/Downloads/nba-gpt/logs/update_season/launchd.log</string>
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

@@ -17,11 +17,13 @@ import re
 import time
 import unicodedata
 import urllib.request
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from nba_api.stats.static import players, teams
+
+from fetch.seasons import current_season  # noqa: F401 (fetch_accolades imports it from here)
 
 BASE = "https://www.basketball-reference.com"
 # Basketball-Reference abbreviations that differ from NBA.com tricodes
@@ -29,13 +31,6 @@ BBREF_ABBR = {"BKN": "BRK", "CHA": "CHO", "PHX": "PHO"}
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140 Safari/537.36"
 COLS = {"number": "number", "player": "player", "pos": "pos", "height": "height", "weight": "weight",
         "birth_date": "birth_date", "years_experience": "exp", "college": "college"}
-
-
-def current_season(today=None):
-    """NBA seasons are named for the year they start; from August on, rosters are for the coming season."""
-    today = today or date.today()
-    start = today.year if today.month >= 8 else today.year - 1
-    return f"{start}-{str(start + 1)[2:]}"
 
 
 def fetch(url, path, refresh, sleep):
@@ -116,37 +111,47 @@ def main():
     ap.add_argument("--sleep", type=float, default=3.5)
     ap.add_argument("--refresh", action="store_true")
     args = ap.parse_args()
-    end_year = int(args.season[:4]) + 1
-    cache = Path(args.cache) / args.season
-    ids = nba_ids(args.cache)
+    update_rosters(args.season, args.out, args.cache, args.sleep, args.refresh)
 
-    rows = []
+
+def update_rosters(season, out, cache_dir="data/context/bbref", sleep=3.5, refresh=False):
+    """Every team's roster page for `season` -> rows of `out` for that season (other seasons kept).
+    Returns the number of teams that failed."""
+    end_year = int(season[:4]) + 1
+    cache = Path(cache_dir) / season
+    ids = nba_ids(cache_dir)
+
+    rows, failed = [], 0
     for t in sorted(teams.get_teams(), key=lambda t: t["abbreviation"]):
         abbr = BBREF_ABBR.get(t["abbreviation"], t["abbreviation"])
         url = f"{BASE}/teams/{abbr}/{end_year}.html"
-        page = fetch(url, cache / f"{abbr}.html", args.refresh, args.sleep)
+        page = fetch(url, cache / f"{abbr}.html", refresh, sleep)
         if page is None:
             print(f"  {t['abbreviation']}: failed")
+            failed += 1
             continue
         roster = parse_roster(page)
         fetched = datetime.fromtimestamp((cache / f"{abbr}.html").stat().st_mtime).strftime("%Y-%m-%d")
         for r in roster:
-            rows.append({**r, "season": args.season, "team": t["abbreviation"], "team_name": t["full_name"],
+            rows.append({**r, "season": season, "team": t["abbreviation"], "team_name": t["full_name"],
                          "teamId": t["id"], "bbref_team": abbr, "url": url, "fetched": fetched,
                          "personId": ids.get(norm_name(r["player"]))})
         print(f"  {t['abbreviation']}: {len(roster)} players")
 
+    if not rows:
+        return failed
     df = pd.DataFrame(rows)
     df["personId"] = df["personId"].astype("Int64")
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    if Path(args.out).exists():  # keep other seasons already fetched
-        old = pd.read_parquet(args.out)
-        df = pd.concat([old[old["season"] != args.season], df], ignore_index=True)
-    df.to_parquet(args.out)
-    cur = df[df["season"] == args.season]
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    if Path(out).exists():  # keep other seasons already fetched
+        old = pd.read_parquet(out)
+        df = pd.concat([old[old["season"] != season], df], ignore_index=True)
+    df.to_parquet(out)
+    cur = df[df["season"] == season]
     miss = cur[cur["personId"].isna()]
-    print(f"{args.season}: {len(cur)} roster spots on {cur['team'].nunique()} teams, "
+    print(f"{season}: {len(cur)} roster spots on {cur['team'].nunique()} teams, "
           f"{len(miss)} not matched to an NBA.com id (mostly rookies): {', '.join(miss['player'].head(12))}")
+    return failed
 
 
 if __name__ == "__main__":

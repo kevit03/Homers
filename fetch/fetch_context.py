@@ -6,7 +6,9 @@
   - per-game defensive matchups (who guarded whom)       -> data/context/matchups/<season>/<gameId>.parquet
     for the regular season and playoffs; NBA.com's matchup feed starts in 2017-18
 
-Everything is cached, so the script can be stopped and re-run safely.
+Everything is cached, so the script can be stopped and re-run safely. Season totals (coaches, play types, tracking)
+are cached per season, so a season in progress is re-downloaded with refresh=[season] (fetch/update_season.py
+does that daily); matchups are cached per game, and only finished games are fetched for the current season.
 
     python -m fetch.fetch_context --seasons 2021-22 2022-23 2023-24 2024-25
 """
@@ -21,6 +23,7 @@ from nba_api.stats.endpoints import (boxscorematchupsv3, commonteamroster, leagu
 from nba_api.stats.static import teams
 
 from fetch.fetch_data import SEASON_TYPES, SEASONS, get_game_ids
+from fetch.seasons import current_season
 
 PLAY_TYPES = ["Isolation", "Transition", "PRBallHandler", "PRRollman", "Postup", "Spotup",
               "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"]
@@ -47,9 +50,15 @@ def call(fn, retries=4, sleep=1.0):
     return None
 
 
-def fetch_coaches(seasons, out, sleep):
+def drop_seasons(have, refresh):
+    """A cached table without the seasons to re-download."""
+    return have if have is None or not refresh else have[~have["season"].isin(list(refresh))]
+
+
+def fetch_coaches(seasons, out, sleep, refresh=()):
     path = out / "coaches.parquet"
     have = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=["season", "teamId"])
+    have = drop_seasons(have, refresh)
     rows = [have]
     for season in seasons:
         for t in teams.get_teams():
@@ -68,9 +77,9 @@ def fetch_coaches(seasons, out, sleep):
     pd.concat(rows, ignore_index=True).to_parquet(path)
 
 
-def fetch_playtypes(seasons, out, sleep):
+def fetch_playtypes(seasons, out, sleep, refresh=()):
     path = out / "playtypes.parquet"
-    have = pd.read_parquet(path) if path.exists() else None
+    have = drop_seasons(pd.read_parquet(path) if path.exists() else None, refresh)
     done = set() if have is None else set(zip(have["season"], have["level"], have["grouping"], have["PLAY_TYPE"]))
     rows = [] if have is None else [have]
     for season in seasons:
@@ -90,11 +99,11 @@ def fetch_playtypes(seasons, out, sleep):
         pd.concat(rows, ignore_index=True).to_parquet(path)
 
 
-def fetch_tracking(seasons, out, sleep):
+def fetch_tracking(seasons, out, sleep, refresh=()):
     """Regular-season totals for players (level P) and teams (T), one row per player or team, season and measure:
     the TRACKING actions, hustle stats, and opponents' FG% near the rim and from three against the defender."""
     path = out / "tracking.parquet"
-    have = pd.read_parquet(path) if path.exists() else None
+    have = drop_seasons(pd.read_parquet(path) if path.exists() else None, refresh)
     done = set() if have is None else set(zip(have["season"], have["level"], have["measure"]))
     rows = [] if have is None else [have]
     for season in seasons:
@@ -128,28 +137,34 @@ def fetch_matchups(seasons, season_types, out, sleep):
         if season < MATCHUPS_FROM:
             print(f"{season}: no matchup data before {MATCHUPS_FROM}, skipped")
             continue
-        sdir = out / "matchups" / season
-        sdir.mkdir(parents=True, exist_ok=True)
         for season_type in season_types:
-            ids = get_game_ids(season, season_type)
+            ids = get_game_ids(season, season_type, final_only=season >= current_season())
             print(f"{season} {season_type}: {len(ids)} games")
-            failed = []
-            for i, gid in enumerate(ids):
-                path = sdir / f"{gid}.parquet"
-                if path.exists():
-                    continue
-                dfs = call(lambda: boxscorematchupsv3.BoxScoreMatchupsV3(game_id=gid, timeout=30).get_data_frames(),
-                           sleep=sleep)
-                if dfs is None or not len(dfs[0]):
-                    failed.append(gid)
-                    continue
-                df = dfs[0]
-                obj = df.select_dtypes("object").columns
-                df[obj] = df[obj].astype(str)
-                df.to_parquet(path)
-                if i % 100 == 0:
-                    print(f"  {i}/{len(ids)}")
+            _, failed = fetch_matchup_games(ids, out / "matchups" / season, sleep)
             print(f"{season} {season_type}: matchups done, {len(failed)} failed {failed[:10]}")
+
+
+def fetch_matchup_games(ids, sdir, sleep):
+    """Matchups for these finished games, skipping the ones on disk. Returns (newly saved, failed IDs)."""
+    sdir.mkdir(parents=True, exist_ok=True)
+    saved, failed = 0, []
+    for i, gid in enumerate(ids):
+        path = sdir / f"{gid}.parquet"
+        if path.exists():
+            continue
+        dfs = call(lambda: boxscorematchupsv3.BoxScoreMatchupsV3(game_id=gid, timeout=30).get_data_frames(),
+                   sleep=sleep)
+        if dfs is None or not len(dfs[0]):
+            failed.append(gid)
+            continue
+        df = dfs[0]
+        obj = df.select_dtypes("object").columns
+        df[obj] = df[obj].astype(str)
+        df.to_parquet(path)
+        saved += 1
+        if i % 100 == 0:
+            print(f"  {i}/{len(ids)}")
+    return saved, failed
 
 
 def main():
