@@ -19,7 +19,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.baseline import fit_elo_baseline
+from models.baseline import context_features, fit_elo_baseline
+from models.game_context import attach_pregame
 from models.model import Config, GameDataset, Tempo, collate, compute_losses, load_data
 
 
@@ -42,6 +43,10 @@ def get_args(argv=None):
     ap.add_argument("--baseline", default="runs/baseline.joblib", help="logistic baseline the win-prob head corrects")
     ap.add_argument("--no_residual", action="store_true", help="win-prob head from scratch, not on top of the baseline")
     ap.add_argument("--no_elo", action="store_true", help="leave out the pre-game Elo features")
+    ap.add_argument("--context", default="data/processed/game_context.pkl",
+                    help="starting fives and missing rotation players per game (python -m models.game_context); "
+                         "used when the file exists")
+    ap.add_argument("--no_lineup", action="store_true", help="leave out the starting-five and missing-player features")
     ap.add_argument("--patience", type=int, default=4, help="early stopping epochs")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="auto")
@@ -104,23 +109,29 @@ def main(argv=None):
 
     d = load_data(args.data)
     games, splits = d["games"], d["splits"]
+    has_elo = any(g.get("elo") for g in games)
+    has_lineup = has_elo and not args.no_elo and not args.no_lineup and Path(args.context).exists()
+    if has_lineup:
+        print(f"starting fives and missing players from {args.context} for {attach_pregame(games, args.context)}/{len(games)} games")
     mk = lambda split, shuffle: DataLoader(
         GameDataset([games[i] for i in splits[split]], args.block_size),
         batch_size=args.batch_size, shuffle=shuffle, collate_fn=collate)
     train_dl, val_dl = mk("train", True), mk("val", False)
 
-    has_elo = any(g.get("elo") for g in games)
     if not has_elo and not args.no_elo:
         print("no pre-game Elo in the data (run models/team_strength.py); training without it")
     base_coef = None
     if not args.no_residual:
-        # with Elo, start from the logistic baseline that also sees Elo, so the plays have to add something on top of it
-        clf = (fit_elo_baseline([games[i] for i in splits["train"]]) if has_elo and not args.no_elo
+        # with Elo (and the starting fives and who is missing), start from the logistic baseline that also sees them,
+        # so the plays have to add something on top of it
+        train_games = [games[i] for i in splits["train"]]
+        clf = (fit_elo_baseline(train_games, features=context_features) if has_lineup
+               else fit_elo_baseline(train_games) if has_elo and not args.no_elo
                else joblib.load(args.baseline))
         base_coef = (float(clf.intercept_[0]), *map(float, clf.coef_[0]))
     cfg = Config(vocab_size=len(d["vocab"]), block_size=args.block_size, n_layer=args.n_layer,
                  n_head=args.n_head, n_embd=args.n_embd, dropout=args.dropout,
-                 n_feat=6 if has_elo and not args.no_elo else 4, wp_residual=not args.no_residual, base_coef=base_coef)
+                 n_feat=12 if has_lineup else 6 if has_elo and not args.no_elo else 4, wp_residual=not args.no_residual, base_coef=base_coef)
     model = Tempo(cfg).to(device)
     print(f"device={device} params={model.n_params():,} train_games={len(splits['train'])}")
 

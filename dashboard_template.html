@@ -1175,15 +1175,70 @@ h3.orb-title { display: flex; align-items: center; gap: 8px; font-size: 18px; co
 .mu-grid thead th { vertical-align: bottom; text-align: center; max-width: 92px; white-space: normal; line-height: 1.2; }
 .mu-grid tbody th { text-align: right; }
 .mu-grid td { border: 0; padding: 0; }
-.mu-grid td button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; place-items: center; width: 100%; min-width: 64px; height: 42px; border-radius: 8px;
-                     font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mu-grid td button { all: unset; box-sizing: border-box; cursor: pointer; position: relative; display: grid; place-content: center; justify-items: center; gap: 1px; width: 100%; min-width: 64px; height: 50px; border-radius: 8px;
+                     font-variant-numeric: tabular-nums; line-height: 1.1; }
+.mu-grid td button b { font-size: 15px; font-weight: 700; }
+.mu-grid td button small { font-size: 11px; font-weight: 500; opacity: .78; }
 .mu-grid td button:hover { filter: brightness(1.08); }
 .mu-grid td button:focus-visible { outline: 2px solid var(--model); outline-offset: 1px; }
-.mu-grid td button.best { box-shadow: inset 0 0 0 2.5px var(--ink); }
+.mu-grid td button.best { box-shadow: inset 0 0 0 2.5px var(--ink), 0 0 0 1px var(--surface); }
+.mu-grid td button.best::after { content: "✓"; position: absolute; top: 3px; right: 3px; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%;
+                                 background: var(--ink); color: var(--surface); font-size: 9.5px; font-weight: 800; line-height: 1; }  /* inside the cell, so it scrolls under the pinned names */
 #muTiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 560px) { #muTiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .mu-grid td button.sw { opacity: .42; background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / .18) 0 2px, transparent 2px 6px) !important; }
-.mu-assign { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink-2); }
+/* guard-whom grid: headshot headers, a pinned name column that stays put while the grid scrolls on a phone */
+.mu-grid { border-spacing: 4px; }
+.mu-grid th.mu-gc { vertical-align: bottom; text-align: right; font-size: 11px; color: var(--muted); line-height: 1.35; }
+.mu-grid th.mu-gc span { display: block; white-space: nowrap; }
+.mu-gh { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 7px; border-radius: 8px; padding: 2px 4px; }
+.mu-gh:hover, .mu-gh:focus-visible { background: var(--bg); }
+.mu-gh:focus-visible { outline: 2px solid var(--model); }
+.mu-gh .pf-av { width: 30px; height: 30px; font-size: 11px; }
+.mu-gn { display: grid; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--ink); line-height: 1.15; white-space: nowrap; }
+.mu-gn small { font-size: 10.5px; font-weight: 500; color: var(--muted); }
+.mu-gn em { font-style: normal; font-size: 10.5px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mu-grid thead th .mu-gh { flex-direction: column; gap: 4px; padding: 4px 2px; margin: 0 auto; }
+.mu-grid thead th .mu-gn { text-align: center; }
+.mu-grid tbody th, .mu-grid th.mu-gc { position: sticky; left: 0; z-index: 1; background: var(--surface); box-shadow: -4px 0 0 var(--surface), 4px 0 0 var(--surface); }  /* covers the cell spacing on both sides */
+.mu-grid tbody th { padding: 0 6px 0 0; }
+.mu-grid th.mu-gc { z-index: 2; }
+.mu-grid tr:hover th .mu-gh, .mu-grid thead th.on .mu-gh { background: var(--bg); }
+.mu-lg-best { position: relative; }
+.mu-swipe { display: none; margin: 0; font-size: 12px; color: var(--muted); }
+.mu-best-k { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
+.mu-best-k b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.mu-best { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 8px; }
+.mu-pair { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; align-items: center; gap: 8px;
+           padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+.mu-pair:hover { border-color: var(--model); }
+.mu-pair:focus-visible { outline: 2px solid var(--model); }
+.mu-pd { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 13px; font-weight: 600; }
+.mu-pd .pf-av { width: 30px; height: 30px; font-size: 11px; }
+.mu-pd > span:last-child { display: grid; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }
+.mu-pd small { font-size: 10px; font-weight: 600; letter-spacing: .05em; color: var(--muted); }
+.mu-on { font-size: 11.5px; color: var(--muted); }
+.mu-pv { display: grid; justify-items: end; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.mu-pv b { font-size: 15px; }
+.mu-pv.cold b { color: var(--dv-1); }
+.mu-pv.hot b { color: var(--dv-5); }
+.mu-pv small { font-size: 10.5px; color: var(--muted); }
+@media (max-width: 640px) {
+  .mu-grid { border-spacing: 3px; }
+  .mu-grid td button { min-width: 50px; height: 44px; }
+  .mu-grid td button b { font-size: 13.5px; }
+  .mu-grid td button small { font-size: 10px; }
+  .mu-grid td button.best::after { display: none; }  /* no room beside the number; the outline marks it */
+  .mu-grid td button.best { box-shadow: inset 0 0 0 3px var(--ink); }
+  .mu-grid tbody th .mu-gh { gap: 5px; padding: 2px; }
+  .mu-grid tbody th .pf-av { display: none; }  /* the name column is pinned, so every pixel it takes is a defender column lost */
+  .mu-grid thead th .pf-av { width: 26px; height: 26px; }
+  .mu-gn { font-size: 11.5px; }
+  .mu-grid th.mu-gc span:last-child { display: none; }
+  .mu-best { grid-template-columns: minmax(0, 1fr); }
+  .mu-swipe { display: block; }
+}
+.mu-assign { display: grid; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
 .mu-assign b { color: var(--ink); font-weight: 600; }
 </style>
 <style>
@@ -1780,8 +1835,9 @@ a.pv:focus-visible, button.pv:focus-visible { outline: 2px solid var(--model); o
       <div class="field"><span class="label">&nbsp;</span><button type="button" id="muTeamSwap" aria-label="Swap teams">⇄</button></div>
       <div class="field"><label class="label" for="muTeamD">Defense</label><select id="muTeamD"></select></div>
     </div>
+    <p class="mu-swipe" aria-hidden="true">Swipe the grid sideways for every defender →</p>
     <div class="table-wrap"><table class="mu-grid" id="muGrid"></table></div>
-    <div class="sc-legend"><span class="sc-ramp">Scorer colder <span class="sw" id="muRamp"></span> hotter than his average</span><span><span class="lg-cell"></span> Best assignment</span><span style="opacity:.6" title="Guard vs center: usually only happens on a switch">▨ Switch only</span></div>
+    <div class="sc-legend"><span class="sc-ramp">Held below his average <span class="sw" id="muRamp"></span> scores above it</span><span><span class="lg-cell mu-lg-best"></span> Best assignment</span><span style="opacity:.6" title="Guard vs center: usually only happens on a switch">▨ Switch only</span></div>
     <div class="mu-assign" id="muAssign"></div>
   </div>
 
@@ -5499,6 +5555,7 @@ const muAvgDef = q => { if (!mu.avgD.has(q.id)) mu.avgD.set(q.id, muAvg(MU_OFFS,
 const MU_BUCKETS = [-.2, -.1, -.04, .04, .1, .2];
 let MU_POS = new Map();
 const muSwitch = (p, q) => { const a = MU_POS.get(p.id), b = MU_POS.get(q.id); return !!a && !!b && ((a === "G" && b === "C") || (a === "C" && b === "G")); };
+const muSg = v => (v >= .05 ? "+" : v <= -.05 ? "−" : "±") + Math.abs(v).toFixed(1);  // signed change, with a true minus
 const muBucket = rel => { let b = 0; while (b < MU_BUCKETS.length && rel >= MU_BUCKETS[b]) b++; return b; };
 function inkOn(cssVar) {  // readable text colour on a filled cell
   const h = css(cssVar).replace("#", ""), n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
@@ -5571,15 +5628,25 @@ function muTeam() {
   };
   perm([...Array(defs.length).keys()]);
   const short = s => { const p = s.split(" "); return p.length > 1 ? p[0][0] + ". " + p.slice(1).join(" ") : s; };
-  $("muGrid").innerHTML = `<thead><tr><th style="text-align:right">${esc(tO)} scorer ↓ · ${esc(tD)} defender →</th>${defs.map(d => `<th>${esc(short(d.n))}</th>`).join("")}</tr></thead><tbody>` +
-    offs.map((o, i) => `<tr><th>${esc(short(o.n))}</th>${defs.map((d, j) => {
-      const b = muBucket(P[i][j] / A[i].pts - 1), v = `--dv-${b}`;
-      const sw = muSwitch(o, d);
-      return `<td><button type="button" class="${i < n && best[i] === j ? "best" : ""}${sw ? " sw" : ""}" data-o="${o.id}" data-d="${d.id}" style="background:var(${v});color:${inkOn(v)}"
-        title="${esc(o.n)} vs ${esc(d.n)}: ${P[i][j].toFixed(1)} pts / 36 (his avg ${A[i].pts.toFixed(1)})${sw ? " · guard vs center, usually only on a switch" : ""}">${P[i][j].toFixed(1)}</button></td>`;
+  const nm = s => { const [f, l] = pfSplitName(s); return `<small>${esc(f ? f[0] + "." : "")}</small>${esc(l)}`; };  // initial over last name
+  // each cell leads with the change from his usual points per 36, so a row reads at a glance; the points themselves sit underneath
+  $("muGrid").innerHTML = `<thead><tr><th class="mu-gc"><span>${esc(tO)} scorer ↓</span><span>${esc(tD)} defender →</span></th>${defs.map((d, j) =>
+      `<th data-c="${j}"><button type="button" class="mu-gh" data-def="${d.id}" title="Load ${esc(d.n)} as the defender">${pfAvatar(d.id, d.n)}<span class="mu-gn">${nm(d.n)}</span></button></th>`).join("")}</tr></thead><tbody>` +
+    offs.map((o, i) => `<tr><th><button type="button" class="mu-gh" data-off="${o.id}" title="Load ${esc(o.n)} as the scorer">${pfAvatar(o.id, o.n)}<span class="mu-gn">${esc(short(o.n))}<em>avg ${A[i].pts.toFixed(1)}</em></span></button></th>${defs.map((d, j) => {
+      const dv = P[i][j] - A[i].pts, b = muBucket(P[i][j] / A[i].pts - 1), v = `--dv-${b}`;
+      const sw = muSwitch(o, d), on = i < n && best[i] === j;
+      return `<td data-c="${j}"><button type="button" class="${on ? "best" : ""}${sw ? " sw" : ""}" data-o="${o.id}" data-d="${d.id}" style="background:var(${v});color:${inkOn(v)}"
+        title="${esc(o.n)} vs ${esc(d.n)}: ${P[i][j].toFixed(1)} pts / 36, ${muSg(dv)} on his average ${A[i].pts.toFixed(1)}${on ? " · best assignment" : ""}${sw ? " · guard vs center, usually only on a switch" : ""}"><b>${muSg(dv)}</b><small>${P[i][j].toFixed(1)}</small></button></td>`;
     }).join("")}</tr>`).join("") + "</tbody>";
-  $("muAssign").innerHTML = offs.slice(0, n).map((o, i) => `<span><b>${esc(short(defs[best[i]].n))}</b> on ${esc(short(o.n))} · ${P[i][best[i]].toFixed(1)}</span>`).join("");
-  $("muTeamCap").innerHTML = tip(`Predicted points per 36 minutes (75 possessions) for each ${tO} scorer against each ${tD} defender (${MU.roster_season} rosters, most-used players first). Outlined cells are the pairing that holds ${tO}'s top five to the fewest points.`);
+  // the best assignment as pairs: defender on scorer, and what it does to the scorer
+  const pairs = offs.slice(0, n).map((o, i) => [o, defs[best[i]], P[i][best[i]], A[i].pts]);
+  const held = pairs.reduce((s, [, , pr, av]) => s + pr - av, 0);
+  $("muAssign").innerHTML = `<p class="mu-best-k">Best assignment · holds ${esc(tO)}'s top ${n} to <b>${muSg(held)}</b> pts / 36 combined against their averages</p><div class="mu-best">` +
+    pairs.map(([o, d, pr, av]) => `<button type="button" class="mu-pair" data-o="${o.id}" data-d="${d.id}" title="Load ${esc(o.n)} vs ${esc(d.n)}">
+      <span class="mu-pd">${pfAvatar(d.id, d.n)}<span><small>${esc(tD)}</small>${esc(short(d.n))}</span></span><span class="mu-on">on</span>
+      <span class="mu-pd">${pfAvatar(o.id, o.n)}<span><small>${esc(tO)}</small>${esc(short(o.n))}</span></span>
+      <span class="mu-pv ${pr < av ? "cold" : "hot"}"><b>${muSg(pr - av)}</b><small>${pr.toFixed(1)} pts</small></span></button>`).join("") + "</div>";
+  $("muTeamCap").innerHTML = tip(`Predicted points per 36 minutes (75 possessions) for each ${tO} scorer against each ${tD} defender (${MU.roster_season} rosters, most-used players first). The big number in each cell is the change from that scorer's usual points per 36 against an average defender; the small one is the points. Outlined cells are the pairing that holds ${tO}'s top five to the fewest points. Tap a cell to load that matchup above, or a name to load that player.`);
 }
 
 function muInit() {
@@ -5638,9 +5705,14 @@ function muInit() {
     if (!r) return;
     if (r.dataset.def) mu.def = MU_BY_ID.get(+r.dataset.def);
     else if (r.dataset.off) mu.off = MU_BY_ID.get(+r.dataset.off);
-    else { mu.off = MU_BY_ID.get(+r.dataset.o); mu.def = MU_BY_ID.get(+r.dataset.d); $("h-matchups").scrollIntoView({ behavior: "smooth" }); }
+    else { mu.off = MU_BY_ID.get(+r.dataset.o); mu.def = MU_BY_ID.get(+r.dataset.d); }
+    if (r.dataset.o || r.closest("#muGrid")) $("h-matchups").scrollIntoView({ behavior: "smooth" });  // the grid sits far below the matchup it loads
     muRender();
   });
+  // light up the defender's column header under the pointer, as the row's name does on its own
+  const muCol = c => $("muGrid").querySelectorAll("thead th[data-c]").forEach(th => th.classList.toggle("on", th.dataset.c === c));
+  $("muGrid").addEventListener("mouseover", e => muCol(e.target.closest("td")?.dataset.c));
+  $("muGrid").addEventListener("mouseleave", () => muCol(null));
   ["muTeamO", "muTeamD"].forEach(id => { selTeam($(id)); $(id).addEventListener("change", muTeam); });
   if (MU.b_season) {  // the season picker: league rates, lists and head-to-head of one season
     $("muSeasonF").hidden = false;
@@ -6252,13 +6324,13 @@ function initH2H() {
    the one axis that sees help defense and rim protection, which the matchup axes miss, and it is the same for every position.
    So the rating no longer averages percentiles, which squash a historic outlier to the same 99th as a merely great one and let
    the on-ball axes outvote what a big does. Each axis is a z-score (Impact among everyone, the rest within position, both
-   capped at DZ_ZCAP), the weighted mean of those is set on one scale for all positions (50 = average, DZ_SCALE points per
-   standard deviation), and the wall ranks on that. Percentiles are still what the crest and the bars show. */
+   capped at DZ_ZCAP), the weighted mean of those is set on one scale for all positions (DZ_MID = average, DZ_SCALE points per
+   standard deviation, eased under 100 by DZ_SOFT so the best stay apart), and the wall ranks on that. Percentiles are still what the crest and the bars show. */
 const DZ_AX = [  // crest order, clockwise from the top; all: rated against every defender, not just his position
-  { k: "imp", name: "Impact", w: 3, low: true, all: true, tip: "Points per 100 opponent shots with him on the floor, after accounting for the other nine players and who took the shot (an adjusted plus-minus). Sees help defense and rim protection; misses turnovers and fouls. A single season is averaged half and half with his last three, since one year of it is noisy" },
-  { k: "lock", name: "Lockdown", w: 1, low: true, tip: "Points per possession by the scorers he guards, from the matchup model. Only sees his assigned man, not help defense" },
-  { k: "con", name: "Contest", w: 1, low: true, tip: "FG% of the scorers he guards, from the matchup model. Only sees his assigned man, not shots he contests in help" },
-  { k: "rim", name: "Rim", w: 1, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking). Bigs see far more of these shots than guards" },
+  { k: "imp", name: "Impact", w: 2.5, low: true, all: true, tip: "Points per 100 opponent shots with him on the floor, after accounting for the other nine players and who took the shot (an adjusted plus-minus). Sees help defense and rim protection; misses turnovers and fouls. A single season is averaged half and half with his last three, since one year of it is noisy" },
+  { k: "lock", name: "Lockdown", w: 1.5, low: true, tip: "Points per possession by the scorers he guards, from the matchup model. Only sees his assigned man, not help defense" },
+  { k: "con", name: "Contest", w: 1.5, low: true, tip: "FG% of the scorers he guards, from the matchup model. Only sees his assigned man, not shots he contests in help" },
+  { k: "rim", name: "Rim", w: 1.5, low: true, tip: "Opponents' FG% at the rim against what those shooters usually make (NBA.com tracking). Bigs see far more of these shots than guards" },
   { k: "blk", name: "Blocks", w: 1.5, low: false, tip: "Blocks per 36 minutes. Rewards bigs and shot-blocking gambles; can't see shots that never happen" },
   { k: "stl", name: "Steals", w: 1.5, low: false, tip: "Steals per 36 minutes. Rewards gambling; players asked to stay home in the paint get fewer chances" },
   { k: "defl", name: "Deflect", long: "Deflections", w: 1, low: false, tip: "Deflections per 36 minutes (NBA.com hustle tracking). Counts hands on passes and dribbles that don't end in a steal; rewards active hands and gambling alike" },
@@ -6272,7 +6344,7 @@ const DI = DATA.defImpact || null;  // {periods, players: {id: [period index, op
 const DZ_SHRINK = 40;  // pseudo-points (Lockdown) and pseudo-shots (Contest) of average defense added to a season's raw results
 const DZ_DET_SHRINK = 400;  // pseudo-shots on the floor of average Deterrence
 const DZ_IMP_MIN = 1000;  // opponent shots he was on the floor for before Impact counts
-const DZ_ZCAP = 3, DZ_SCALE = 13;  // an axis's z-score past 3 counts as 3; the rating moves 13 points per standard deviation of the weighted mean
+const DZ_ZCAP = 3, DZ_MID = 65, DZ_SCALE = 12.5, DZ_SOFT = 6;  // an axis's z-score past 3 counts as 3; an average defender rates 65 and the rating moves 12.5 points per standard deviation of the weighted mean, bending softly under 100 near the top (the 90th percentile is about 81)
 const dz = { pool: [], byId: new Map(), rank: "score", pos: "", sel: null, cols: 0, tot: null, span: "", period: "career", ds: null, di: null };
 function dzSeasons(period = dz.period) {  // the regular seasons a period covers; null = the whole career (the matchup model)
   if (period === "career" || !DS) return null;
@@ -6381,7 +6453,7 @@ function dzBuild() {
     for (const a of DZ_AX) if (x.z[a.k] != null) { s += a.w * x.z[a.k]; w += a.w; }
     x.zc = s / w;
   }
-  zscore(dz.pool, x => x.zc, (x, z) => { x.zs = z; x.score = Math.max(0, Math.min(100, Math.round(50 + DZ_SCALE * z))); }, Infinity);
+  zscore(dz.pool, x => x.zc, (x, z) => { x.zs = z; x.score = Math.max(0, Math.min(100, Math.round(100 - DZ_SOFT * Math.log1p(Math.exp((100 - DZ_MID - DZ_SCALE * z) / DZ_SOFT))))); }, Infinity);
   for (const x of dz.pool) dz.byId.set(x.id, x);
   const ss = [...seasons].sort();
   if (!only) dz.span = ss.length ? `${ss[0].slice(0, 4)}–${ss.at(-1).slice(-2)}` : "";
@@ -6490,7 +6562,7 @@ function dzReport(x) {
     top.length ? `Elite in ${list(top)}.` : "",
     low.length ? `Held down by ${list(low)}${low.some(a => a.k === "imp") ? "; Impact carries the most weight" : ""}.` : `No weak spots: every part is above the 60th percentile for ${grp}.`,
     matchupLow.length && big ? `${matchupLow.map(a => a.long || a.name).join(" and ")} only ${matchupLow.length > 1 ? "see" : "sees"} the man he's assigned to, which undersells a big whose job is to wait in the paint and help.` : "",
-    x.dpoy || x.alld ? `${x.score >= 85 ? "Voters agreed" : "Voters rated him higher"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
+    x.dpoy || x.alld ? `${x.zs >= 2.7 ? "Voters agreed" : "Voters rated him higher"}: ${[x.dpoy && `${x.dpoy}× Defensive Player of the Year`, x.alld && `${x.alld}× All-Defense`].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" ");
   const byScore = [...dz.pool].sort((a, c) => c.zs - a.zs), rank = byScore.findIndex(y => y.id === x.id) + 1;
   const peers = byScore.filter(y => y.grp === x.grp), prank = peers.findIndex(y => y.id === x.id) + 1;
   $("dzReport").innerHTML = `<div class="dz-who"><span class="dz-face" style="--tc:${T[1]}"><img src="${pfHead(x.id, "260x190")}" alt="" onerror="this.remove()"></span>
@@ -6582,8 +6654,8 @@ function dzLabels() {
   $("dzKicker").textContent = `Defense · ${dz.pool.length} defenders · ${only ? (only.length === 1 ? only[0] : `${only[0]} to ${only.at(-1)}`) : dz.span}`;
   $("dzFoot").innerHTML = `<span><i class="g"></i>Defensive Player of the Year</span><span><i class="s"></i>All-Defense team</span><span><i class="r"></i>dim to lit: rank on the wall</span><span class="dz-posnote">One scale for every position</span>`
     + tip(only
-      ? `Top ${DZ_N} of ${dz.pool.length} players with ${min.toLocaleString()}+ regular-season minutes ${dzSpanText()}. The Wall rating puts every position on one scale (50 is an average defender). It starts from Impact, an adjusted plus-minus on every opponent shot: points per 100 shots with him on the floor, after the other nine players and who shot. Impact counts three times; blocks and steals per 36 one and a half times each; Lockdown, Contest, rim protection and deflections once each; Deterrence half. Impact is rated against everyone. The others are rated against his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone), because Lockdown and Contest only see the man a player is assigned to and would sink help-side rim protectors. Each is a z-score capped at 3, so a historic outlier stays ahead of a merely great one; the crest and bars show percentiles. Here Impact is fit on these seasons alone (a single season averaged half and half with the last three), and Lockdown and Contest are raw matchup results: what the scorers a player guarded did against him, against what the same scorers did against everyone else that season, shrunk toward average for small samples. Deterrence is an on/off: opponents' rim-shot share with him on the floor against his team with him off it, after who was shooting. Neither is the career model, so a season's ranks can differ from Career's. The Impact, Lockdown, Contest, Rim, Blocks, Steals, Deflect and Deter buttons rank everyone together on the stat itself. Awards from those seasons, from Basketball-Reference.`
-      : `Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating puts every position on one scale (50 is an average defender). It starts from Impact, an adjusted plus-minus on every opponent shot: points per 100 shots with him on the floor, after the other nine players and who shot. Impact counts three times; blocks and steals per 36 one and a half times each; Lockdown, Contest, rim protection and deflections once each; Deterrence half. Impact is rated against everyone. The others are rated against his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone), because Lockdown and Contest only see the man a player is assigned to and would sink help-side rim protectors. Each is a z-score capped at 3, so a historic outlier stays ahead of a merely great one; the crest and bars show percentiles. Lockdown and Contest come from the matchup model. The Impact, Lockdown, Contest, Rim, Blocks, Steals, Deflect and Deter buttons rank everyone together on the stat itself. Awards from Basketball-Reference.`);
+      ? `Top ${DZ_N} of ${dz.pool.length} players with ${min.toLocaleString()}+ regular-season minutes ${dzSpanText()}. The Wall rating puts every position on one scale (65 is an average defender, and it eases in under 100 at the top). It starts from Impact, an adjusted plus-minus on every opponent shot: points per 100 shots with him on the floor, after the other nine players and who shot. Impact counts two and a half times; Lockdown, Contest, rim protection, blocks and steals per 36 one and a half times each; deflections once; Deterrence half. Impact is rated against everyone. The others are rated against his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone), because Lockdown and Contest only see the man a player is assigned to and would sink help-side rim protectors. Each is a z-score capped at 3, so a historic outlier stays ahead of a merely great one; the crest and bars show percentiles. Here Impact is fit on these seasons alone (a single season averaged half and half with the last three), and Lockdown and Contest are raw matchup results: what the scorers a player guarded did against him, against what the same scorers did against everyone else that season, shrunk toward average for small samples. Deterrence is an on/off: opponents' rim-shot share with him on the floor against his team with him off it, after who was shooting. Neither is the career model, so a season's ranks can differ from Career's. The Impact, Lockdown, Contest, Rim, Blocks, Steals, Deflect and Deter buttons rank everyone together on the stat itself. Awards from those seasons, from Basketball-Reference.`
+      : `Top ${DZ_N} of ${dz.pool.length} players with ${DZ_MIN.toLocaleString()}+ regular-season minutes since ${dz.span.slice(0, 4)}. The Wall rating puts every position on one scale (65 is an average defender, and it eases in under 100 at the top). It starts from Impact, an adjusted plus-minus on every opponent shot: points per 100 shots with him on the floor, after the other nine players and who shot. Impact counts two and a half times; Lockdown, Contest, rim protection, blocks and steals per 36 one and a half times each; deflections once; Deterrence half. Impact is rated against everyone. The others are rated against his position (guards, wings or bigs; positions from NBA.com, and any with fewer than 20 players rank against everyone), because Lockdown and Contest only see the man a player is assigned to and would sink help-side rim protectors. Each is a z-score capped at 3, so a historic outlier stays ahead of a merely great one; the crest and bars show percentiles. Lockdown and Contest come from the matchup model. The Impact, Lockdown, Contest, Rim, Blocks, Steals, Deflect and Deter buttons rank everyone together on the stat itself. Awards from Basketball-Reference.`);
 }
 function dzSetPeriod(p) {  // rebuild the pool for the new span and redraw everything; keep the same player if he's still in it
   if (p === dz.period) return;

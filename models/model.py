@@ -18,22 +18,35 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 
-N_FEAT = 6  # a checkpoint may use fewer: Config.n_feat takes the first n
+N_FEAT = 12  # a checkpoint may use fewer: Config.n_feat takes the first n
 
 
-def make_features(sec, diff, period, elo=0.0):
-    """elo: the home team's pre-game edge as a logit (models/team_strength.py); it matters less as the clock runs."""
+def make_features(sec, diff, period, elo=0.0, start=0.0, miss=0.0, nmiss=0.0):
+    """elo: the home team's pre-game edge as a logit (models/team_strength.py); it matters less as the clock runs.
+    start: the starting fives' strength, home minus away in points per 48 (models/game_context.py start_net).
+    miss, nmiss: rotation players out tonight, home minus away (game_context miss_diff, nmiss_diff)."""
     minutes = np.maximum(sec, 0) / 60.0
     frac_left = np.clip(sec / 2880.0, 0, 1) * (period <= 4)
+    start = float(np.nan_to_num(start)) / 10.0
+    miss, nmiss = float(np.nan_to_num(miss)) / 5.0, float(np.nan_to_num(nmiss))
     return np.stack([sec / 2880.0, diff / 20.0, np.minimum(period, 6) / 4.0,
                      diff / np.sqrt(minutes + 1.0) / 5.0,  # lead relative to time left
-                     np.full_like(sec, elo, dtype=np.float32), elo * frac_left],
+                     np.full_like(sec, elo, dtype=np.float32), elo * frac_left,
+                     np.full_like(sec, start, dtype=np.float32), start * frac_left,
+                     np.full_like(sec, miss, dtype=np.float32), miss * frac_left,
+                     np.full_like(sec, nmiss, dtype=np.float32), nmiss * frac_left],
                     axis=-1).astype(np.float32)
 
 
 def load_data(path):
     with open(path, "rb") as fh:
         return pickle.load(fh)
+
+
+def game_features(g, T):
+    """make_features for a game dict, with whatever pre-game context it carries (0 where it has none)."""
+    return make_features(g["sec"][:T], g["diff"][:T], g["period"][:T], g.get("elo", 0.0),
+                         g.get("start_net", 0.0), g.get("miss_diff", 0.0), g.get("nmiss_diff", 0.0))
 
 
 class GameDataset(Dataset):
@@ -46,7 +59,7 @@ class GameDataset(Dataset):
     def __getitem__(self, i):
         g, T = self.games[i], self.block_size
         return (torch.from_numpy(g["tokens"][:T].astype(np.int64)),
-                torch.from_numpy(make_features(g["sec"][:T], g["diff"][:T], g["period"][:T], g.get("elo", 0.0))),
+                torch.from_numpy(game_features(g, T)),
                 float(g["home_win"]))
 
 
@@ -70,9 +83,12 @@ class Config:
     n_head: int = 4
     n_embd: int = 128
     dropout: float = 0.1
-    n_feat: int = 4             # 4 = no Elo (older checkpoints), 6 = with pre-game Elo
+    n_feat: int = 4             # 4 = no Elo (older checkpoints), 6 = with pre-game Elo, 8 = and the starting fives,
+                                # 12 = and the missing rotation players
     wp_residual: bool = False   # win-prob head adds to the baseline logit below
-    base_coef: tuple = None     # logistic baseline (b, w_diff, w_diff/sqrt(min+1), w_min[, w_elo, w_elo_fading])
+    base_coef: tuple = None     # logistic baseline (b, w_diff, w_diff/sqrt(min+1), w_min[, w_elo, w_elo_fading
+                                #                    [, w_start, w_start_fading[, w_miss, w_miss_fading,
+                                #                    w_nmiss, w_nmiss_fading]]])
     wp_temp: float = 1.0        # win-prob logit is divided by this (temperature scaling)
 
 
@@ -143,6 +159,10 @@ class Tempo(nn.Module):
         z = b + w_diff * 20 * feats[..., 1] + w_rel * 5 * feats[..., 3] + w_min * 48 * feats[..., 0]
         if w_elo:  # the baseline with Elo (baseline.fit_elo_baseline): + w_elo * elo + w_fade * elo * share of game left
             z = z + w_elo[0] * feats[..., 4] + w_elo[1] * feats[..., 5]
+        if len(w_elo) > 2:  # and the starting fives (baseline.lineup_features), the same way
+            z = z + w_elo[2] * feats[..., 6] + w_elo[3] * feats[..., 7]
+        if len(w_elo) > 4:  # and the missing rotation players (baseline.context_features)
+            z = z + sum(w * feats[..., 8 + k] for k, w in enumerate(w_elo[4:8]))
         return z
 
     def forward(self, tokens, feats):

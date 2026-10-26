@@ -21,7 +21,8 @@ import torch
 
 from models.baseline import baseline_features
 from models.evaluate import brier, calibration
-from models.model import Config, Tempo, load_data, make_features
+from models.game_context import attach_pregame
+from models.model import Config, Tempo, game_features, load_data
 
 ROOT = Path(__file__).resolve().parents[1]
 TOP_K = 5
@@ -32,7 +33,7 @@ FIRST_TRAIN_SEASON = "2016-17"  # runs/base trained on 2016-17 on; replay labels
 def run_game(model, g):
     T = min(len(g["tokens"]), model.config.block_size)
     tokens = torch.from_numpy(g["tokens"][:T].astype(np.int64))[None]
-    feats = torch.from_numpy(make_features(g["sec"][:T], g["diff"][:T], g["period"][:T], g.get("elo", 0.0)))[None]
+    feats = torch.from_numpy(game_features(g, T))[None]  # the model reads its first n_feat columns
     logits, wp = model(tokens, feats)
     probs = torch.softmax(logits[0], -1)
     top_p, top_i = probs.topk(TOP_K, -1)
@@ -125,6 +126,8 @@ def main():
                     "coach/matchup exports keep --shots, whose models only know 2016-17 on")
     ap.add_argument("--shot_run", default="runs/shots", help="shot model run dir; skipped if missing")
     ap.add_argument("--context", default="data/context")
+    ap.add_argument("--game_context", default="data/processed/game_context.pkl",
+                    help="starting fives and missing players, for a checkpoint with n_feat > 6 (models/game_context.py)")
     ap.add_argument("--raw", default="data/raw", help="raw play-by-play for player profiles; skipped for synthetic data")
     ap.add_argument("--profile_cache", default="data/processed/profiles_cache.pkl")
     ap.add_argument("--rosters", default="data/context/bbref_rosters.parquet", help="current rosters from fetch/fetch_bbref.py")
@@ -137,6 +140,9 @@ def main():
     model.load_state_dict(ck["model"])
     model.eval()
     d = load_data(args.data)
+    if model.config.n_feat > 6 and Path(args.game_context).exists():
+        n = attach_pregame(d["games"], args.game_context)
+        print(f"pre-game context from {args.game_context} for {n}/{len(d['games'])} games")
     clf = joblib.load(args.baseline)
     games = [d["games"][i] for i in d["splits"][args.split]]
 

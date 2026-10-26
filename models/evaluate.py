@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from models.baseline import baseline_features, elo_features, fit_elo_baseline
+from models.baseline import baseline_features, context_features, elo_features, fit_elo_baseline, lineup_features
+from models.game_context import attach_pregame
 from models.model import Config, GameDataset, Tempo, collate, load_data
 
 
@@ -70,6 +71,7 @@ def main():
     ap.add_argument("--ckpt", default="runs/base/best.pt")
     ap.add_argument("--data", default="data/processed/games.pkl")
     ap.add_argument("--baseline", default="runs/baseline.joblib")
+    ap.add_argument("--context", default="data/processed/game_context.pkl", help="starting fives, missing players (models/game_context.py)")
     ap.add_argument("--out", default="results")
     ap.add_argument("--n_game_plots", type=int, default=3)
     args = ap.parse_args()
@@ -82,27 +84,38 @@ def main():
     model.load_state_dict(ck["model"])
 
     d = load_data(args.data)
+    has_lineup = Path(args.context).exists()
+    if has_lineup:
+        attach_pregame(d["games"], args.context)
     games = [d["games"][i] for i in d["splits"]["test"]]
     wps, acc, nll = predict_games(model, games, cfg.block_size, device)
     clf = joblib.load(args.baseline)
     has_elo = any(g.get("elo") for g in d["games"])
-    clf_elo = fit_elo_baseline([d["games"][i] for i in d["splits"]["train"]]) if has_elo else None
+    train = [d["games"][i] for i in d["splits"]["train"]]
+    clf_elo = fit_elo_baseline(train) if has_elo else None
+    clf_lu = fit_elo_baseline(train, features=lineup_features) if has_elo and has_lineup else None
+    clf_cx = fit_elo_baseline(train, features=context_features) if has_elo and has_lineup else None
 
-    p_m, p_b, p_e, y, sec_all = [], [], [], [], []
+    p_m, p_b, p_e, p_l, p_c, y, sec_all = [], [], [], [], [], [], []
     for g, w in zip(games, wps):
         L = len(w)
         p_m.append(w)
         p_b.append(clf.predict_proba(baseline_features(g["sec"][:L], g["diff"][:L]))[:, 1])
         p_e.append(clf_elo.predict_proba(elo_features(g, L))[:, 1] if clf_elo else np.full(L, np.nan))
+        p_l.append(clf_lu.predict_proba(lineup_features(g, L))[:, 1] if clf_lu else np.full(L, np.nan))
+        p_c.append(clf_cx.predict_proba(context_features(g, L))[:, 1] if clf_cx else np.full(L, np.nan))
         y.append(np.full(L, g["home_win"]))
         sec_all.append(np.where(g["period"][:L] <= 4, g["sec"][:L], 0))
-    p_m, p_b, p_e, y, sec_all = map(np.concatenate, (p_m, p_b, p_e, y, sec_all))
+    gid = np.concatenate([np.full(len(w), i) for i, w in enumerate(wps)])
+    p_m, p_b, p_e, p_l, p_c, y, sec_all = map(np.concatenate, (p_m, p_b, p_e, p_l, p_c, y, sec_all))
 
     # Brier by game phase (regulation quarter; OT counted with Q4)
     phase = np.clip(4 - (sec_all // 720).astype(int), 1, 4)
     by_q = {f"Q{q}": {"model": brier(p_m[phase == q], y[phase == q]),
                       "baseline": brier(p_b[phase == q], y[phase == q]),
-                      **({"baseline_elo": brier(p_e[phase == q], y[phase == q])} if clf_elo else {})}
+                      **({"baseline_elo": brier(p_e[phase == q], y[phase == q])} if clf_elo else {}),
+                      **({"baseline_lineup": brier(p_l[phase == q], y[phase == q])} if clf_lu else {}),
+                      **({"baseline_context": brier(p_c[phase == q], y[phase == q])} if clf_cx else {})}
             for q in range(1, 5)}
 
     metrics = {
@@ -112,11 +125,18 @@ def main():
         "brier_model": brier(p_m, y),
         "brier_baseline": brier(p_b, y),
         **({"brier_baseline_elo": brier(p_e, y)} if clf_elo else {}),
+        **({"brier_baseline_lineup": brier(p_l, y)} if clf_lu else {}),
+        **({"brier_baseline_context": brier(p_c, y)} if clf_cx else {}),
         "temperature": cfg.wp_temp,
         "brier_constant": brier(np.full_like(y, y.mean(), dtype=float), y),
         "brier_by_quarter": by_q,
         "calibration_model": calibration(p_m, y),
     }
+    if clf_elo:  # the promotion test: Tempo minus the best baseline, resampling whole games
+        from models.wp_context import compare
+        ref, name = (p_c, "baseline_context") if clf_cx else (p_e, "baseline_elo")
+        r = compare(p_m, ref, y, gid)
+        metrics["vs_best_baseline"] = {"baseline": name, "delta": r["delta"], "ci95": r["ci95"], "p_better": r["p_better"]}
     json.dump(metrics, open(out / "metrics.json", "w"), indent=1)
     print(json.dumps({k: v for k, v in metrics.items() if k != "calibration_model"}, indent=1))
 

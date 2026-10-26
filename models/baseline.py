@@ -36,10 +36,31 @@ def elo_features(g, L):
     return np.column_stack([X, np.full(L, elo), elo * frac_left])
 
 
-def fit_elo_baseline(games, max_rows=2_000_000, seed=0):
+def lineup_features(g, L):
+    """Elo features plus the starting fives' strength (game_context start_net: home minus away, points per 48
+    minutes, /10) and that times the share of regulation left. Games without lineups get 0."""
+    X = elo_features(g, L)
+    s = float(np.nan_to_num(g.get("start_net", 0.0))) / 10.0
+    frac_left = np.clip(g["sec"][:L] / 2880, 0, 1) * (g["period"][:L] <= 4)
+    return np.column_stack([X, np.full(L, s), s * frac_left])
+
+
+def context_features(g, L):
+    """Lineup features plus who is missing tonight (game_context miss_diff: rotation players out, their minutes/48 times
+    net rating, /5; nmiss_diff: those minutes/48), home minus away, each also times the share of regulation left.
+    The one group a validation-season search kept over rest, record, recent form and roster depth."""
+    X = lineup_features(g, L)
+    m, n = float(g.get("miss_diff", 0.0)) / 5.0, float(g.get("nmiss_diff", 0.0))
+    frac_left = np.clip(g["sec"][:L] / 2880, 0, 1) * (g["period"][:L] <= 4)
+    return np.column_stack([X, np.full(L, m), m * frac_left, np.full(L, n), n * frac_left])
+
+
+def fit_elo_baseline(games, max_rows=2_000_000, seed=0, features=elo_features):
     """The same logistic regression given the pre-game Elo too: Tempo's win head starts from it, and models/evaluate.py
-    reports it, since Tempo has to beat it to show the plays add something the team ratings don't."""
-    X = np.concatenate([elo_features(g, len(g["sec"])) for g in games])
+    reports it, since Tempo has to beat it to show the plays add something the team ratings don't.
+    features=lineup_features adds the starting fives (models/wp_context.py picked it on the validation season),
+    context_features also the missing rotation players."""
+    X = np.concatenate([features(g, len(g["sec"])) for g in games])
     y = np.concatenate([np.full(len(g["sec"]), g["home_win"]) for g in games])
     if len(y) > max_rows:
         idx = np.random.default_rng(seed).choice(len(y), max_rows, replace=False)
