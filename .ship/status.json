@@ -1,0 +1,273 @@
+{
+  "schema": 1,
+  "project": "homers",
+  "path": "/Users/kevintang/Downloads/nba-gpt",
+  "updated": "2026-10-28T15:32:27Z",
+  "apps": [
+    {
+      "name": "homers-site",
+      "stack": "plain-html + 1 Vercel function",
+      "platforms": [
+        "site"
+      ],
+      "live_url": "https://homers-nu.vercel.app",
+      "score": {
+        "done": 16,
+        "applicable": 28
+      },
+      "areas": {
+        "live_on_the_web": {
+          "done": 2,
+          "applicable": 3
+        },
+        "security_and_data": {
+          "done": 2,
+          "applicable": 5
+        },
+        "see_how_it_is_used": {
+          "done": 0,
+          "applicable": 4
+        },
+        "legal_and_trust": {
+          "done": 0,
+          "applicable": 2
+        },
+        "payments_and_costs": {
+          "done": 2,
+          "applicable": 2
+        },
+        "builds_and_releases": {
+          "done": 2,
+          "applicable": 4
+        },
+        "mission_control": {
+          "done": 8,
+          "applicable": 8
+        }
+      },
+      "items": [
+        {
+          "id": "1.1",
+          "status": "done",
+          "note": "200 over HTTPS, HSTS preload"
+        },
+        {
+          "id": "1.2",
+          "status": "n/a",
+          "note": "staying on homers-nu.vercel.app"
+        },
+        {
+          "id": "1.3",
+          "status": "done",
+          "note": "http -> https 308"
+        },
+        {
+          "id": "1.4",
+          "status": "n/a",
+          "note": "the dashboard is the product; revisit if monetizing"
+        },
+        {
+          "id": "1.5",
+          "status": "n/a",
+          "note": "build needs local data/; ./deploy.sh --preview gives previews"
+        },
+        {
+          "id": "1.6",
+          "status": "blocked",
+          "note": "favicon, robots, sitemap, 404, og tags in build_site.py; live after redeploy. OG image still missing"
+        },
+        {
+          "id": "3.1",
+          "status": "done",
+          "note": ".env* gitignored; no secrets in tracked files or history"
+        },
+        {
+          "id": "3.2",
+          "status": "done",
+          "note": "no keys in client; only public ESPN/NBA endpoints"
+        },
+        {
+          "id": "3.3",
+          "status": "n/a"
+        },
+        {
+          "id": "3.4",
+          "status": "n/a"
+        },
+        {
+          "id": "3.5",
+          "status": "todo",
+          "note": "/api/record?any-query bypasses CDN cache; abuse could exhaust Hobby function quota and pause it ~30 days"
+        },
+        {
+          "id": "3.6",
+          "status": "blocked",
+          "note": "nosniff, frame-ancestors, referrer, permissions headers in vercel.json; live after redeploy"
+        },
+        {
+          "id": "3.7",
+          "status": "by-hand",
+          "note": "public repo: enable Dependabot alerts + secret scanning push protection in GitHub settings"
+        },
+        {
+          "id": "4.1",
+          "status": "todo",
+          "note": "no analytics; Vercel Web Analytics (cookieless, 50k events/mo on Hobby) suggested"
+        },
+        {
+          "id": "4.2",
+          "status": "todo",
+          "note": "function errors only in Vercel logs (1h retention on Hobby)"
+        },
+        {
+          "id": "4.3",
+          "status": "todo",
+          "note": "no uptime monitor; proposed daily GitHub Actions smoke check (needs OK)"
+        },
+        {
+          "id": "4.4",
+          "status": "blocked",
+          "note": "/api/record returns 404 live: Oct 26 deploy used a stale site/; fixed by ./deploy.sh"
+        },
+        {
+          "id": "5.1",
+          "status": "blocked",
+          "note": "export/site_static/privacy.html; live after redeploy; needs a footer link in dashboard_template.html"
+        },
+        {
+          "id": "5.2",
+          "status": "n/a",
+          "note": "not taking money yet; needed before monetizing"
+        },
+        {
+          "id": "5.3",
+          "status": "blocked",
+          "note": "GitHub issues link on privacy page; live after redeploy"
+        },
+        {
+          "id": "6.1",
+          "status": "n/a"
+        },
+        {
+          "id": "6.2",
+          "status": "n/a"
+        },
+        {
+          "id": "6.3",
+          "status": "n/a"
+        },
+        {
+          "id": "6.4",
+          "status": "done"
+        },
+        {
+          "id": "6.5",
+          "status": "done",
+          "note": "Hobby cannot bill overage; it pauses instead"
+        },
+        {
+          "id": "6.6",
+          "status": "n/a"
+        },
+        {
+          "id": "7.1",
+          "status": "done"
+        },
+        {
+          "id": "7.2",
+          "status": "todo",
+          "note": "ci.yml written; turns on with next push"
+        },
+        {
+          "id": "7.3",
+          "status": "todo",
+          "note": "deploy.sh does not run checks first"
+        },
+        {
+          "id": "7.4",
+          "status": "n/a"
+        },
+        {
+          "id": "7.5",
+          "status": "n/a"
+        },
+        {
+          "id": "7.6",
+          "status": "done",
+          "note": ".ship/RUNBOOK.md"
+        },
+        {
+          "id": "8.1",
+          "status": "done"
+        },
+        {
+          "id": "8.2",
+          "status": "done"
+        },
+        {
+          "id": "8.3",
+          "status": "done"
+        },
+        {
+          "id": "8.4",
+          "status": "done"
+        },
+        {
+          "id": "8.5",
+          "status": "done"
+        },
+        {
+          "id": "8.6",
+          "status": "done"
+        },
+        {
+          "id": "8.7",
+          "status": "done"
+        },
+        {
+          "id": "8.8",
+          "status": "done"
+        }
+      ],
+      "next_steps": [
+        "Redeploy with ./deploy.sh (restores /api/record, ships headers, privacy, 404)",
+        "Add favicon + privacy footer link to dashboard_template.html",
+        "Enable Dependabot alerts + secret scanning on kevit03/Homers",
+        "Push to turn on CI",
+        "Decide on daily smoke check (uptime) and Vercel Web Analytics",
+        "Before monetizing: Vercel Pro ($20/dev seat/mo), terms of service, check NBA/ESPN data + image rights"
+      ],
+      "metered_services": [
+        {
+          "name": "Vercel (Hobby)",
+          "cap": "Hobby has hard limits and pauses instead of billing; Spend Management exists on Pro only",
+          "cap_verified": true
+        }
+      ],
+      "costs": [
+        {
+          "item": "Vercel Hobby",
+          "amount": 0,
+          "cadence": "month",
+          "source": "https://vercel.com/docs/plans/hobby",
+          "checked": "2026-10-28"
+        },
+        {
+          "item": "Vercel Pro (required if commercial)",
+          "amount": 20,
+          "cadence": "month per developer seat",
+          "source": "https://vercel.com/docs/plans/hobby",
+          "checked": "2026-10-28"
+        },
+        {
+          "item": "GitHub Actions on public repo",
+          "amount": 0,
+          "cadence": "month",
+          "source": "",
+          "checked": ""
+        }
+      ]
+    }
+  ],
+  "gates": []
+}

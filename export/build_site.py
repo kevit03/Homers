@@ -22,6 +22,12 @@ LOADER = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HOMERs</title>
 <meta name="description" content="NBA play-by-play, read one play at a time: win probability, shot charts, matchups and the league's best defenders.">
+<!-- what link previews show (crawlers read this loader, not the unpacked page) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="HOMERs">
+<meta property="og:description" content="NBA play-by-play, read one play at a time: win probability, shot charts, matchups and the league's best defenders.">
+<meta property="og:url" content="https://homers-nu.vercel.app/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
   :root { color-scheme: dark; --o: #eb6834; }
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(120% 80% at 50% 100%, #1a1f26, #0f1216 60%);
@@ -178,7 +184,16 @@ def main():
     (out / "vercel.json").write_text(json.dumps({
         "$schema": "https://openapi.vercel.sh/vercel.json", "framework": None,
         # api/record.js reads Tempo's weights and the record snapshot from live/ (see add_live)
-        "functions": {"api/record.js": {"includeFiles": "live/**", "maxDuration": 60}}}, indent=2) + "\n")
+        "functions": {"api/record.js": {"includeFiles": "live/**", "maxDuration": 60}},
+        # Vercel already sends HSTS; these cover sniffing, framing by other sites, referrers and unused device APIs
+        "headers": [{"source": "/(.*)", "headers": [
+            {"key": "X-Content-Type-Options", "value": "nosniff"},
+            {"key": "Content-Security-Policy", "value": "frame-ancestors 'self'"},
+            {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"},
+            {"key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()"}]}]}, indent=2) + "\n")
+    # favicon, robots.txt, sitemap.xml, 404.html (Vercel serves it for missing paths) and privacy.html
+    for f in (ROOT / "export" / "site_static").iterdir():
+        shutil.copy2(f, out / f.name)
     add_live(out)
     total = sum(p.stat().st_size for p in out.iterdir() if p.is_file())
     if total / 1e6 > args.max_mb:

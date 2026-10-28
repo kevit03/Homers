@@ -8,5 +8,9 @@ site/
 # build output of export_dashboard.py (~50 MB, past GitHub's 50 MB warning); rebuild it locally, the live copy is on Vercel
 dashboard.html
 
+# secrets: never commit env files (the site needs none today)
+.env*
+!.env.example
+
 # personal notes, kept local only
 RESUME.md

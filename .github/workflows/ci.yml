@@ -1,0 +1,24 @@
+# Cheap checks on every push: no secrets in git, the Live tab's JavaScript parses, the Python modules compile.
+# The real build (export_dashboard + build_site) needs data/ and runs/, which stay on the laptop, so deploys remain ./deploy.sh.
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24  # api/record.js is an ES module in a .js file; Node 22.7+ detects that on its own
+      - name: JavaScript parses
+        run: for f in api/*.js live/*.mjs; do node --check "$f"; done
+      - name: Python compiles
+        run: python3 -m compileall -q export fetch scripts

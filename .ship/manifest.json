@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "b52d3791fc847badabbbda4ba8e3fabd783ffa1443dc2723017b60703f9d81f1",
+      "created": false,
+      "backup": ".ship/backup/.gitignore"
+    },
+    {
+      "path": "export/build_site.py",
+      "sha256": "85fd11240663b1f53c3f67a6512a53369839d3bab6f4d83a645e6badbadf62c5",
+      "created": false,
+      "backup": ".ship/backup/export/build_site.py"
+    },
+    {
+      "path": "export/site_static/404.html",
+      "sha256": "96d05610f5913814d79274e6d288954ca049115b40aab01ebfd3c5a33e900a21",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": "export/site_static/privacy.html",
+      "sha256": "2675b8e395e234757b24a72d89226d111779462980fac828f5607dec4575e244",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": "export/site_static/favicon.svg",
+      "sha256": "41de85f8abe70bf7ea8f00cc0937c9f2e651c0e7480e112a6c9c3a3b94a61ba4",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": "export/site_static/robots.txt",
+      "sha256": "f04fae842b9c9e79e82a8db744a758d2db2705235690ba9f8e54ba7929ae8a5f",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": "export/site_static/sitemap.xml",
+      "sha256": "b1cf00c48b344db936d4be18840d0b4bb09c710774bb15ec6e6492c1813c71de",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0de992b5cf25e88b79dc2143fd1c22193c1294fd3cfc887a39518a1f3684ac2d",
+      "created": true,
+      "backup": null
+    },
+    {
+      "path": ".ship/RUNBOOK.md",
+      "sha256": "49e75778df0efa901bd4e56d91d8ad5b09ecde79751b61cb268054f169f050a8",
+      "created": true,
+      "backup": null
+    }
+  ]
+}
